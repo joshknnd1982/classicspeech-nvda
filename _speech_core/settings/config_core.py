@@ -66,6 +66,10 @@ def _normalize_late_registered_boolean_values(section, spec):
 			_normalize_late_registered_boolean_values(value, key_spec)
 
 
+#: The section object most recently normalized by ``_read_classic_speech_section``.
+_normalized_section = None
+
+
 def _ensure_classic_speech_section():
 	"""Return the base ClassicSpeech config section.
 
@@ -73,6 +77,7 @@ def _ensure_classic_speech_section():
 	settings must read and write that same base section, not a transient layered
 	profile view, otherwise the settings panel and speech hook can disagree.
 	"""
+	global _normalized_section
 	try:
 		baseConf = config.conf.profiles[0]
 	except Exception:
@@ -95,7 +100,44 @@ def _ensure_classic_speech_section():
 	if "profileBehaviorData" not in conf:
 		conf["profileBehaviorData"] = {}
 
+	_normalized_section = conf
 	return conf
+
+
+def _read_classic_speech_section():
+	"""Return the base section for speech-path getters.
+
+	Getters such as the debug-logging check run several times for every speech
+	sequence. The full schema normalization runs once per loaded section object;
+	callers must coerce values with ``_as_bool`` so a string written later is
+	still interpreted correctly.
+	"""
+	try:
+		baseConf = config.conf.profiles[0]
+	except Exception:
+		baseConf = config.conf
+	try:
+		conf = baseConf["classicSpeech"]
+	except Exception:
+		return _ensure_classic_speech_section()
+	if conf is _normalized_section:
+		return conf
+	return _ensure_classic_speech_section()
+
+
+def _as_bool(value, default=False) -> bool:
+	"""Interpret ConfigObj Boolean leaves, including late-registered strings."""
+	if value is None:
+		return bool(default)
+	if isinstance(value, str):
+		return value.strip().lower() in {"1", "true", "yes", "on"}
+	return bool(value)
+
+
+def _forget_normalized_section():
+	"""Force the next speech-path read to normalize again (tests and reloads)."""
+	global _normalized_section
+	_normalized_section = None
 
 
 def _replace_section_contents(section, plain_data: dict):

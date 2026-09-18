@@ -128,6 +128,9 @@ class BaseSpeechProcessor:
 	def _get_object_role_key(self, obj):
 		return self.context._get_object_role_key(obj)
 
+	def _normalize_role_key_for_role(self, role):
+		return self.context._normalize_role_key_for_role(role)
+
 	def _get_focus_role_key(self):
 		return self.context._get_focus_role_key()
 

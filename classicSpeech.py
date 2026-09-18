@@ -1501,7 +1501,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             return ""
 
     def _getDefaultButtonName(self):
-        return get_default_button_name(api.getFocusObject())
+        # An explicit NVDA+E query always rescans; focus speech keeps using the
+        # dialog cache, including a recent "no default button" result.
+        return get_default_button_name(api.getFocusObject(), use_negative_cache=False)
 
     def _getFocusedButtonDefaultStatus(self):
         focus = api.getFocusObject()
