@@ -60,6 +60,7 @@ from ._speech_core.schemes import store as scheme_store
 from ._speech_core.history import SpeechHistoryBuffer, consume_history_native_passthrough
 from ._speech_core.history_viewer import show_history_dialog, is_history_list_focus
 from ._speech_core.interrupt_control import SpeechInterruptController
+from ._speech_core.user_guide import open_user_guide
 from ._speech_core.processors.web.summary import build_summary, format_summary_with_document_title
 from ._speech_core.processors.web.lifecycle import WebPageLifecycle
 from ._speech_core.processors.web.page_entry import (
@@ -1399,6 +1400,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     )
     def script_openClassicSpeechSchemes(self, gesture):
         queueHandler.queueFunction(queueHandler.eventQueue, self._openSpeechSchemes)
+
+    @scriptHandler.script(
+        description=_("Opens the ClassicSpeech user guide"),
+        category=_("ClassicSpeech"),
+    )
+    def script_openClassicSpeechUserGuide(self, gesture):
+        try:
+            open_user_guide()
+        except Exception:
+            log.exception("ClassicSpeech: opening the user guide failed")
 
     @scriptHandler.script(
         description=_("Turns ClassicSpeech speech and sound schemes on or off"),

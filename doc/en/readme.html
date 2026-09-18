@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClassicSpeech User Guide</title>
+<style>
+:root { color-scheme: light dark; }
+body { font-family: "Segoe UI", Arial, sans-serif; font-size: 1.05em; line-height: 1.55; max-width: 52em; margin: 0 auto; padding: 1em 1.5em 3em; }
+h1, h2, h3 { line-height: 1.25; }
+h2 { margin-top: 2em; padding-bottom: .2em; border-bottom: 1px solid; }
+h3 { margin-top: 1.6em; }
+table { border-collapse: collapse; margin: 1em 0; }
+caption { text-align: left; font-weight: 600; margin-bottom: .4em; }
+th, td { border: 1px solid; padding: .35em .6em; text-align: left; vertical-align: top; }
+kbd { font-family: inherit; font-weight: 600; }
+li { margin: .25em 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>ClassicSpeech User Guide</h1>
+<p>ClassicSpeech is an NVDA add-on that lets you choose what NVDA says about controls and objects, and in what order. It also adds voice profiles, JAWS-style speech and sound schemes, web page tools, a speech history, and optional text and number processing.</p>
+<p>This guide describes every ClassicSpeech setting and command. Setting names are written exactly as NVDA speaks them in the dialogs.</p>
+
+<nav aria-label="Contents">
+<h2 id="contents">Contents</h2>
+<ol>
+<li><a href="#opening-this-guide">Opening this guide</a></li>
+<li><a href="#getting-started">Getting started</a></li>
+<li><a href="#general-settings">General Settings</a>
+<ol>
+<li><a href="#verbosity">Verbosity</a></li>
+<li><a href="#token-editor">Token Editor</a></li>
+<li><a href="#speech-timing">Speech Timing</a></li>
+<li><a href="#text-processing">Text Processing</a></li>
+<li><a href="#number-processing">Number Processing</a></li>
+<li><a href="#document-reading-proofing">Document Reading / Proofing</a></li>
+<li><a href="#menus">Menus</a></li>
+<li><a href="#key-labels">Key Labels</a></li>
+<li><a href="#hotkeys">Hotkeys</a></li>
+<li><a href="#misc">Misc</a></li>
+<li><a href="#advanced">Advanced</a></li>
+</ol>
+</li>
+<li><a href="#web-browse-mode-settings">Web / Browse Mode Settings</a>
+<ol>
+<li><a href="#browse-mode">Browse Mode</a></li>
+<li><a href="#web-element-reporting">Web Element Reporting</a></li>
+<li><a href="#page-summary">Page Summary</a></li>
+<li><a href="#microsoft-edge-notifications">Microsoft Edge Notifications</a></li>
+</ol>
+</li>
+<li><a href="#voice-profiles">Voice Profiles</a></li>
+<li><a href="#speech-and-sound-schemes">Speech and Sound Schemes</a></li>
+<li><a href="#speech-history">Speech history</a></li>
+<li><a href="#object-commands">Current object, default button and page summary commands</a></li>
+<li><a href="#commands">Commands and gestures</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#credits">Credits and license</a></li>
+</ol>
+</nav>
+
+<h2 id="opening-this-guide">Opening this guide</h2>
+<p>You can open this guide in two ways:</p>
+<ul>
+<li><strong>From the Add-on Store:</strong> press <kbd>NVDA+N</kbd> to open the NVDA menu, then choose Tools, then Add-on Store. Go to the <strong>Installed add-ons</strong> tab (<kbd>Control+Tab</kbd> moves between tabs) and move to ClassicSpeech in the list. Press the <kbd>Applications</kbd> key or <kbd>Shift+F10</kbd>, then choose <strong>Help</strong>.</li>
+<li><strong>With a gesture:</strong> assign a gesture to the <strong>Opens the ClassicSpeech user guide</strong> command. It has no gesture until you assign one. See <a href="#assigning-gestures">Assigning gestures</a>.</li>
+</ul>
+<p>The guide opens in your default web browser. In browse mode, press <kbd>H</kbd> to move from heading to heading, or <kbd>2</kbd> to move between the main sections.</p>
+<p>This guide is in English. If a translation for your NVDA language is added later, NVDA opens it instead.</p>
+
+<h2 id="getting-started">Getting started</h2>
+<p>ClassicSpeech starts working when NVDA restarts after installation. It supports NVDA 2025.1 through 2026.2.</p>
+<p>Its settings are in the NVDA menu: press <kbd>NVDA+N</kbd>, then choose Preferences, then ClassicSpeech. The ClassicSpeech submenu has four items:</p>
+<ul>
+<li><strong>General Settings...</strong>: how much ClassicSpeech says about objects, token order and timing, text and number processing, menus, key names, shortcut keys, and other speech options. See <a href="#general-settings">General Settings</a>.</li>
+<li><strong>Web / Browse Mode Settings...</strong>: browse mode, web element reporting, Page Summary and Microsoft Edge notifications. See <a href="#web-browse-mode-settings">Web / Browse Mode Settings</a>.</li>
+<li><strong>Voice Profiles...</strong>: different voice settings for different kinds of speech. See <a href="#voice-profiles">Voice Profiles</a>.</li>
+<li><strong>Speech and Sound Schemes...</strong>: sounds and voices for object types, states, formatting and web elements. See <a href="#speech-and-sound-schemes">Speech and Sound Schemes</a>.</li>
+</ul>
+<p>These commands work as soon as ClassicSpeech is installed:</p>
+<ul>
+<li><kbd>NVDA+Tab</kbd>: speak the current object. Press twice quickly to spell it and copy it to the clipboard.</li>
+<li><kbd>NVDA+E</kbd>: say the current dialog's default button.</li>
+<li><kbd>NVDA+Shift+U</kbd>: summarize the current web page.</li>
+<li><kbd>Shift+F11</kbd>, <kbd>Shift+F12</kbd>, <kbd>Control+Shift+F11</kbd>, <kbd>Control+Shift+F12</kbd>, <kbd>F12</kbd> and <kbd>NVDA+Shift+H</kbd>: review, copy and open the <a href="#speech-history">speech history</a>.</li>
+</ul>
+<p>Every command is listed in <a href="#commands">Commands and gestures</a>.</p>
+
+<h3 id="how-settings-dialogs-work">How the settings dialogs work</h3>
+<ul>
+<li>The General Settings and Web / Browse Mode Settings dialogs start with a <strong>Categories</strong> list. Choose a category with the arrow keys, then press <kbd>Tab</kbd> to reach its options.</li>
+<li>In those two dialogs, most changes take effect as soon as you make them, so you can hear the difference before you save.</li>
+<li><strong>OK</strong> saves your changes and closes the dialog. <strong>Apply</strong> saves them and leaves the dialog open.</li>
+<li><strong>Cancel</strong>, <kbd>Escape</kbd>, or closing the window puts back the settings you had when you opened the dialog, or when you last pressed Apply.</li>
+<li>Reset buttons work immediately, and Cancel does not undo them, so ClassicSpeech asks you to confirm first.</li>
+</ul>
+<p>ClassicSpeech keeps its own settings in NVDA's normal configuration, so they stay the same when an NVDA configuration profile is active. Some pages also show options that belong to NVDA itself, such as Document Reading / Proofing and Browse Mode. NVDA saves those in the usual way.</p>
+
+<h2 id="general-settings">General Settings</h2>
+<p>Open this dialog from the NVDA menu: Preferences, then ClassicSpeech, then General Settings. The dialog is called ClassicSpeech Settings, and its Categories list has eleven pages, described below in order.</p>
+<p>Next to the OK button there is a reset button whose name depends on the page: <strong>Reset Profile Now</strong> on Verbosity, <strong>Reset Tokens to Defaults Now</strong> on Token Editor, and <strong>Reset Key Labels to Defaults Now</strong> on Key Labels. Other pages have no reset button.</p>
+
+<h3 id="verbosity">Verbosity</h3>
+<p>Choose how much ClassicSpeech says about each object. A verbosity profile is a named set of these choices.</p>
+<ul>
+<li><strong>Active profile</strong>: Beginner, Intermediate or Advanced. The profile you choose becomes active, and the rest of this page changes that profile. Default: Beginner.</li>
+<li><strong>Spoken object details</strong>: a checklist of Name, Role, State, Description and Tooltip. Checked details are spoken. Press <kbd>Space</kbd> to check or clear one.</li>
+<li><strong>Position announcements</strong>: whether to say where an item is in its list or group, such as "3 of 10".
+<ul>
+<li>Off.</li>
+<li>Announce only first item: say the position only for the first item you reach in a list or other container.</li>
+<li>Announce on every move.</li>
+</ul>
+</li>
+<li><strong>Read edit field contents when focused</strong>: when checked, moving to an edit field speaks its current line, or "blank" when it is empty, as NVDA does. Clear it to hear only selected text. Default: checked for every profile.</li>
+</ul>
+<table>
+<caption>Verbosity profile defaults</caption>
+<thead>
+<tr><th scope="col">Profile</th><th scope="col">Spoken object details</th><th scope="col">Position announcements</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">Beginner</th><td>Name, Role, State, Description</td><td>Announce on every move</td></tr>
+<tr><th scope="row">Intermediate</th><td>Name, Role, State</td><td>Announce only first item</td></tr>
+<tr><th scope="row">Advanced</th><td>Name, State</td><td>Off</td></tr>
+</tbody>
+</table>
+<p><strong>Reset Profile Now</strong> returns the selected profile to these defaults.</p>
+
+<h3 id="token-editor">Token Editor</h3>
+<p>ClassicSpeech speaks an object as a series of tokens: its name, role, value, state, position, description and hotkey. The Token Editor applies to every verbosity profile.</p>
+<ul>
+<li><strong>Spoken token sequence</strong>: the order tokens are spoken in. Select a token and press <kbd>Control+Up Arrow</kbd> or <kbd>Control+Down Arrow</kbd> to move it. Default order: Name, Role, Value, State, Position, Description, Hotkey.</li>
+<li><strong>Roles</strong> and <strong>States</strong>: every role word, such as "button" or "check box", and every state word, such as "checked" or "expanded", that NVDA can speak. In either list:
+<ul>
+<li><kbd>Space</kbd> mutes or unmutes the word. A checked item is spoken; a cleared item is muted.</li>
+<li><kbd>F2</kbd> renames it, for example "btn" instead of "button".</li>
+<li><kbd>Delete</kbd> removes the rename.</li>
+<li><kbd>Shift+F10</kbd> or the <kbd>Applications</kbd> key opens a menu with the same actions.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Reset Tokens to Defaults Now</strong> clears every rename and mute and restores the default order.</p>
+
+<h3 id="speech-timing">Speech Timing</h3>
+<p>Set the short silences ClassicSpeech places between tokens.</p>
+<ul>
+<li><strong>Global pause</strong>: the pause between tokens. Choose Off, or 80 to 1000 milliseconds. Default: 80 ms.</li>
+<li><strong>Pause placement</strong>: Before each token or After each token. Default: Before each token.</li>
+<li><strong>Name pause</strong>, <strong>Role pause</strong>, <strong>Value pause</strong>, <strong>State pause</strong>, <strong>Position pause</strong>, <strong>Description pause</strong> and <strong>Hotkey pause</strong>: a different pause for one token. Choose Use global, Off, or a length. Default: Use global.</li>
+<li><strong>Pause after final spoken token</strong>: also pause after the last token. Default: checked.</li>
+</ul>
+
+<h3 id="text-processing">Text Processing</h3>
+<p>These options change text before it reaches your synthesizer.</p>
+<ul>
+<li><strong>Announce new lines during Say All</strong>: speak a message at each line break while NVDA reads continuously. <strong>New line message</strong> sets the words. Default: off, with the message "new line".</li>
+<li><strong>Split mixed-case words, such as SayAll into Say All</strong>. Default: off.</li>
+<li><strong>Suppress dashes inside words, such as sister-in-law</strong>: read the parts as separate words without saying "dash". Default: off.</li>
+<li><strong>Spell alphanumeric data</strong>: spell words that mix letters and digits, such as a part number.
+<ul>
+<li>Off (default).</li>
+<li>Spell mixed letters and numbers.</li>
+<li>Spell mixed letters and numbers phonetically, with words such as "Alpha" and "Bravo" for the letters.</li>
+</ul>
+</li>
+<li><strong>List item state reporting</strong>: whether you hear "selected" and "not selected" on list items, tree view items, menu items, and table rows and cells.
+<ul>
+<li>NVDA native: as NVDA speaks them.</li>
+<li>Say not selected: speak only "not selected". This is the default.</li>
+<li>Say none.</li>
+<li>Say selected: speak only "selected".</li>
+<li>Say both.</li>
+</ul>
+</li>
+<li><strong>Repeated characters</strong>: how a run of the same punctuation mark is read, such as a line of dashes.
+<ul>
+<li>NVDA native: leave it to NVDA and your synthesizer.</li>
+<li>3 repeated characters: read at most three of them. This is the default.</li>
+<li>4 repeated characters, 5 repeated characters and 6 repeated characters: say each symbol by name, up to that many times.</li>
+<li>All repeated characters: say every symbol by name.</li>
+<li>Count repeated characters and spaces: say how many there are, such as "5 dashes" or "4 spaces". This helps you follow indentation.</li>
+</ul>
+</li>
+</ul>
+
+<h3 id="number-processing">Number Processing</h3>
+<p>Number Processing leaves numbers to NVDA and your synthesizer until you change it. It changes only standalone numbers and the dates, prices, ordinals and phone numbers described below. Times, codes and text that mixes numbers and letters stay unchanged.</p>
+<ul>
+<li><strong>Number processing</strong>: how standalone whole numbers are read, with or without commas. Using 1234 as the example:
+<ul>
+<li>NVDA native: your synthesizer decides. This is the default.</li>
+<li>Single digits: "one two three four".</li>
+<li>Pairs: "twelve thirty four".</li>
+<li>Full numbers: "one thousand two hundred thirty four".</li>
+</ul>
+</li>
+<li><strong>Speak single digits if number contains</strong>: read long numbers one digit at a time, whatever Number processing is set to. Choose NVDA native (default), Five or more digits, Six or more digits, Seven or more digits, or Eight or more digits.</li>
+<li><strong>Phone number processing</strong>: NVDA native (default), or Grouped digits, which reads common U.S. phone numbers in groups. For example, 555-1212 becomes "five five five, one two one two".</li>
+<li><strong>Use friendly toll-free prefixes</strong>: with Grouped digits, say 1-800 as "one eight hundred". Default: checked.</li>
+<li><strong>Currency processing</strong>: NVDA native (default), or Dollars and cents: $5.25 becomes "five dollars and twenty five cents".</li>
+<li><strong>Ordinal processing</strong>: NVDA native (default), or Ordinals as words: 22nd becomes "twenty second".</li>
+<li><strong>Numeric date processing</strong>:
+<ul>
+<li>NVDA native (default).</li>
+<li>Some: read complete dates. For example, 9/18/2026 becomes "September eighteenth, twenty twenty six".</li>
+<li>Full: also read dates without a year, such as 9/18.</li>
+</ul>
+</li>
+<li><strong>Numeric date format</strong>: the order of the parts in a numeric date: Month day year (default), Day month year, or Year month day.</li>
+<li><strong>Recognize ISO year-first dates</strong>: also read strict year-first dates such as 2026-09-05, whatever the date format. Default: checked.</li>
+<li><strong>Use Windows locale for date format</strong>: use the date order from your Windows regional settings. If Windows uses an order ClassicSpeech doesn't support, Numeric date format is used. Default: off.</li>
+</ul>
+
+<h3 id="document-reading-proofing">Document Reading / Proofing</h3>
+<p>This page shows options from NVDA's own Document Formatting settings, so you can change them without leaving ClassicSpeech. Changing them here is the same as changing them in NVDA's Document Formatting settings.</p>
+<ul>
+<li><strong>Font</strong> group: Font name, Font size, Font attributes (Off, Speech, Braille, or Speech and braille), Superscripts and subscripts, Emphasis, Highlighted (marked) text, Style, Colors, and Report transparent color values, which is available when Colors is checked.</li>
+<li><strong>Document information</strong> group: Comments, Bookmarks, Editor revisions, and Spelling or grammar errors, a checklist of the ways NVDA reports them.</li>
+<li><strong>Pages and spacing</strong> group: Pages, Line numbers, Line indentation reporting (Off, Speech, Tones, or Both Speech and Tones), Ignore blank lines for line indentation reporting, Paragraph indentation, Line spacing and Alignment.</li>
+<li><strong>Table information</strong> group: Tables, Headers (Off, Rows and columns, Rows, or Columns), Cell coordinates, and Cell borders (Off, Styles, or Both Colors and Styles).</li>
+<li><strong>Advanced</strong> group: Report formatting changes after the cursor (can cause a lag).</li>
+</ul>
+<p>To give formatting its own voice or sound, use the <a href="#formatting-voices">Document and web formatting</a> voice profile or <a href="#speech-and-sound-schemes">Speech and Sound Schemes</a>.</p>
+
+<h3 id="menus">Menus</h3>
+<p>Choose what ClassicSpeech says when menus open and close. Each announcement has a checkbox and an edit field for its words.</p>
+<ul>
+<li><strong>Announce menu open</strong>, with <strong>Menu open message</strong>. Default: checked, "Entering menu".</li>
+<li><strong>Announce menu close</strong>, with <strong>Menu close message</strong>. Default: checked, "Leaving menu".</li>
+<li><strong>Announce menu bar focus</strong>, with <strong>Menu bar focus message</strong>. Default: checked, "Menu bar".</li>
+<li><strong>Announce leaving menu bar</strong>, with <strong>Menu bar leave message</strong>. Default: off, "Leaving menu bar".</li>
+</ul>
+
+<h3 id="key-labels">Key Labels</h3>
+<p>Change how keys are spoken when NVDA echoes what you type or announces keys you press. NVDA's input help, <kbd>NVDA+1</kbd>, is not affected.</p>
+<p>The <strong>Key labels</strong> list has every key NVDA can name, plus letters, digits and punctuation keys. It works like the Token Editor lists: <kbd>Space</kbd> mutes or unmutes a key, <kbd>F2</kbd> renames it, <kbd>Delete</kbd> removes the rename, and <kbd>Shift+F10</kbd> opens a menu with the same actions.</p>
+<p><strong>Reset Key Labels to Defaults Now</strong> clears every rename and mute.</p>
+
+<h3 id="hotkeys">Hotkeys</h3>
+<p>Choose where ClassicSpeech speaks keyboard shortcuts and how they sound. These settings apply to every verbosity profile. The current object command, <kbd>NVDA+Tab</kbd>, always includes a shortcut when NVDA provides one.</p>
+<ul>
+<li><strong>Speak hotkeys</strong>: Off, Dialogs, Menus, or Both. Default: Both.</li>
+<li><strong>Shortcut formatting</strong>:
+<ul>
+<li>Native shortcut as is, such as "Ctrl+S". This is the default.</li>
+<li>Expanded without plus, such as "Control S".</li>
+<li>Abbreviated without plus, such as "Ctrl S".</li>
+</ul>
+</li>
+<li><strong>Which shortcuts to speak</strong>: Access keys only (the underlined letters you use with <kbd>Alt</kbd>), Command shortcuts only (such as <kbd>Control+S</kbd>), or Access keys and command shortcuts. Default: Access keys and command shortcuts.</li>
+<li><strong>For simple dialog Alt shortcuts, speak only the access key letter</strong>: in dialogs, say "N" instead of "Alt+N". Default: off.</li>
+</ul>
+
+<h3 id="misc">Misc</h3>
+<ul>
+<li><strong>Announce default button in dialogs</strong>: add "default" when focus reaches a dialog's default button, as in "OK, default, button". Default: off.</li>
+<li><strong>Guess object position information when unavailable</strong>: NVDA's own setting. It estimates positions such as "3 of 10" when an application doesn't report them. Default: off.</li>
+<li><strong>Insert+Tab reports</strong>: what the <kbd>NVDA+Tab</kbd> command reports.
+<ul>
+<li>NVDA native: run NVDA's own report current focus command.</li>
+<li>Focused object: ClassicSpeech's announcement of the focus. This is the default.</li>
+<li>Navigator object: ClassicSpeech's announcement of the navigator object.</li>
+</ul>
+</li>
+<li><strong>Object navigation processing</strong>: when checked, ClassicSpeech applies your verbosity settings to NVDA's object navigation commands. When cleared, those commands speak as NVDA does, in the Review and object navigation voice. Default: off.</li>
+<li><strong>Prevent automatic speech interruptions</strong>: when checked, speech that NVDA starts on its own, for example when focus or the active window changes, waits for current speech to finish instead of cutting it off. Default: off.</li>
+<li><strong>Speech interrupt for typed characters</strong> and <strong>Speech interrupt for Enter key</strong>: NVDA's own keyboard settings, shown here for convenience. Default: both checked.</li>
+</ul>
+
+<h3 id="advanced">Advanced</h3>
+<ul>
+<li><strong>Enable ClassicSpeech speech processing hook</strong>: the main switch for ClassicSpeech's speech changes. When cleared, NVDA speech passes through without ClassicSpeech processing, but ClassicSpeech commands still work. Default: checked.</li>
+<li><strong>Speak a message when the speech hook loads</strong>, with <strong>Speech hook loaded message</strong>: say a message when ClassicSpeech starts processing speech, for example after NVDA starts. Default: off, "ClassicSpeech hook loaded".</li>
+<li><strong>Enable ClassicSpeech diagnostic logging</strong>: write detailed ClassicSpeech entries to the NVDA log. It slows speech, so turn it on only to record a problem, then turn it off. Default: off.</li>
+</ul>
+
+<h2 id="web-browse-mode-settings">Web / Browse Mode Settings</h2>
+<p>Open this dialog from the NVDA menu: Preferences, then ClassicSpeech, then Web / Browse Mode Settings. Its Categories list has four pages.</p>
+
+<h3 id="browse-mode">Browse Mode</h3>
+<p>This page shows NVDA's own browse mode settings, plus two ClassicSpeech additions.</p>
+<ul>
+<li>NVDA's settings: Maximum number of characters on one line, Number of lines per page, Use screen layout (when supported), Enable browse mode on page load, Automatic Say All on page load, Automatic focus mode for focus changes, Automatic focus mode for caret movement, Trap all non-command gestures from reaching the document, Touch navigation elements (available on touch screens), and Load Chromium virtual buffer when document busy.</li>
+<li><strong>Audio indication of focus and browse modes</strong>: NVDA's setting that plays a sound when you switch between browse mode and focus mode. Default: checked. When you clear it, NVDA speaks the mode's name instead, and ClassicSpeech makes two fields available:
+<ul>
+<li><strong>Browse mode message</strong> and <strong>Focus mode message</strong>: the words spoken for each mode. They start as NVDA's own "Browse mode" and "Focus mode". Clear a field to go back to NVDA's wording.</li>
+</ul>
+</li>
+<li><strong>Reduce repeated heading levels on continuation lines</strong>, in the <strong>Experimental heading presentation</strong> group: when a heading wraps onto more than one line, stop repeating "heading level 2" on each line. Default: off.</li>
+</ul>
+
+<h3 id="web-element-reporting">Web Element Reporting</h3>
+<p>These are NVDA's own settings for elements in documents and web pages, gathered from NVDA's Document Formatting and Braille settings: Report 'has details' for structured annotations, Report aria-description always, Include layout tables, Headings, Links, Link type, Graphics, Lists, Block quotes, Groupings, Landmarks, Articles, Frames, Figures, Clickable, and Braille report live regions.</p>
+
+<h3 id="page-summary">Page Summary</h3>
+<p>Page Summary counts elements on a web page and speaks the result, for example "4 headings, 2 landmarks, 37 links." Press <kbd>NVDA+Shift+U</kbd> in browse mode to hear it. It counts without moving your position on the page.</p>
+<ul>
+<li><strong>Notify when page is ready</strong>: speak a message when a page finishes loading. <strong>Page ready message</strong> sets the words. Default: off, "Page ready".</li>
+<li><strong>Page-load summary</strong>: whether ClassicSpeech speaks the summary on its own when a page opens.
+<ul>
+<li>NVDA native, no summary. This is the default.</li>
+<li>Summary after page is ready: NVDA reads the page as usual, then ClassicSpeech speaks the summary.</li>
+<li>Replace initial page speech with summary: ClassicSpeech speaks the summary instead of what NVDA normally says when a page opens.</li>
+</ul>
+</li>
+<li><strong>Automatic page-entry summary delay</strong>: how long to wait before the automatic summary, from No additional delay to 5 seconds. Available when Page-load summary is not NVDA native. Default: 2 seconds.</li>
+<li><strong>Page Summary choices</strong>: a checklist of what the summary includes: Title (the page title, spoken first), Annotations, Buttons, Combo boxes, Landmarks, Edit fields, Form fields, Graphics, Headings, Links, Lists, Frames, Embedded objects, Block quotes, Radio buttons, Separators, Tables, Errors and Check boxes. Checked by default: Buttons, Landmarks, Form fields, Headings, Links and Tables.</li>
+</ul>
+<p>Types with none on the page are left out. If nothing is found, you hear "No selected element types found."</p>
+
+<h3 id="microsoft-edge-notifications">Microsoft Edge Notifications</h3>
+<p>Choose which Microsoft Edge notifications are spoken, such as download progress or zoom changes. Each notification type in the <strong>Microsoft Edge notifications</strong> list is either announced or suppressed:</p>
+<ul>
+<li><kbd>Space</kbd> switches between Announce and Suppress.</li>
+<li><kbd>F2</kbd> sets your own message for that notification.</li>
+<li><kbd>Delete</kbd> goes back to Edge's own message.</li>
+<li><kbd>Shift+F10</kbd> opens a menu with these actions.</li>
+</ul>
+<p>Announced by default: Start download, Download completed, Edge update, Zoom changes, Remove suggestion, Site permission or content setting, and Excel autofill suggestion. The other types, such as Page loading, Back and New tab, are suppressed by default. Edge notifications that are not in the list keep NVDA's normal handling.</p>
+
+<h2 id="voice-profiles">Voice Profiles</h2>
+<p>Voice Profiles give different kinds of speech their own voice settings, so you can tell them apart by ear. For example, review cursor speech could use a lower pitch, or mouse speech a faster rate. Open this dialog from the NVDA menu: Preferences, then ClassicSpeech, then Voice Profiles.</p>
+<table>
+<caption>Voice profile categories</caption>
+<thead>
+<tr><th scope="col">Category</th><th scope="col">Used for</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">Focus and navigation</th><td>Focus changes, dialogs, menus, and other object speech that doesn't belong to another category.</td></tr>
+<tr><th scope="row">Review and object navigation</th><td>NVDA's review cursor and object navigation commands.</td></tr>
+<tr><th scope="row">Mouse</th><td>NVDA's mouse tracking, when you move a mouse or touchpad.</td></tr>
+<tr><th scope="row">Keyboard entry</th><td>Characters and words that NVDA echoes as you type.</td></tr>
+<tr><th scope="row">System and notifications</th><td>Windows notifications, switching desktops, secure screens such as User Account Control, screen orientation, power and battery changes, saving or reverting NVDA's configuration, and NVDA's status commands for speech mode, date and time, battery status, screen curtain, configuration profiles, audio ducking and sleep mode.</td></tr>
+<tr><th scope="row">Document and web formatting</th><td>A voice for each formatting option and web element. See <a href="#formatting-voices">Document and web formatting voices</a>.</td></tr>
+</tbody>
+</table>
+
+<h3 id="changing-a-voice-profile">Changing a category's voice</h3>
+<ol>
+<li>In the <strong>Voice profiles</strong> list, select a category.</li>
+<li>Press <kbd>Tab</kbd> to move through the settings your synthesizer offers, such as Voice, Variant, Rate, Pitch, Volume and Inflection. The settings depend on your synthesizer.</li>
+<li>Change the settings that should be different for that category. Each category starts with your current NVDA voice settings.</li>
+<li>To hear the result, change <strong>Preview text</strong> if you like, then press <strong>Preview selected profile</strong>.</li>
+<li>Press <strong>OK</strong> to save, or <strong>Cancel</strong> to discard your changes. An <strong>Apply</strong> button appears after you change something.</li>
+</ol>
+<ul>
+<li>ClassicSpeech saves only the settings you change, and keeps them separately for each synthesizer.</li>
+<li>ClassicSpeech never changes your NVDA voice settings. It uses a category's settings while speaking that kind of speech, then returns to your voice.</li>
+<li><strong>Reset all Voice Profile overrides</strong> removes your changes to the first five categories for the active synthesizer, after asking you to confirm. Document and web formatting voices are not affected.</li>
+</ul>
+
+<h3 id="formatting-voices">Document and web formatting voices</h3>
+<p>When you select <strong>Document and web formatting</strong> in the Voice profiles list, the rest of the dialog lists every formatting option and web element NVDA can report. A voice set here is used for the announcement and for the text itself. For example, bold words are read in the bold voice, and a link's text in the link voice.</p>
+<p>The items are grouped as follows:</p>
+<ul>
+<li><strong>Font and text formatting</strong>: font name and size changes, bold, italic, underline, strikethrough, hidden text, superscript and subscript, emphasis, highlighting, style changes and colors.</li>
+<li><strong>Specific font names</strong>: every font installed on your computer, plus fonts you add.</li>
+<li><strong>Specific font sizes</strong>: common sizes from 8 to 72 points, plus sizes you add.</li>
+<li><strong>Specific styles</strong>: styles you add, such as Heading 1 or Quote.</li>
+<li><strong>Document information</strong>: comments, bookmarks, editor revisions, and spelling and grammar errors.</li>
+<li><strong>Pages and spacing</strong>: page and section numbers, columns, breaks, line numbers, indentation, line spacing, alignment, and list bullets and numbers.</li>
+<li><strong>Table information</strong>: tables, cell coordinates, headers and cell borders.</li>
+<li><strong>Elements (documents and web pages)</strong>: headings and each heading level, links (including visited and same-page links), graphics, lists and list items, block quotes, groupings, articles, frames, figures, captions, clickable elements, forms and math.</li>
+<li><strong>Landmarks and regions</strong>: each landmark type, and regions.</li>
+</ul>
+<p>Select an item, check <strong>Use a custom voice for this item</strong>, and change its settings. The controls are the same as in Speech and Sound Schemes: see <a href="#item-voice">Giving an item a voice</a>. Here, <strong>Reset this item</strong> removes only the item's voice.</p>
+<p>These voices are part of the active speech and sound scheme, so they also appear in Speech and Sound Schemes. They are used while <strong>Enable speech and sound schemes</strong> is checked, which is the default. Sounds for these items are set in Speech and Sound Schemes.</p>
+
+<h2 id="speech-and-sound-schemes">Speech and Sound Schemes</h2>
+<p>Speech and Sound Schemes work like the JAWS Speech and Sounds Manager. You can give any object type, object state, window class, unknown object, unlabeled graphic, formatting option or web element:</p>
+<ul>
+<li>a WAV sound, played with the announcement or instead of it;</li>
+<li>its own voice, on your synthesizer or another installed synthesizer.</li>
+</ul>
+<p>Items you don't change keep NVDA's normal speech. Sounds and voices work with focus changes, object navigation, the review cursor, say all, browse mode and the mouse.</p>
+<p>Open this dialog from the NVDA menu: Preferences, then ClassicSpeech, then Speech and Sound Schemes. Its buttons are OK, Cancel and Apply.</p>
+
+<h3 id="choosing-a-scheme">Turning schemes on and choosing a scheme</h3>
+<ul>
+<li><strong>Enable speech and sound schemes</strong>: turns every scheme sound and voice on or off, including document and web formatting voices. Default: checked.</li>
+<li><strong>Active scheme</strong>: the scheme in use. A scheme is a named set of sounds and voices. ClassicSpeech starts with one scheme, called Default.</li>
+<li><strong>New scheme...</strong> creates an empty scheme, <strong>Copy scheme...</strong> copies the active one, <strong>Rename scheme...</strong> renames it, and <strong>Delete scheme</strong> deletes it after asking you to confirm.</li>
+</ul>
+<p>Two commands do the same without opening the dialog: <strong>Turns ClassicSpeech speech and sound schemes on or off</strong>, and <strong>Switches to the next ClassicSpeech speech and sound scheme</strong>. They have no gestures until you assign them.</p>
+
+<h3 id="finding-items">Finding an item</h3>
+<ul>
+<li><strong>Search items</strong>: type part of a name, such as "bold" or "link", to show only matching items.</li>
+<li><strong>List</strong>: All items, or Only items with a sound or voice, to review what you have changed.</li>
+<li><strong>Scheme items</strong>: a tree of categories. Press <kbd>Right Arrow</kbd> to open a category and <kbd>Left Arrow</kbd> to close it. An item's name says what it uses, for example "Bold (sound, voice)" or "Link (sound only)".</li>
+<li><strong>Item details</strong>: a read-only field describing the selected item, including what its voice covers.</li>
+</ul>
+<p>The categories are:</p>
+<ul>
+<li>Font and text formatting, Specific font names, Specific font sizes, Specific styles, Document information, Pages and spacing, Table information, Elements (documents and web pages), and Landmarks and regions. These are the same items as the <a href="#formatting-voices">Document and web formatting</a> voices.</li>
+<li><strong>Object types (control types and roles)</strong>: every NVDA object type, such as button, check box, link or unknown.</li>
+<li><strong>Object states</strong>: every NVDA state, such as checked, selected or expanded, and opposite states such as "not checked".</li>
+<li><strong>Unknown and unlabeled objects</strong>: unknown objects, graphics without a label, and graphics.</li>
+<li><strong>Window classes</strong>: window classes you add.</li>
+</ul>
+
+<h3 id="item-sound">Giving an item a sound</h3>
+<ol>
+<li>Select the item in the tree.</li>
+<li>Press <strong>Browse for sound...</strong> and choose a WAV file. The <strong>Sound file</strong> field shows its location.</li>
+<li>Press <strong>Play sound</strong> to hear it.</li>
+<li>In <strong>When playing the sound</strong>, choose Also speak the announcement, or Do not speak the announcement (sound only).</li>
+</ol>
+<p><strong>Remove sound</strong> removes the item's sound. Only WAV files are supported. Short sounds work best, because a sound plays at the same moment as the announcement.</p>
+
+<h3 id="item-voice">Giving an item a voice</h3>
+<ol>
+<li>Select the item and check <strong>Use a custom voice for this item</strong>.</li>
+<li>In <strong>Synthesizer</strong>, keep Active synthesizer, or choose Other synthesizers... to pick another installed synthesizer.</li>
+<li>Change the voice settings that appear, such as Voice, Rate or Pitch.</li>
+<li>Press <strong>Speak a voice preview</strong> to hear it.</li>
+</ol>
+<p><strong>Reset this item</strong> removes the item's sound and voice.</p>
+<p>The active synthesizer switches voices fastest. Another synthesizer has to be loaded each time the item is spoken and unloaded afterwards, which adds a noticeable delay. If ClassicSpeech can't load it, the item keeps using your active synthesizer.</p>
+
+<h3 id="adding-entries">Adding fonts, sizes, styles and window classes</h3>
+<ul>
+<li><strong>Add font name...</strong>: add a font, such as Arial, to Specific font names.</li>
+<li><strong>Add font size...</strong>: add a size in points, such as 13 or 10.5, to Specific font sizes.</li>
+<li><strong>Add style name...</strong>: add a style exactly as NVDA reports it, such as Heading 1 or Quote, to Specific styles.</li>
+<li><strong>Add window class...</strong>: add a window class to Window classes. The field starts with the class of the object you were on before opening the dialog, so move to that control first, then open Speech and Sound Schemes.</li>
+<li><strong>Remove added entry</strong>: remove a font, size, style or class you added, together with its sound and voice.</li>
+</ul>
+
+<h2 id="speech-history">Speech history</h2>
+<p>ClassicSpeech remembers the last 50 things NVDA said, as NVDA said them before ClassicSpeech changed them. Use it to catch something you missed.</p>
+<table>
+<caption>Speech history commands</caption>
+<thead>
+<tr><th scope="col">Gesture</th><th scope="col">Action</th></tr>
+</thead>
+<tbody>
+<tr><td><kbd>Shift+F11</kbd></td><td>Speak the previous, older item.</td></tr>
+<tr><td><kbd>Shift+F12</kbd></td><td>Speak the next, newer item.</td></tr>
+<tr><td><kbd>Control+Shift+F11</kbd></td><td>Go to the oldest item.</td></tr>
+<tr><td><kbd>Control+Shift+F12</kbd></td><td>Go to the newest item.</td></tr>
+<tr><td><kbd>F12</kbd></td><td>Copy the current item to the clipboard.</td></tr>
+<tr><td><kbd>NVDA+Shift+H</kbd></td><td>Open the Speech History dialog.</td></tr>
+</tbody>
+</table>
+<p>At the ends of the history you hear "Bottom of speech history" or "Top of speech history". The Speech History dialog lists the items, with <strong>Copy</strong>, <strong>Clear</strong> and <strong>Close</strong> buttons.</p>
+<p>While ClassicSpeech is running, these keys replace the same keys in other programs. For example, <kbd>F12</kbd> opens Save As in Microsoft Word. To send one key to the program instead, press <kbd>NVDA+F2</kbd> first. To stop ClassicSpeech using a key, remove or change its gesture in Input Gestures.</p>
+
+<h2 id="object-commands">Current object, default button and page summary commands</h2>
+<h3 id="current-object">Current object: NVDA+Tab</h3>
+<p>ClassicSpeech replaces NVDA's report current focus command with its own announcement. It uses your verbosity settings and always includes the object's shortcut key when there is one. Press <kbd>NVDA+Tab</kbd> twice quickly to spell the announcement and copy it to the clipboard.</p>
+<p><strong>Insert+Tab reports</strong>, in General Settings on the <a href="#misc">Misc</a> page, chooses whether the command reports the focused object or the navigator object, or runs NVDA's own command. When the speech processing hook is off, NVDA's own command runs.</p>
+<h3 id="default-button">Default button: NVDA+E</h3>
+<p>Says the default button of the current dialog, the button that <kbd>Enter</kbd> activates, for example "Default button OK". If there isn't one, you hear "No default button". If focus is on a button, that button is reported.</p>
+<h3 id="page-summary-command">Page summary: NVDA+Shift+U</h3>
+<p>In browse mode, speaks the element counts chosen on the <a href="#page-summary">Page Summary</a> page. Elsewhere, you hear "Page summary is not available here."</p>
+
+<h2 id="commands">Commands and gestures</h2>
+<p>All ClassicSpeech commands are in the ClassicSpeech category of NVDA's Input Gestures dialog. Commands without a default gesture are there so you can choose your own keys, without clashing with other add-ons.</p>
+<table>
+<caption>ClassicSpeech commands</caption>
+<thead>
+<tr><th scope="col">Command, as named in Input Gestures</th><th scope="col">Default gesture</th></tr>
+</thead>
+<tbody>
+<tr><td>Opens ClassicSpeech settings</td><td>None</td></tr>
+<tr><td>Opens ClassicSpeech Web / Browse Mode Settings</td><td>None</td></tr>
+<tr><td>Opens ClassicSpeech Voice Profiles</td><td>None</td></tr>
+<tr><td>Opens ClassicSpeech Speech and Sound Schemes</td><td>None</td></tr>
+<tr><td>Opens the ClassicSpeech user guide</td><td>None</td></tr>
+<tr><td>Turns ClassicSpeech speech and sound schemes on or off</td><td>None</td></tr>
+<tr><td>Switches to the next ClassicSpeech speech and sound scheme</td><td>None</td></tr>
+<tr><td>Speaks the current object. Press twice quickly to spell and copy it</td><td><kbd>NVDA+Tab</kbd></td></tr>
+<tr><td>Announces the default button in the current dialog</td><td><kbd>NVDA+E</kbd></td></tr>
+<tr><td>Reports selected Browse Mode element counts for the current page</td><td><kbd>NVDA+Shift+U</kbd></td></tr>
+<tr><td>Reviews the previous ClassicSpeech history item</td><td><kbd>Shift+F11</kbd></td></tr>
+<tr><td>Reviews the next ClassicSpeech history item</td><td><kbd>Shift+F12</kbd></td></tr>
+<tr><td>Moves to the oldest ClassicSpeech history item</td><td><kbd>Control+Shift+F11</kbd></td></tr>
+<tr><td>Moves to the newest ClassicSpeech history item</td><td><kbd>Control+Shift+F12</kbd></td></tr>
+<tr><td>Copies the current ClassicSpeech history item to the clipboard</td><td><kbd>F12</kbd></td></tr>
+<tr><td>Opens the ClassicSpeech history dialog</td><td><kbd>NVDA+Shift+H</kbd></td></tr>
+</tbody>
+</table>
+
+<h3 id="assigning-gestures">Assigning gestures</h3>
+<ol>
+<li>Press <kbd>NVDA+N</kbd> to open the NVDA menu, then choose Preferences, then Input gestures.</li>
+<li>Type ClassicSpeech in the <strong>Filter by</strong> field.</li>
+<li>In the tree, open the ClassicSpeech category and select a command.</li>
+<li>Press <strong>Add</strong>, then press the keys you want to use. If NVDA asks, choose the keyboard layouts the gesture should work in.</li>
+<li>Press <strong>OK</strong>.</li>
+</ol>
+<p>To change a default gesture, select the gesture under its command, press <strong>Remove</strong>, then add a new one.</p>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><strong>Speech feels slow.</strong> In General Settings, clear Enable ClassicSpeech diagnostic logging on the Advanced page. On the Misc page, Prevent automatic speech interruptions also makes some speech wait for current speech to finish.</li>
+<li><strong>You want to compare with NVDA's normal speech.</strong> Clear Enable ClassicSpeech speech processing hook on the Advanced page, then check it again when you are done.</li>
+<li><strong>NVDA says too much or too little.</strong> Choose another verbosity profile or change its Spoken object details on the Verbosity page, and mute words you don't need in the Token Editor.</li>
+<li><strong>A key such as F12 no longer works in a program.</strong> See the note at the end of <a href="#speech-history">Speech history</a>.</li>
+<li><strong>A scheme sound doesn't play.</strong> Check that Enable speech and sound schemes is checked and that the right scheme is active. Make sure the file is a WAV file and hasn't been moved; Play sound tells you if the file can't be found.</li>
+<li><strong>An item doesn't use the other synthesizer you chose.</strong> ClassicSpeech tells you when it can't load a synthesizer, and uses your active synthesizer instead. The active synthesizer is also the fastest choice.</li>
+</ul>
+
+<h3 id="reporting-a-problem">Reporting a problem</h3>
+<p>Report problems on the GitHub page where you got ClassicSpeech. Please include:</p>
+<ol>
+<li>your NVDA and Windows versions;</li>
+<li>your synthesizer and voice;</li>
+<li>your verbosity profile and, when it matters, the voice profile category;</li>
+<li>the exact steps that cause the problem;</li>
+<li>what you expected to hear, and what you heard;</li>
+<li>the relevant part of the NVDA log, with personal information removed. Open the log from the NVDA menu: Tools, then View log.</li>
+</ol>
+<p>Never include passwords, access tokens or other private information in a report.</p>
+
+<h2 id="credits">Credits and license</h2>
+<ul>
+<li>Tim and Calli, the original authors: <a href="https://github.com/trssharp/classicspeech-nvda">https://github.com/trssharp/classicspeech-nvda</a></li>
+<li>Josh Kennedy: <a href="https://github.com/joshknnd1982">https://github.com/joshknnd1982</a></li>
+</ul>
+<p>ClassicSpeech is free software, licensed under the GNU General Public License, version 2 or later.</p>
+</main>
+</body>
+</html>
