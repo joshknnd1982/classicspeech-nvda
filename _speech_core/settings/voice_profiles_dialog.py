@@ -12,7 +12,14 @@ import logHandler
 from gui import guiHelper, nvdaControls
 from wx.lib import scrolledpanel
 
+from .file_choosers import choose_export_path, choose_import_path
 from .voice_profile_controls import VoiceProfileControls
+from .voice_profile_packages import (
+	VOICES_EXTENSION,
+	VoiceProfilesFileError,
+	read_voice_profiles,
+	write_voice_profiles,
+)
 from .voice_profiles_config import VoiceProfileStore
 from ..schemes import store as schemeStore
 from .voice_profiles_preview import (
@@ -68,6 +75,8 @@ class VoiceProfilesDialog(wx.Dialog):
 		self.cancelBtn.Bind(wx.EVT_BUTTON, self.onCancel)
 		self.previewBtn.Bind(wx.EVT_BUTTON, self.onPreview)
 		self.resetBtn.Bind(wx.EVT_BUTTON, self.onResetAllOverrides)
+		self.exportBtn.Bind(wx.EVT_BUTTON, self.onExportProfiles)
+		self.importBtn.Bind(wx.EVT_BUTTON, self.onImportProfiles)
 		self.Bind(wx.EVT_CLOSE, self.onClose)
 		self._select_profile(0)
 		self._clearDirty()
@@ -111,6 +120,8 @@ class VoiceProfilesDialog(wx.Dialog):
 		self.previewBtn.Disable()
 		self.resetBtn = wx.Button(self, label=_("Reset all Voice Profile overrides"))
 		self.resetBtn.SetName(_("Reset all Voice Profile overrides"))
+		self.exportBtn = wx.Button(self, label=_("E&xport voice profiles..."))
+		self.importBtn = wx.Button(self, label=_("I&mport voice profiles..."))
 		self.okBtn = wx.Button(self, wx.ID_OK, label=_("OK"))
 		self.cancelBtn = wx.Button(self, wx.ID_CANCEL, label=_("Cancel"))
 		self.applyBtn = wx.Button(self, label=_("Apply"))
@@ -119,6 +130,8 @@ class VoiceProfilesDialog(wx.Dialog):
 		buttons.Add(previewControls, 1, wx.ALL | wx.EXPAND, 8)
 		buttons.Add(self.previewBtn, 0, wx.ALL | wx.ALIGN_BOTTOM, 8)
 		buttons.Add(self.resetBtn, 0, wx.ALL | wx.ALIGN_BOTTOM, 8)
+		buttons.Add(self.exportBtn, 0, wx.ALL | wx.ALIGN_BOTTOM, 8)
+		buttons.Add(self.importBtn, 0, wx.ALL | wx.ALIGN_BOTTOM, 8)
 		buttons.AddStretchSpacer()
 		buttons.Add(self.okBtn, 0, wx.ALL, 8)
 		buttons.Add(self.cancelBtn, 0, wx.ALL, 8)
@@ -342,6 +355,57 @@ class VoiceProfilesDialog(wx.Dialog):
 			self._clearDirty()
 		except Exception:
 			log.exception("ClassicSpeech Voice Profiles reset failed")
+
+	def _message(self, text, title, icon=None):
+		if icon is None:
+			icon = wx.ICON_INFORMATION
+		wx.MessageBox(text, title, wx.OK | icon, self)
+
+	def onExportProfiles(self, event):
+		self._cancelPreview()
+		title = _("Export voice profiles")
+		profiles = self.store.shareable_profiles()
+		if not profiles:
+			self._message(_("There are no voice profiles to export."), title)
+			return
+		path = choose_export_path(
+			self, title, _("ClassicSpeech voice profiles"), VOICES_EXTENSION, _("ClassicSpeech voice profiles"),
+		)
+		if not path:
+			return
+		try:
+			write_voice_profiles(path, profiles)
+		except Exception:
+			log.exception("ClassicSpeech Voice Profiles export failed")
+			self._message(_("The voice profiles could not be exported. See the NVDA log for details."), title, wx.ICON_ERROR)
+			return
+		self._message(_("Exported voice profiles to {path}.").format(path=path), title)
+
+	def onImportProfiles(self, event):
+		self._cancelPreview()
+		title = _("Import voice profiles")
+		path = choose_import_path(self, title, _("ClassicSpeech voice profiles"), VOICES_EXTENSION)
+		if not path:
+			return
+		try:
+			synthesizers = read_voice_profiles(path)
+		except VoiceProfilesFileError:
+			self._message(_("This file is not a ClassicSpeech voice profiles file, or it has no voice profiles."), title, wx.ICON_ERROR)
+			return
+		except Exception:
+			log.exception("ClassicSpeech Voice Profiles import failed")
+			self._message(_("The voice profiles could not be imported. See the NVDA log for details."), title, wx.ICON_ERROR)
+			return
+		names = self.store.import_profiles(synthesizers)
+		self._markDirty()
+		if self.currentProfileId is not None:
+			self._show_profile(next(row for row in self.store.rows if row.profile_id == self.currentProfileId))
+		text = _("Imported voice profiles for {synthesizers}. Press OK or Apply to keep them.").format(
+			synthesizers=", ".join(names),
+		)
+		if self.store.synth_id not in names:
+			text += " " + _("The file has no voice profiles for your current synthesizer. They are used when you switch to one of those synthesizers.")
+		self._message(text, title)
 
 	def onApply(self, event):
 		try:

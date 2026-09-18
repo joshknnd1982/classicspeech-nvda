@@ -8,10 +8,12 @@ call shapes as NVDA 2026.2.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import types
 import unittest
+import zipfile
 from enum import Enum
 from pathlib import Path
 
@@ -807,6 +809,280 @@ class SchemePluginIntegrationTests(SchemeHarnessBase):
 			offset for offset, entry in enumerate(output[sound_index + 1:]) if isinstance(entry, str) and entry == "button"
 		))
 		self.assertFalse(any(isinstance(entry, self.markers.SchemeMarker) for entry in output))
+
+
+# ---------------------------------------------------------------------------
+# Scheme folders and packages
+# ---------------------------------------------------------------------------
+
+class SchemeFolderHarnessBase(SchemeHarnessBase):
+	"""Keep schemes in a temporary folder, as NVDA keeps them in its configuration folder."""
+
+	def setUp(self):
+		super().setUp()
+		self.root_dir = tempfile.TemporaryDirectory()
+		self.addCleanup(self.root_dir.cleanup)
+		self.root = str(Path(self.root_dir.name) / "Schemes")
+		self.store._ROOT_OVERRIDE = self.root
+		self.addCleanup(setattr, self.store, "_ROOT_OVERRIDE", None)
+		self.section["schemeData"] = "{}"
+		self.store.invalidate_runtime_cache()
+
+	def folders(self):
+		return sorted(entry.name for entry in Path(self.root).iterdir() if entry.is_dir())
+
+	def scheme_json(self, folder):
+		return json.loads((Path(self.root) / folder / "scheme.json").read_text(encoding="utf-8"))
+
+	def saved(self, editor):
+		editor.apply()
+		editor.mark_applied()
+
+
+class SchemeFolderTests(SchemeFolderHarnessBase):
+	def test_a_default_scheme_folder_is_created(self):
+		self.assertEqual(self.store.prepare_scheme_folders(self.section), self.root)
+		self.assertEqual(self.folders(), ["Default"])
+		self.assertEqual(self.scheme_json("Default")["name"], "Default")
+		self.assertEqual(self.scheme_json("Default")["items"], {})
+
+	def test_plugin_start_prepares_the_schemes_folder(self):
+		plugin = self.module.GlobalPlugin()
+		self.addCleanup(plugin.terminate)
+		self.assertEqual(self.folders(), ["Default"])
+
+	def test_schemes_kept_in_the_config_move_into_their_own_folders(self):
+		link = self.sound("link.wav")
+		self.configure({"role.LINK": {"sound": link}}, custom={"fonts": ["Arial"]})
+		data = json.loads(self.section["schemeData"])
+		data["schemes"]["Web: news"] = {"items": {"fmt.bold": {"sound": link, "soundOnly": True}}}
+		data["activeScheme"] = "Web: news"
+		self.section["schemeData"] = json.dumps(data)
+		self.store.prepare_scheme_folders(self.section)
+		self.assertEqual(self.folders(), ["Default", "Web_ news"])
+		default = self.scheme_json("Default")
+		self.assertEqual(default["items"]["role.LINK"]["sound"], "Sounds/link.wav")
+		self.assertTrue((Path(self.root) / "Default" / "Sounds" / "link.wav").is_file())
+		self.assertEqual(default["custom"]["fonts"], ["Arial"])
+		self.assertEqual(self.scheme_json("Web_ news")["name"], "Web: news")
+		self.assertEqual(
+			json.loads(self.section["schemeData"]),
+			{"version": 2, "enabled": True, "activeScheme": "Web: news"},
+		)
+		# Speech now reads the active scheme from its folder.
+		self.assertEqual(
+			self.store.active_items()["fmt.bold"]["sound"],
+			str(Path(self.root) / "Web_ news" / "Sounds" / "link.wav"),
+		)
+		# Moving again changes nothing.
+		self.store.prepare_scheme_folders(self.section)
+		self.assertEqual(self.folders(), ["Default", "Web_ news"])
+
+	def test_saving_writes_renames_and_deletes_scheme_folders(self):
+		editor = self.store.SchemeStore(self.section)
+		self.assertEqual(editor.root, self.root)
+		self.assertEqual(editor.scheme_names, ["Default"])
+		editor.add_scheme("Proofreading")
+		editor.set_item("fmt.bold", {"sound": self.sound("bold.wav")})
+		self.saved(editor)
+		self.assertEqual(self.folders(), ["Default", "Proofreading"])
+		self.assertEqual(self.scheme_json("Proofreading")["items"]["fmt.bold"]["sound"], "Sounds/bold.wav")
+		# After saving, the sound is the scheme's own copy.
+		self.assertEqual(
+			editor.get_item("fmt.bold")["sound"],
+			str(Path(self.root) / "Proofreading" / "Sounds" / "bold.wav"),
+		)
+		editor.rename_scheme("Proofreading", "Word/Docs")
+		self.saved(editor)
+		self.assertEqual(self.folders(), ["Default", "Word_Docs"])
+		self.assertEqual(self.scheme_json("Word_Docs")["name"], "Word/Docs")
+		self.assertTrue((Path(self.root) / "Word_Docs" / "Sounds" / "bold.wav").is_file())
+		editor.set_active_scheme("Word/Docs")
+		self.assertTrue(editor.delete_scheme("Word/Docs"))
+		self.saved(editor)
+		self.assertEqual(self.folders(), ["Default"])
+
+	def test_a_copy_keeps_the_sounds_of_a_scheme_deleted_in_the_same_save(self):
+		editor = self.store.SchemeStore(self.section)
+		editor.add_scheme("Old")
+		editor.set_item("role.LINK", {"sound": self.sound("link.wav")})
+		self.saved(editor)
+		editor.add_scheme("Old copy", copy_from="Old")
+		editor.delete_scheme("Old")
+		# A new scheme may take the deleted scheme's name.
+		self.assertEqual(editor.add_scheme("Old"), "Old")
+		self.saved(editor)
+		self.assertEqual(self.folders(), ["Default", "Old", "Old copy"])
+		self.assertTrue((Path(self.root) / "Old copy" / "Sounds" / "link.wav").is_file())
+		self.assertEqual(self.scheme_json("Old")["items"], {})
+
+	def test_cancel_leaves_the_folders_alone(self):
+		editor = self.store.SchemeStore(self.section)
+		editor.add_scheme("Draft")
+		editor.set_item("role.LINK", {"sound": self.sound()})
+		editor.cancel()
+		self.assertEqual(self.folders(), ["Default"])
+		self.assertEqual(editor.scheme_names, ["Default"])
+		self.assertFalse(editor.is_dirty())
+
+	def test_added_entries_belong_to_each_scheme(self):
+		editor = self.store.SchemeStore(self.section)
+		self.assertTrue(editor.add_custom_entry("fonts", "Arial"))
+		editor.add_scheme("Plain")
+		# A new scheme starts with the active scheme's added entries.
+		self.assertEqual(editor.custom_entries()["fonts"], ["Arial"])
+		self.assertTrue(editor.add_custom_entry("styles", "Quote"))
+		editor.set_active_scheme("Default")
+		self.assertEqual(editor.custom_entries()["styles"], [])
+		self.saved(editor)
+		self.assertEqual(self.scheme_json("Plain")["custom"]["styles"], ["Quote"])
+		self.assertEqual(self.scheme_json("Default")["custom"]["fonts"], ["Arial"])
+
+	def test_folder_names_are_safe_on_windows(self):
+		name_for = self.store.folder_name_for
+		self.assertEqual(name_for("News: today?"), "News_ today_")
+		self.assertEqual(name_for("CON"), "_CON")
+		self.assertEqual(name_for("lpt1.old"), "_lpt1.old")
+		self.assertEqual(name_for(" trailing. "), "trailing")
+		self.assertEqual(name_for("..."), "Scheme")
+
+	def test_switch_commands_use_the_scheme_folders(self):
+		editor = self.store.SchemeStore(self.section)
+		editor.add_scheme("Web")
+		editor.set_item("role.LINK", {"sound": self.sound()})
+		editor.set_active_scheme("Default")
+		self.saved(editor)
+		self.assertEqual(self.store.active_items(), {})
+		self.assertEqual(self.store.cycle_active_scheme(), "Web")
+		self.assertIn("role.LINK", self.store.active_items())
+		self.assertFalse(self.store.set_schemes_enabled(False))
+		self.assertEqual(self.store.active_items(), {})
+		self.assertEqual(
+			json.loads(self.section["schemeData"]),
+			{"version": 2, "enabled": False, "activeScheme": "Web"},
+		)
+
+
+class SchemePackageTests(SchemeFolderHarnessBase):
+	def package_path(self, name="Shared"):
+		return str(Path(self.root_dir.name) / f"{name}.classicspeech-scheme")
+
+	def test_export_and_import_carry_sounds_voices_and_added_entries(self):
+		from globalPlugins._speech_core.schemes import packages
+
+		editor = self.store.SchemeStore(self.section)
+		editor.add_custom_entry("fonts", "Arial")
+		editor.set_item("fmt.fontName.arial", {"sound": self.sound("arial.wav"), "soundOnly": True})
+		editor.set_item("role.LINK", {"voice": {"enabled": True, "bySynth": {"fakeSynth": _voice_record(pitch=70)}}})
+		package = self.package_path()
+		self.assertEqual(editor.export_scheme("Default", package), [])
+		with zipfile.ZipFile(package) as archive:
+			self.assertEqual(sorted(archive.namelist()), ["Sounds/arial.wav", packages.MANIFEST_NAME])
+		receiver = self.store.SchemeStore(self.section)
+		self.assertEqual(receiver.import_package(package), "Default 2")
+		self.assertEqual(receiver.active_scheme, "Default 2")
+		self.assertEqual(receiver.custom_entries()["fonts"], ["Arial"])
+		self.assertTrue(receiver.get_item("fmt.fontName.arial")["soundOnly"])
+		self.assertEqual(receiver.get_item("role.LINK")["voice"]["bySynth"]["fakeSynth"]["overrides"], {"pitch": 70})
+		# Nothing is saved before Apply.
+		self.assertEqual(self.folders(), ["Default"])
+		self.saved(receiver)
+		self.assertEqual(self.folders(), ["Default", "Default 2"])
+		self.assertTrue((Path(self.root) / "Default 2" / "Sounds" / "arial.wav").is_file())
+
+	def test_cancelled_import_leaves_no_files(self):
+		editor = self.store.SchemeStore(self.section)
+		editor.set_item("role.LINK", {"sound": self.sound()})
+		package = self.package_path()
+		editor.export_scheme("Default", package)
+		receiver = self.store.SchemeStore(self.section)
+		receiver.import_package(package)
+		staging = receiver._staging[0]
+		self.assertTrue(os.path.isdir(staging))
+		receiver.cancel()
+		self.assertFalse(os.path.isdir(staging))
+		self.assertEqual(self.folders(), ["Default"])
+
+	def test_export_leaves_out_missing_sounds_and_names_them(self):
+		from globalPlugins._speech_core.schemes import packages
+
+		editor = self.store.SchemeStore(self.section)
+		missing = str(Path(self.sound_dir.name) / "gone.wav")
+		editor.set_item("role.LINK", {
+			"sound": missing,
+			"voice": {"enabled": True, "bySynth": {"fakeSynth": _voice_record(rate=70)}},
+		})
+		package = self.package_path("Partial")
+		self.assertEqual(editor.export_scheme("Default", package), [missing])
+		with zipfile.ZipFile(package) as archive:
+			manifest = json.loads(archive.read(packages.MANIFEST_NAME))
+		self.assertNotIn("sound", manifest["items"]["role.LINK"])
+		self.assertTrue(manifest["items"]["role.LINK"]["voice"]["enabled"])
+
+	def test_other_files_and_unsafe_package_contents_are_refused(self):
+		from globalPlugins._speech_core.schemes import packages
+
+		base = Path(self.root_dir.name)
+		editor = self.store.SchemeStore(self.section)
+		not_a_zip = base / "notes.classicspeech-scheme"
+		not_a_zip.write_text("hello", encoding="utf-8")
+		with self.assertRaises(packages.PackageError):
+			editor.import_package(str(not_a_zip))
+		foreign = base / "foreign.classicspeech-scheme"
+		with zipfile.ZipFile(foreign, "w") as archive:
+			archive.writestr(packages.MANIFEST_NAME, json.dumps({"format": "something else"}))
+		with self.assertRaises(packages.PackageError):
+			editor.import_package(str(foreign))
+		sneaky = base / "sneaky.classicspeech-scheme"
+		manifest = {"format": packages.PACKAGE_FORMAT, "name": "Sneaky", "items": {
+			"role.LINK": {"sound": "Sounds/../../evil.wav", "soundOnly": True},
+			"role.BUTTON": {"sound": "Sounds/run.exe"},
+			"role.CHECKBOX": {"sound": "C:/Windows/evil.wav"},
+			"state.CHECKED": {"sound": "Sounds/ok.wav"},
+			"python.code": {"sound": "Sounds/ok.wav"},
+		}}
+		with zipfile.ZipFile(sneaky, "w") as archive:
+			archive.writestr(packages.MANIFEST_NAME, json.dumps(manifest))
+			archive.writestr("Sounds/../../evil.wav", b"RIFF")
+			archive.writestr("Sounds/run.exe", b"MZ")
+			archive.writestr("Sounds/ok.wav", b"RIFF")
+		self.assertEqual(editor.import_package(str(sneaky)), "Sneaky")
+		self.assertEqual(editor.configured_item_ids(), {"state.CHECKED"})
+		staging = Path(editor._staging[-1])
+		self.assertEqual(sorted(path.name for path in staging.rglob("*") if path.is_file()), ["ok.wav"])
+		self.assertFalse((base / "evil.wav").exists())
+		editor.cancel()
+
+	def test_import_button_adds_the_scheme_and_waits_for_apply(self):
+		from globalPlugins._speech_core.settings import schemes_dialog
+
+		editor = self.store.SchemeStore(self.section)
+		editor.set_item("role.LINK", {"sound": self.sound()})
+		package = self.package_path("Friend")
+		editor.export_scheme("Default", package)
+		calls = []
+		messages = []
+		dialog = types.SimpleNamespace(
+			store=self.store.SchemeStore(self.section),
+			_loadSchemeChoice=lambda: calls.append("choices"),
+			itemsPanel=types.SimpleNamespace(rebuildTree=lambda *args: calls.append("tree")),
+			_markDirty=lambda: calls.append("dirty"),
+			_message=lambda text, title, icon=None: messages.append(text),
+			schemeChoice=types.SimpleNamespace(SetFocus=lambda: calls.append("focus")),
+		)
+		original = schemes_dialog.choose_import_path
+		schemes_dialog.choose_import_path = lambda *args, **kwargs: package
+		try:
+			schemes_dialog.SpeechSoundSchemesDialog.onImportScheme(dialog, None)
+		finally:
+			schemes_dialog.choose_import_path = original
+		self.assertEqual(calls, ["choices", "tree", "dirty", "focus"])
+		self.assertEqual(dialog.store.active_scheme, "Default 2")
+		self.assertEqual(
+			messages,
+			["Imported the scheme Default 2. It is now the active scheme. Press OK or Apply to keep it."],
+		)
+		dialog.store.cancel()
 
 
 if __name__ == "__main__":

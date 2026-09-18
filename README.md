@@ -50,6 +50,8 @@ Current Voice Profile categories are:
 
 A Voice Profile may select an exposed Voice or Variant and supported synthesizer settings. ClassicSpeech applies a profile only to an owned complete speech sequence, then restores the active synthesizer settings.
 
+**Export voice profiles** saves every synthesizer's profiles in one `.classicspeech-voices` file, and **Import voice profiles** reads one, replacing only the synthesizers and categories it contains.
+
 A document and web formatting voice is used for the announcement and for the text itself, such as the bold words or the heading. An item may also use another installed synthesizer. NVDA loads that synthesizer each time the item is spoken, which adds a delay, so the active synthesizer is the fastest choice.
 
 ### Speech and Sound Schemes
@@ -60,6 +62,8 @@ A document and web formatting voice is used for the announcement and for the tex
 - a custom voice.
 
 Items are grouped by category, and the dialog has a search box and a filter that shows only the items you changed. Each item's name in the tree says what is set. You can keep several named schemes and switch between them. Sounds and voices apply to focus changes, object navigation, the review cursor, say all, browse mode, and the physical mouse. An item without a sound or voice keeps NVDA's normal speech.
+
+Each scheme, including Default, is its own folder under `ClassicSpeech\Schemes` in NVDA's user configuration folder (`%APPDATA%\nvda\ClassicSpeech\Schemes` for an installed NVDA). A scheme folder holds `scheme.json` and a `Sounds` folder with copies of the scheme's sounds, and **Open schemes folder** shows the folders in File Explorer. **Export scheme** saves a scheme with its sounds as one `.classicspeech-scheme` file, and **Import scheme** adds such a file as a new scheme. Schemes that earlier versions kept in NVDA's configuration move into folders automatically.
 
 ### Web / Browse Mode tools
 
