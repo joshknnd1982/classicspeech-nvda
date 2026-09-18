@@ -23,6 +23,7 @@ from .tokens import (
 	TOKEN_KIND_SET,
 	coerce_tokens,
 )
+from .schemes.runtime import label_marker_for_token
 
 log = logHandler.log
 DEBUG = False
@@ -500,6 +501,13 @@ class SpeechFormatter:
 
 			if pause_placement == "before" and pause > 0 and not is_first:
 				sequence.append(BreakCommand(time=pause))
+
+			# Speech and Sound Schemes: mark role and state words so the speech
+			# filter can play their sounds or speak them in their voices after
+			# the token editor has settled the final order.
+			scheme_marker = label_marker_for_token(token)
+			if scheme_marker is not None:
+				sequence.append(scheme_marker)
 
 			# Complete formatter output is owned by the one profile transaction added
 			# by ``format``. Do not inject token-scoped prosody inside it: that

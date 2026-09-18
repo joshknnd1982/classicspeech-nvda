@@ -14,6 +14,7 @@ from wx.lib import scrolledpanel
 
 from .voice_profile_controls import VoiceProfileControls
 from .voice_profiles_config import VoiceProfileStore
+from ..schemes import store as schemeStore
 from .voice_profiles_preview import (
 	DEFAULT_PREVIEW_TEXT,
 	PreviewEvents,
@@ -21,6 +22,11 @@ from .voice_profiles_preview import (
 )
 
 log = logHandler.log
+
+
+#: List row after the synthesizer profiles: voices for document formatting and
+#: web elements, stored in Speech and Sound Schemes.
+FORMATTING_ROW_LABEL = _("Document and web formatting")
 
 
 class VoiceProfilesDialog(wx.Dialog):
@@ -37,6 +43,8 @@ class VoiceProfilesDialog(wx.Dialog):
 			from synthDriverHandler import getSynth
 			driver = getSynth()
 		self.store = VoiceProfileStore(driver)
+		self.schemeStore = schemeStore.SchemeStore()
+		self.formattingPanel = None
 		self.currentProfileId = None
 		self.currentControls = None
 		self._previewController = None
@@ -76,6 +84,7 @@ class VoiceProfilesDialog(wx.Dialog):
 		self.profileList.InsertColumn(0, _("Voice profiles"))
 		for index, row in enumerate(self.store.rows):
 			self.profileList.InsertItem(index, row.label)
+		self.profileList.InsertItem(len(self.store.rows), FORMATTING_ROW_LABEL)
 		left.Add(self.profileList, 1, wx.ALL | wx.EXPAND, 8)
 		content.Add(left, 0, wx.EXPAND)
 
@@ -118,16 +127,59 @@ class VoiceProfilesDialog(wx.Dialog):
 		self.applyBtn.MoveAfterInTabOrder(self.cancelBtn)
 
 	def _select_profile(self, index):
-		if index < 0 or index >= len(self.store.rows):
+		if index < 0 or index > len(self.store.rows):
 			return
 		self.profileList.Select(index)
 		self.profileList.Focus(index)
-		self._show_profile(self.store.rows[index])
+		if index == len(self.store.rows):
+			self._show_formatting_voices()
+		else:
+			self._show_profile(self.store.rows[index])
+
+	def _clear_editor(self):
+		if self.formattingPanel is not None:
+			try:
+				self.formattingPanel.cleanup()
+			except Exception:
+				log.debug("ClassicSpeech Voice Profiles: formatting panel cleanup failed", exc_info=True)
+			self.formattingPanel = None
+		self.editorSizer.Clear(delete_windows=True)
+		self.currentControls = None
+
+	def _show_formatting_voices(self):
+		"""Per-item voices for NVDA's document formatting and web elements."""
+		from .schemes_panel import SchemeItemsPanel
+
+		self.currentProfileId = None
+		self._clear_editor()
+		self.editorPanel.Show()
+		self.editorSizer.Add(
+			wx.StaticText(
+				self.editorPanel,
+				label=_(
+					"Choose a voice for any document formatting or web element NVDA reports, such as bold text, "
+					"a font, headings or links. The voice is used for the announcement and for the text itself. "
+					"Sounds for these items are set in Speech and Sound Schemes."
+				),
+			),
+			0, wx.ALL | wx.EXPAND, 6,
+		)
+		self.formattingPanel = SchemeItemsPanel(
+			self.editorPanel,
+			self.schemeStore,
+			formatting_only=True,
+			show_sounds=False,
+			on_change=self._markDirty,
+		)
+		self.editorSizer.Add(self.formattingPanel, 1, wx.EXPAND | wx.ALL, 4)
+		self.editorPanel.Layout()
+		self.editorPanel.SetupScrolling(scroll_x=False)
+		self.previewBtn.Disable()
+		self.Layout()
 
 	def _show_profile(self, row):
 		self.currentProfileId = row.profile_id
-		self.editorSizer.Clear(delete_windows=True)
-		self.currentControls = None
+		self._clear_editor()
 		self.editorPanel.Show()
 		snapshot = self.store.get_snapshot(row.profile_id)
 		self.currentControls = VoiceProfileControls(
@@ -152,10 +204,15 @@ class VoiceProfilesDialog(wx.Dialog):
 	def onProfileChanged(self, event):
 		if self._preview_is_active():
 			return
-		next_profile_id = self.store.rows[event.GetIndex()].profile_id
+		index = event.GetIndex()
+		if index == len(self.store.rows):
+			if self.formattingPanel is None:
+				self._show_formatting_voices()
+			return
+		next_profile_id = self.store.rows[index].profile_id
 		if next_profile_id != self.currentProfileId:
 			self._markDirty()
-		self._show_profile(self.store.rows[event.GetIndex()])
+		self._show_profile(self.store.rows[index])
 
 	def _markDirty(self):
 		self.applyBtn.Show()
@@ -252,7 +309,7 @@ class VoiceProfilesDialog(wx.Dialog):
 		self.profileList.Enable(not busy)
 		self.editorPanel.Enable(not busy)
 		self.previewText.Enable(not busy)
-		self.previewBtn.Enable(not busy)
+		self.previewBtn.Enable(not busy and self.formattingPanel is None)
 		self.previewBtn.SetLabel(
 			_("Previewing selected profile...") if busy else _("Pre&view selected profile")
 		)
@@ -280,7 +337,8 @@ class VoiceProfilesDialog(wx.Dialog):
 			self.store.reset_all_overrides()
 			self.store.apply()
 			self.store.mark_applied()
-			self._show_profile(next(row for row in self.store.rows if row.profile_id == self.currentProfileId))
+			if self.currentProfileId is not None:
+				self._show_profile(next(row for row in self.store.rows if row.profile_id == self.currentProfileId))
 			self._clearDirty()
 		except Exception:
 			log.exception("ClassicSpeech Voice Profiles reset failed")
@@ -289,6 +347,8 @@ class VoiceProfilesDialog(wx.Dialog):
 		try:
 			self.store.apply()
 			self.store.mark_applied()
+			self.schemeStore.apply()
+			self.schemeStore.mark_applied()
 			self._clearDirty()
 			return True
 		except Exception:
@@ -298,16 +358,21 @@ class VoiceProfilesDialog(wx.Dialog):
 	def onOK(self, event):
 		self._cancelPreview()
 		if self.onApply(event):
+			self._clear_editor()
 			self.Destroy()
 
 	def onCancel(self, event):
 		self._cancelPreview()
+		self.schemeStore.cancel()
 		self.store.cancel()
+		self._clear_editor()
 		self.Destroy()
 
 	def onClose(self, event):
 		self._cancelPreview()
+		self.schemeStore.cancel()
 		self.store.cancel()
+		self._clear_editor()
 		event.Skip()
 
 	def _cancelPreview(self):

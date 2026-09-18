@@ -4,6 +4,7 @@ import logHandler
 
 from .debug import should_debug_log
 
+from .. import focus_ancestry
 from ..dialog_helpers import object_is_in_dialog
 
 log = logHandler.log
@@ -194,15 +195,23 @@ class ContextAnalyzer:
 	def _get_focus_role_key(self):
 		return self._get_object_role_key(api.getFocusObject())
 
+	def _lineage_role_key(self, lineage, index):
+		return self._normalize_role_key_for_role(focus_ancestry.role_at(lineage, index))
+
+	def _normalize_role_key_for_role(self, role):
+		if role is None:
+			return None
+		role_name = getattr(role, "name", None)
+		if role_name:
+			return self._normalize_role_key(role_name)
+		return self._normalize_role_key(role)
+
 	def _object_or_ancestor_has_role(self, obj, role_keys, max_depth=8):
-		current = obj
-		depth = 0
-		while current is not None and depth < max_depth:
-			if self._get_object_role_key(current) in role_keys:
-				return True
-			current = self._safe_obj_attr(current, "parent", None)
-			depth += 1
-		return False
+		lineage = focus_ancestry.lineage_for(obj, max_depth)
+		return any(
+			self._lineage_role_key(lineage, index) in role_keys
+			for index in range(len(lineage))
+		)
 
 	def _is_native_menu_context(self, obj, max_depth=8):
 		"""Return True only for menu contexts that are not owned by a
@@ -210,17 +219,14 @@ class ContextAnalyzer:
 		eligible while preventing ARIA/web menus from bypassing the browse
 		mode guard.
 		"""
-		current = obj
-		depth = 0
-		while current is not None and depth < max_depth:
-			role_key = self._get_object_role_key(current)
+		lineage = focus_ancestry.lineage_for(obj, max_depth)
+		for index, current in enumerate(lineage):
+			role_key = self._lineage_role_key(lineage, index)
 			if role_key in MENU_CONTEXT_ROLE_KEYS:
 				ti = self._safe_obj_attr(current, "treeInterceptor", None)
 				if ti and isinstance(ti, browseMode.BrowseModeDocumentTreeInterceptor):
 					return False
 				return True
-			current = self._safe_obj_attr(current, "parent", None)
-			depth += 1
 		return False
 
 	def _roles_compatible(self, token_role_key, focus_role_key):
@@ -235,14 +241,10 @@ class ContextAnalyzer:
 		Coarse context for hotkey handling.
 		'menu' if focus or ancestor is menu-ish, otherwise 'dialog'.
 		"""
-		current = api.getFocusObject()
-		depth = 0
-		while current is not None and depth < 8:
-			role_key = self._get_object_role_key(current)
-			if role_key in MENU_CONTEXT_ROLE_KEYS:
+		lineage = focus_ancestry.lineage_for(api.getFocusObject(), 8)
+		for index in range(len(lineage)):
+			if self._lineage_role_key(lineage, index) in MENU_CONTEXT_ROLE_KEYS:
 				return "menu"
-			current = self._safe_obj_attr(current, "parent", None)
-			depth += 1
 		return "dialog"
 
 	# -------------------------

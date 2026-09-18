@@ -3,6 +3,8 @@ import browseMode
 import config
 import logHandler
 
+from . import focus_ancestry
+
 log = logHandler.log
 
 CONTEXT_NONE = "none"
@@ -67,6 +69,16 @@ def _get_object_role_key(obj):
     if not obj:
         return None
     role = _safe_obj_attr(obj, "role", None)
+    if role is None:
+        return None
+    role_name = getattr(role, "name", None)
+    if role_name:
+        return _normalize_role_key(role_name)
+    return _normalize_role_key(role)
+
+
+def _role_key_at(lineage, index):
+    role = focus_ancestry.role_at(lineage, index)
     if role is None:
         return None
     role_name = getattr(role, "name", None)
@@ -156,21 +168,18 @@ def _object_menu_context(obj):
     MENUBAR until a popup/root menu ancestor appears.  This keeps Alt-alone as
     "menu bar" and reserves "menu active" for an actual opened menu.
     """
-    current = obj
-    depth = 0
+    lineage = focus_ancestry.lineage_for(obj, 10)
     saw_menubar = False
     saw_menuitem = False
 
-    while current is not None and depth < 10:
-        role_key = _get_object_role_key(current)
+    for index in range(len(lineage)):
+        role_key = _role_key_at(lineage, index)
         if role_key == "menu":
             return CONTEXT_MENU
         if role_key == "menubar":
             saw_menubar = True
         elif role_key in MENU_ITEM_ROLE_KEYS:
             saw_menuitem = True
-        current = _safe_obj_attr(current, "parent", None)
-        depth += 1
 
     if saw_menubar or saw_menuitem:
         return CONTEXT_MENUBAR
@@ -189,17 +198,14 @@ def _is_native_menu_context(obj, max_depth=10):
     are still owned by a BrowseModeDocumentTreeInterceptor.  Those should not
     update native menu state or receive native menu hints.
     """
-    current = obj
-    depth = 0
-    while current is not None and depth < max_depth:
-        role_key = _get_object_role_key(current)
+    lineage = focus_ancestry.lineage_for(obj, max_depth)
+    for index, current in enumerate(lineage):
+        role_key = _role_key_at(lineage, index)
         if role_key in MENU_CONTEXT_ROLE_KEYS:
             ti = _safe_obj_attr(current, "treeInterceptor", None)
             if ti and isinstance(ti, browseMode.BrowseModeDocumentTreeInterceptor):
                 return False
             return True
-        current = _safe_obj_attr(current, "parent", None)
-        depth += 1
     return False
 
 

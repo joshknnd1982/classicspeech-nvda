@@ -2,7 +2,7 @@
 
 ClassicSpeech is an NVDA add-on for configurable speech verbosity, conservative text and number processing, Web / Browse Mode tools, and same-synth Voice Profiles.
 
-> **Current release:** [ClassicSpeech 1.01](https://github.com/trssharp/classicspeech-nvda/releases/tag/v1.01) is the latest stable release. The `main` branch remains active development; commits after a release may not yet have completed live NVDA validation.
+> **Current release:** [ClassicSpeech 1.02](https://github.com/joshknnd1982/classicspeech-nvda/releases/tag/v1.02) fixes lag in Windows Explorer and file dialogs, reads edit field contents on focus, and adds a Mouse voice profile, document and web formatting voices, and Speech and Sound Schemes. See the [1.02 release notes](docs/RELEASE-1.02.md). The `main` branch remains active development; commits after a release may not yet have completed live NVDA validation.
 
 ## Settings access
 
@@ -11,8 +11,9 @@ All ClassicSpeech settings are available from **NVDA menu → Preferences → Cl
 - **General Settings**
 - **Web / Browse Mode Settings**
 - **Voice Profiles**
+- **Speech and Sound Schemes**
 
-The same three commands appear in NVDA's **Input Gestures** dialog under the **ClassicSpeech** category. They intentionally have **no default gestures**, so they do not compete with gestures supplied by other add-ons. Assign a gesture there only if it suits your configuration.
+The same commands appear in NVDA's **Input Gestures** dialog under the **ClassicSpeech** category, together with commands that turn speech and sound schemes on or off and switch to the next scheme. They intentionally have **no default gestures**, so they do not compete with gestures supplied by other add-ons. Assign a gesture there only if it suits your configuration.
 
 ## What it does
 
@@ -30,16 +31,31 @@ Position announcements are separate from the Position token and are set per verb
 
 The Intermediate profile leaves Description and Hotkey off by default. You can change these choices in **General Settings → Verbosity**.
 
+**Read edit field contents when focused**, also in **General Settings → Verbosity**, is on for every profile by default. Moving to an edit field then speaks its current line, or "blank" when it is empty, as NVDA does natively. Clear it to hear only selected text, which was the behavior before 1.02.
+
 ### Voice Profiles
 
 Current Voice Profile categories are:
 
 - **Focus and navigation**
-- **Review and object navigation**, including mouse feedback
+- **Review and object navigation**
+- **Mouse**, for speech from NVDA's mouse tracking when you move a physical mouse or touchpad
 - **Keyboard entry**
 - **System and notifications** for explicitly scoped NVDA system-origin speech
+- **Document and web formatting**, a voice for any item from NVDA's Document Formatting panel (font attributes, specific fonts and sizes, document information, pages and spacing, table information, headings and each heading level, links, lists, landmarks and other elements)
 
 A Voice Profile may select an exposed Voice or Variant and supported synthesizer settings. ClassicSpeech applies a profile only to an owned complete speech sequence, then restores the active synthesizer settings.
+
+A document and web formatting voice is used for the announcement and for the text itself, such as the bold words or the heading. An item may also use another installed synthesizer. NVDA loads that synthesizer each time the item is spoken, which adds a delay, so the active synthesizer is the fastest choice.
+
+### Speech and Sound Schemes
+
+**Speech and Sound Schemes** works like the JAWS Speech and Sounds Manager. Every NVDA object type and state, unknown objects, unlabeled graphics, window classes you add, and every document formatting and web element option can have:
+
+- a WAV sound, played in addition to the announcement or instead of it;
+- a custom voice.
+
+Items are grouped by category, and the dialog has a search box and a filter that shows only the items you changed. Each item's name in the tree says what is set. You can keep several named schemes and switch between them. Sounds and voices apply to focus changes, object navigation, the review cursor, say all, browse mode, and the physical mouse. An item without a sound or voice keeps NVDA's normal speech.
 
 ### Web / Browse Mode tools
 
@@ -59,8 +75,7 @@ For example, `5'5` remains literal rather than becoming `five'five`.
 
 ## Safety boundaries
 
-- ClassicSpeech does **not** automatically change NVDA's selected synthesizer.
-- Automatic cross-synth switching is out of scope.
+- ClassicSpeech does **not** automatically change NVDA's selected synthesizer. A formatting or scheme item that you set to another synthesizer loads it only for that item's speech, through NVDA's own configuration-profile mechanism, and then returns to your synthesizer.
 - Voice Profiles are stored separately for each synthesizer.
 - Reset all Voice Profile overrides clears every ClassicSpeech profile override for the active synthesizer, returning all categories to native NVDA Voice Settings.
 - System routing is source-scoped. ClassicSpeech does not route every NVDA message through a System profile.
@@ -69,7 +84,7 @@ For example, `5'5` remains literal rather than becoming `five'five`.
 
 ## Installation and manual testing
 
-The source manifest currently supports NVDA 2025.1 through 2026.1. Download the `.nvda-addon` from the [latest release](https://github.com/trssharp/classicspeech-nvda/releases/latest), open it in Windows Explorer, and accept NVDA's add-on installation prompt. Restart NVDA when prompted.
+The source manifest currently supports NVDA 2025.1 through 2026.2. Download the `.nvda-addon` from the [latest release](https://github.com/joshknnd1982/classicspeech-nvda/releases/latest), open it in Windows Explorer, and accept NVDA's add-on installation prompt. Restart NVDA when prompted.
 
 For a manual development test, deploy only a verified source tree to the scratchpad using the process in the [development workflow](docs/DEVELOPMENT-WORKFLOW.md). Do not edit the scratchpad copy as the source of a change.
 

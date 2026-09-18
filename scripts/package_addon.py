@@ -14,7 +14,7 @@ RUNTIME_FILES = ("classicSpeech.py",)
 RUNTIME_DIRECTORIES = ("_speech_core",)
 APP_MODULE_DIRECTORIES = ("appModules",)
 LOCALE_DIRECTORIES = ("locale",)
-RELEASE_NOTES = "EDGE-NOTIFICATIONS-RC-V26.md"
+RELEASE_NOTES = "RELEASE-1.02.md"
 _NUMERIC_VERSION = re.compile(r"^\d+\.\d+(?:\.\d+)?$")
 _SAFE_LABEL = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
@@ -133,6 +133,16 @@ def main() -> None:
             "globalPlugins/_speech_core/settings/text/__init__.py",
             "globalPlugins/_speech_core/settings/text/config.py",
             "globalPlugins/_speech_core/settings/text/panel.py",
+            "globalPlugins/_speech_core/focus_ancestry.py",
+            "globalPlugins/_speech_core/schemes/__init__.py",
+            "globalPlugins/_speech_core/schemes/catalog.py",
+            "globalPlugins/_speech_core/schemes/labels.py",
+            "globalPlugins/_speech_core/schemes/markers.py",
+            "globalPlugins/_speech_core/schemes/runtime.py",
+            "globalPlugins/_speech_core/schemes/store.py",
+            "globalPlugins/_speech_core/schemes/tagging.py",
+            "globalPlugins/_speech_core/settings/schemes_dialog.py",
+            "globalPlugins/_speech_core/settings/schemes_panel.py",
             "appModules/msedge.py",
             "locale/es/LC_MESSAGES/nvda.mo",
         }

@@ -34,40 +34,11 @@ class DefaultButtonTokenInserter:
 		except Exception:
 			return semantic_tokens
 
-		focus = focus or api.getFocusObject()
-		try:
-			is_button, is_default, _default_name = focused_button_default_status(focus)
-		except Exception:
-			return semantic_tokens
-
-		if not is_button or not is_default:
-			return semantic_tokens
-
-		# Avoid duplicate default tokens if a future NVDA/core sequence exposes one.
-		for tok in semantic_tokens or []:
-			if getattr(tok, "kind", None) != TOKEN_STATE:
-				continue
-			try:
-				if tok.text().strip().lower() == "default":
-					return semantic_tokens
-			except Exception:
-				continue
-
-		default_tok = token(
-			TOKEN_STATE,
-			raw="default",
-			spoken="default",
-			source=[],
-			meta={
-				"orderIndex": self._role_order_index_for_default_token(),
-				"suppressRename": True,
-				"suppressProfileLabelMute": True,
-			},
-		)
-
 		# Only decorate actual focused-button description sequences.
 		# Action-only messages such as ``pressed`` arrive while focus is still
 		# on the default button, but they should not become ``default pressed``.
+		# Check the cheap token shape first: the dialog default-button lookup
+		# is expensive and is only needed for a spoken button role.
 		has_button_role = False
 		for tok in semantic_tokens or []:
 			if getattr(tok, "kind", None) != TOKEN_ROLE:
@@ -81,6 +52,37 @@ class DefaultButtonTokenInserter:
 
 		if not has_button_role:
 			return semantic_tokens
+
+		# Avoid duplicate default tokens if a future NVDA/core sequence exposes one.
+		for tok in semantic_tokens or []:
+			if getattr(tok, "kind", None) != TOKEN_STATE:
+				continue
+			try:
+				if tok.text().strip().lower() == "default":
+					return semantic_tokens
+			except Exception:
+				continue
+
+		focus = focus or api.getFocusObject()
+		try:
+			is_button, is_default, _default_name = focused_button_default_status(focus)
+		except Exception:
+			return semantic_tokens
+
+		if not is_button or not is_default:
+			return semantic_tokens
+
+		default_tok = token(
+			TOKEN_STATE,
+			raw="default",
+			spoken="default",
+			source=[],
+			meta={
+				"orderIndex": self._role_order_index_for_default_token(),
+				"suppressRename": True,
+				"suppressProfileLabelMute": True,
+			},
+		)
 
 		result = []
 		inserted = False

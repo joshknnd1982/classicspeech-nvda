@@ -3,7 +3,9 @@
 import logHandler
 
 from .config_core import (
+	_as_bool,
 	_ensure_classic_speech_section,
+	_read_classic_speech_section,
 	_get_live_verbosity_manager,
 	_get_nvda_setting,
 	_set_nvda_setting,
@@ -96,7 +98,7 @@ def _set_automatic_speech_interrupt_fallback_ms(value):
 
 
 def _get_query_object_source():
-	conf = _ensure_classic_speech_section()
+	conf = _read_classic_speech_section()
 	value = str(conf.get("queryObjectSource", QUERY_OBJECT_SOURCE_FOCUS)).strip().lower()
 	if value not in {QUERY_OBJECT_SOURCE_FOCUS, QUERY_OBJECT_SOURCE_NAVIGATOR, QUERY_OBJECT_SOURCE_NATIVE}:
 		value = QUERY_OBJECT_SOURCE_FOCUS
@@ -116,8 +118,8 @@ def get_query_object_source():
 
 
 def _get_object_navigation_processing_enabled():
-	conf = _ensure_classic_speech_section()
-	return bool(conf.get("objectNavigationProcessing", False))
+	conf = _read_classic_speech_section()
+	return _as_bool(conf.get("objectNavigationProcessing", False))
 
 
 def _set_object_navigation_processing_enabled(enabled: bool):

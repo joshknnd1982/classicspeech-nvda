@@ -1,6 +1,6 @@
 """Hotkeys panel settings helpers."""
 
-from .config_core import _ensure_classic_speech_section, _set_nvda_setting
+from .config_core import _ensure_classic_speech_section, _read_classic_speech_section, _set_nvda_setting
 from .constants import (
 	HOTKEY_FORMAT_ABBREVIATED_NO_PLUS,
 	HOTKEY_FORMAT_EXPANDED_NO_PLUS,
@@ -17,7 +17,7 @@ from .constants import (
 
 
 def _get_hotkey_mode():
-	conf = _ensure_classic_speech_section()
+	conf = _read_classic_speech_section()
 	try:
 		mode = str(conf.get("hotkeyMode", HOTKEY_MODE_BOTH))
 	except Exception:
@@ -52,7 +52,7 @@ def _get_hotkey_mode_label(mode: str):
 
 
 def _get_hotkey_format():
-	conf = _ensure_classic_speech_section()
+	conf = _read_classic_speech_section()
 	try:
 		format_value = str(conf.get("hotkeyFormat", HOTKEY_FORMAT_NATIVE))
 	except Exception:
@@ -83,7 +83,7 @@ def _set_hotkey_format(format_value: str):
 
 
 def _get_hotkey_types():
-	conf = _ensure_classic_speech_section()
+	conf = _read_classic_speech_section()
 	try:
 		types_value = str(conf.get("hotkeyTypes", HOTKEY_TYPES_BOTH))
 	except Exception:
@@ -104,7 +104,7 @@ def _set_hotkey_types(types_value: str):
 	return types_value
 
 def _get_hotkey_dialog_access_key_only():
-	conf = _ensure_classic_speech_section()
+	conf = _read_classic_speech_section()
 	try:
 		value = conf.get("hotkeyDialogAccessKeyOnly", False)
 	except Exception:

@@ -316,6 +316,39 @@ class GeneralPanelContractTests(unittest.TestCase):
         self.assertTrue(saved["enabledTokens"]["tooltip"])
         self.assertEqual(self._section()["profileBehaviorData"]["Advanced"]["positionMode"], "first")
 
+    def test_verbosity_panel_persists_edit_field_contents_option(self):
+        from globalPlugins._speech_core.settings.profile_config import (
+            _get_profile_behavior,
+            get_read_edit_field_contents_enabled,
+        )
+        from globalPlugins._speech_core.settings.verbosity_panel import VerbosityPanel
+
+        class CheckedList:
+            def GetCheckedItems(self):
+                return [0, 1, 2]
+
+        # Every profile reads edit field contents by default.
+        self.assertTrue(_get_profile_behavior("Advanced")["readEditFieldContents"])
+        panel = types.SimpleNamespace(
+            currentEditProfile="Beginner",
+            profileConfig={"enabledTokens": {}},
+            profileBehavior={},
+            activeProfileChoice=Control(0),
+            tokenList=CheckedList(),
+            positionModeChoice=Control(2),
+            readEditFieldContentsCheckBox=Control(False),
+        )
+        panel._getPositionModeFromChoice = lambda: VerbosityPanel._getPositionModeFromChoice(panel)
+        panel._refreshWorkingConfigFromControls = lambda: VerbosityPanel._refreshWorkingConfigFromControls(panel)
+
+        behavior = VerbosityPanel.get_working_profile_behavior(panel)
+        VerbosityPanel.apply_live(panel, save=True)
+
+        self.assertFalse(behavior["readEditFieldContents"])
+        self.assertIs(self._section()["profileBehaviorData"]["Beginner"]["readEditFieldContents"], False)
+        self.assertFalse(get_read_edit_field_contents_enabled())
+        self.assertFalse(_get_profile_behavior("Beginner")["readEditFieldContents"])
+
     def test_advanced_hook_message_is_disabled_when_announcement_is_off(self):
         from globalPlugins._speech_core.settings.advanced_panel import AdvancedPanel
 
