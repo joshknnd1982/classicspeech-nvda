@@ -13,7 +13,11 @@ All ClassicSpeech settings are available from **NVDA menu → Preferences → Cl
 - **Voice Profiles**
 - **Speech and Sound Schemes**
 
-The same commands appear in NVDA's **Input Gestures** dialog under the **ClassicSpeech** category, together with commands that turn speech and sound schemes on or off and switch to the next scheme. They intentionally have **no default gestures**, so they do not compete with gestures supplied by other add-ons. Assign a gesture there only if it suits your configuration.
+The same commands appear in NVDA's **Input Gestures** dialog under the **ClassicSpeech** category, together with commands that turn speech and sound schemes on or off, switch to the next scheme, and open the user guide. They intentionally have **no default gestures**, so they do not compete with gestures supplied by other add-ons. Assign a gesture there only if it suits your configuration.
+
+## User guide
+
+The user guide explains every setting and command. Open it from NVDA's **Add-on Store**: on the **Installed add-ons** tab, select ClassicSpeech, press the Applications key or Shift+F10, and choose **Help**. You can also assign a gesture to **Opens the ClassicSpeech user guide** in Input Gestures. The guide's source is [doc/en/readme.html](doc/en/readme.html).
 
 ## What it does
 

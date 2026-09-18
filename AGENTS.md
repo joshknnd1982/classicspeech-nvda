@@ -25,6 +25,7 @@
 - The target user is visually impaired. Prefer native NVDA controls, keyboard-complete workflows, stable labels, and screen-reader-friendly feedback.
 - Follow existing settings-dialog transaction behavior: Apply, OK, Cancel, Close, reload, and external configuration save must leave persisted and runtime state coherent.
 - Do not replace an NVDA accessibility-enhanced control with a raw wx equivalent without explicit approval.
+- `doc/en/readme.html` is the user guide NVDA opens from the Add-on Store's Help action. Update it with every user-facing change; `tests/classic_speech_user_guide_harness.py` checks that it covers every command, default gesture and settings page.
 
 ## Validation
 
