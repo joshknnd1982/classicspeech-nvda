@@ -110,12 +110,23 @@ class VerbosityPanel(wx.Panel):
 		self._loadPositionModeChoice()
 		positionGrid.Add(self.positionModeChoice, 1, wx.EXPAND)
 		mainSizer.Add(positionGrid, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, 8)
+
+		# Translators: A verbosity option. When checked, moving focus to an edit
+		# field speaks its current line (or "blank"), like native NVDA.
+		self.readEditFieldContentsCheckBox = wx.CheckBox(
+			self,
+			label=_("Read edit field &contents when focused"),
+		)
+		self.readEditFieldContentsCheckBox.SetName(_("Read edit field contents when focused"))
+		self._loadReadEditFieldContents()
+		mainSizer.Add(self.readEditFieldContentsCheckBox, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, 8)
 		self.SetSizer(mainSizer)
 
 		self._loadEditorsFromProfileConfig()
 
 		self.activeProfileChoice.Bind(wx.EVT_CHOICE, self.onActiveProfileChanged)
 		self.positionModeChoice.Bind(wx.EVT_CHOICE, self.onInlineProfileChanged)
+		self.readEditFieldContentsCheckBox.Bind(wx.EVT_CHECKBOX, self.onInlineProfileChanged)
 		self.tokenList.Bind(wx.EVT_CHECKLISTBOX, self.onTokenListChanged)
 
 	def _getPositionModeFromChoice(self):
@@ -135,6 +146,12 @@ class VerbosityPanel(wx.Panel):
 		else:
 			self.positionModeChoice.SetSelection(2)
 
+	def _loadReadEditFieldContents(self):
+		checkBox = getattr(self, "readEditFieldContentsCheckBox", None)
+		if checkBox is None:
+			return
+		checkBox.SetValue(bool(self.profileBehavior.get("readEditFieldContents", True)))
+
 	def _refreshWorkingConfigFromControls(self):
 		profile = copy.deepcopy(self.profileConfig)
 		enabled = dict(profile.get("enabledTokens", {}))
@@ -148,6 +165,9 @@ class VerbosityPanel(wx.Panel):
 
 		behavior = dict(self.profileBehavior)
 		behavior["positionMode"] = self._getPositionModeFromChoice()
+		checkBox = getattr(self, "readEditFieldContentsCheckBox", None)
+		if checkBox is not None:
+			behavior["readEditFieldContents"] = bool(checkBox.GetValue())
 		self.profileBehavior = behavior
 
 	def _loadEditorsFromProfileConfig(self):
@@ -156,6 +176,7 @@ class VerbosityPanel(wx.Panel):
 			self.tokenList.Check(index, check=bool(enabled.get(tokenKind, True)))
 
 		self._loadPositionModeChoice()
+		self._loadReadEditFieldContents()
 
 	def onActiveProfileChanged(self, evt=None):
 		self.currentEditProfile = _profile_name_from_choice(

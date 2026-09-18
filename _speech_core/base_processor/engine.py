@@ -38,6 +38,7 @@ from ..settings import (
 	POSITION_MODE_OFF,
 )
 from ..token_policy import apply_token_policy
+from ..settings.profile_config import get_read_edit_field_contents_enabled
 from ..tokens import (
 	TOKEN_HOTKEY,
 	TOKEN_NAME,
@@ -439,6 +440,7 @@ class BaseSpeechProcessor:
 			pending_hotkey=self._pending_hotkey,
 			suppress_editable_text_value=True,
 			selected_text=selected_text,
+			read_edit_field_contents=get_read_edit_field_contents_enabled(),
 		)
 
 		semantic_tokens = self._insert_focused_default_button_token(semantic_tokens, focus)

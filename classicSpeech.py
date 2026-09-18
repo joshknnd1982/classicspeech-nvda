@@ -882,25 +882,27 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         pending = getattr(self, "_pendingContainerSequence", None)
         if not pending:
             return None
+        if not self._is_mergeable_item_followup(sequence):
+            # The held container was not followed by an item of that container
+            # (for example Chrome's "tool bar" before the address bar edit
+            # field). Speak it now as its own native utterance, queued ahead of
+            # the current sequence. Merging the two would make the classifier
+            # read the edit field's name, role and contents as values of the
+            # tool bar and drop them.
+            self._cancel_pending_container_flush()
+            self._flush_pending_container_sequence()
+            return None
         self._cancel_pending_container_flush()
         self._pendingContainerSequence = None
         mergedHistoryRaw = list(pending.get("historyRaw") or []) + list(historyRaw)
-        if self._is_mergeable_item_followup(sequence):
-            merged = list(pending.get("core") or pending.get("raw") or [])
-            if merged and isinstance(merged[-1], str):
-                merged.append(BreakCommand(time=80))
-            merged.extend(list(sequence))
-            if pending.get("hotkey"):
-                merged.append(BreakCommand(time=80))
-                merged.extend(list(pending.get("hotkey") or []))
-            log.debug(f"ClassicSpeech: merged generic container/item sequence: {pending.get('raw')} -> {merged}")
-            return merged, mergedHistoryRaw
-        # If the held sequence was a false positive, do not drop it. Speak it
-        # immediately before the current sequence as one conservative utterance.
-        merged = list(pending.get("raw") or [])
+        merged = list(pending.get("core") or pending.get("raw") or [])
         if merged and isinstance(merged[-1], str):
             merged.append(BreakCommand(time=80))
         merged.extend(list(sequence))
+        if pending.get("hotkey"):
+            merged.append(BreakCommand(time=80))
+            merged.extend(list(pending.get("hotkey") or []))
+        log.debug(f"ClassicSpeech: merged generic container/item sequence: {pending.get('raw')} -> {merged}")
         return merged, mergedHistoryRaw
 
     def _merge_prefix_sequence(self, prefix, sequence):

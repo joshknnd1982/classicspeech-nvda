@@ -33,6 +33,7 @@ _CLASSIC_SPEECH_SPEC = {
     "hotkeyTypes": "string(default='both')",
     "hotkeyDialogAccessKeyOnly": "boolean(default=False)",
     "positionMode": "string(default='each')",
+    "readEditFieldContents": "boolean(default=True)",
     "textProcessingData": {
         "announceNewLinesDuringSayAll": "boolean(default=False)",
         "newLineMessage": "string(default='new line')",
@@ -72,6 +73,7 @@ _CLASSIC_SPEECH_SPEC = {
     "profileBehaviorData": {
         "__many__": {
             "positionMode": "string(default='each')",
+            "readEditFieldContents": "boolean(default=True)",
         },
     },
     "pageSummaryData": {
