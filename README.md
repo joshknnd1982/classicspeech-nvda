@@ -2,7 +2,7 @@
 
 ClassicSpeech is an NVDA add-on for configurable speech verbosity, conservative text and number processing, Web / Browse Mode tools, and same-synth Voice Profiles.
 
-> **Current release:** [ClassicSpeech 1.03](https://github.com/joshknnd1982/classicspeech-nvda/releases/tag/v1.03) adds Josh Kennedy to the add-on credits. It includes everything from 1.02, which fixes lag in Windows Explorer and file dialogs, reads edit field contents on focus, and adds a Mouse voice profile, document and web formatting voices, and Speech and Sound Schemes. See the [1.03 release notes](docs/RELEASE-1.03.md) and the [1.02 release notes](docs/RELEASE-1.02.md). The `main` branch remains active development; commits after a release may not yet have completed live NVDA validation.
+> **Current release:** [ClassicSpeech 1.04](https://github.com/joshknnd1982/classicspeech-nvda/releases/tag/v1.04) adds a user guide that opens from NVDA's Add-on Store, and a command that opens it. 1.03 added Josh Kennedy to the add-on credits. 1.02 fixed lag in Windows Explorer and file dialogs, read edit field contents on focus, and added a Mouse voice profile, document and web formatting voices, and Speech and Sound Schemes. See the [1.04](docs/RELEASE-1.04.md), [1.03](docs/RELEASE-1.03.md) and [1.02](docs/RELEASE-1.02.md) release notes. The `main` branch remains active development; commits after a release may not yet have completed live NVDA validation.
 
 ## Settings access
 

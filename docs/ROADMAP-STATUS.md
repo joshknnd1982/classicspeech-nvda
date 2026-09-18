@@ -21,7 +21,7 @@ The current automated baseline includes:
 - the **Mouse** and **Document and web formatting** Voice Profile categories;
 - **Speech and Sound Schemes**: per-item sounds and voices for object roles, states, window classes, document formatting and web elements, with named schemes.
 
-The 1.02 baseline passed the local harness gate and a wxPython build of the new dialogs. It still requires live NVDA validation of the items listed in `RELEASE-1.02.md`. 1.03 changes only the manifest's author credits.
+The 1.02 baseline passed the local harness gate and a wxPython build of the new dialogs. It still requires live NVDA validation of the items listed in `RELEASE-1.02.md`. 1.03 changes only the manifest's author credits. 1.04 adds the user guide and the command that opens it.
 
 ## Current boundaries
 
@@ -38,7 +38,8 @@ The 1.02 baseline passed the local harness gate and a wxPython build of the new 
 | `../doc/en/readme.html` | User guide for every setting and command; NVDA's Add-on Store Help opens it. |
 | `DEVELOPMENT-WORKFLOW.md` | Source, branch, CI, scratchpad, and live-validation procedure. |
 | `VERSIONING.md` | CI artifact and official-release versioning rules. |
-| `RELEASE-1.03.md` | Current release notes, packaged with the add-on. |
+| `RELEASE-1.04.md` | Current release notes, packaged with the add-on. |
+| `RELEASE-1.03.md` | 1.03 release notes: author credits. |
 | `RELEASE-1.02.md` | 1.02 release notes: latency fixes, edit fields, Mouse voice, Speech and Sound Schemes. |
 | `plans/2026-09-18-speech-sound-schemes-and-latency.md` | 1.02 design: latency fixes, edit fields, Mouse voice, Speech and Sound Schemes. |
 | `WEB-BUFFER-LOAD-RESEARCH.md` | Historical NVDA lifecycle research and the no-buffer-mutation boundary. |
