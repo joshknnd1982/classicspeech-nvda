@@ -78,6 +78,32 @@ class PackageVersioningTests(unittest.TestCase):
         self.assertIn("locale/es/LC_MESSAGES/nvda.mo", members)
         self.assertNotIn("locale/es/LC_MESSAGES/nvda.po", members)
 
+    def test_package_contains_the_user_guide_nvda_opens(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_directory = Path(temporary_directory)
+            arguments = SimpleNamespace(version="20260918.1", label="guide")
+            with mock.patch.object(self.packager, "DIST", output_directory), mock.patch.object(
+                self.packager, "_parse_args", return_value=arguments
+            ):
+                self.packager.main()
+
+            package_path = output_directory / "ClassicSpeech-20260918.1-guide.nvda-addon"
+            with zipfile.ZipFile(package_path) as archive:
+                members = set(archive.namelist())
+                manifest = archive.read("manifest.ini").decode("utf-8")
+
+        # NVDA's Add-on Store Help opens doc/<language>/<docFileName> from the add-on root.
+        self.assertEqual(self.packager.manifest_doc_file_name(manifest), "readme.html")
+        self.assertIn("doc/en/readme.html", members)
+        self.assertIn("globalPlugins/_speech_core/user_guide.py", members)
+
+    def test_manifest_doc_file_name_is_read_from_quoted_or_bare_values(self):
+        read = self.packager.manifest_doc_file_name
+        self.assertEqual(read("name = X\ndocFileName = readme.html\n"), "readme.html")
+        self.assertEqual(read('docFileName = "guide.html"\r\n'), "guide.html")
+        self.assertIsNone(read("name = X\n"))
+        self.assertIsNone(read("docFileName =\n"))
+
 
 if __name__ == "__main__":
     unittest.main()

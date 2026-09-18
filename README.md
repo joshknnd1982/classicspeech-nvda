@@ -2,7 +2,7 @@
 
 ClassicSpeech is an NVDA add-on for configurable speech verbosity, conservative text and number processing, Web / Browse Mode tools, and same-synth Voice Profiles.
 
-> **Current release:** [ClassicSpeech 1.03](https://github.com/joshknnd1982/classicspeech-nvda/releases/tag/v1.03) adds Josh Kennedy to the add-on credits. It includes everything from 1.02, which fixes lag in Windows Explorer and file dialogs, reads edit field contents on focus, and adds a Mouse voice profile, document and web formatting voices, and Speech and Sound Schemes. See the [1.03 release notes](docs/RELEASE-1.03.md) and the [1.02 release notes](docs/RELEASE-1.02.md). The `main` branch remains active development; commits after a release may not yet have completed live NVDA validation.
+> **Current release:** [ClassicSpeech 1.04](https://github.com/joshknnd1982/classicspeech-nvda/releases/tag/v1.04) adds a user guide that opens from NVDA's Add-on Store, and a command that opens it. 1.03 added Josh Kennedy to the add-on credits. 1.02 fixed lag in Windows Explorer and file dialogs, read edit field contents on focus, and added a Mouse voice profile, document and web formatting voices, and Speech and Sound Schemes. See the [1.04](docs/RELEASE-1.04.md), [1.03](docs/RELEASE-1.03.md) and [1.02](docs/RELEASE-1.02.md) release notes. The `main` branch remains active development; commits after a release may not yet have completed live NVDA validation.
 
 ## Settings access
 
@@ -13,7 +13,11 @@ All ClassicSpeech settings are available from **NVDA menu → Preferences → Cl
 - **Voice Profiles**
 - **Speech and Sound Schemes**
 
-The same commands appear in NVDA's **Input Gestures** dialog under the **ClassicSpeech** category, together with commands that turn speech and sound schemes on or off and switch to the next scheme. They intentionally have **no default gestures**, so they do not compete with gestures supplied by other add-ons. Assign a gesture there only if it suits your configuration.
+The same commands appear in NVDA's **Input Gestures** dialog under the **ClassicSpeech** category, together with commands that turn speech and sound schemes on or off, switch to the next scheme, and open the user guide. They intentionally have **no default gestures**, so they do not compete with gestures supplied by other add-ons. Assign a gesture there only if it suits your configuration.
+
+## User guide
+
+The user guide explains every setting and command. Open it from NVDA's **Add-on Store**: on the **Installed add-ons** tab, select ClassicSpeech, press the Applications key or Shift+F10, and choose **Help**. You can also assign a gesture to **Opens the ClassicSpeech user guide** in Input Gestures. The guide's source is [doc/en/readme.html](doc/en/readme.html).
 
 ## What it does
 

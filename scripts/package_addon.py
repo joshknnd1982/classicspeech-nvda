@@ -13,8 +13,10 @@ DIST = ROOT / "dist"
 RUNTIME_FILES = ("classicSpeech.py",)
 RUNTIME_DIRECTORIES = ("_speech_core",)
 APP_MODULE_DIRECTORIES = ("appModules",)
+# NVDA's Add-on Store Help opens doc/<language>/<docFileName> from the add-on root.
+DOC_DIRECTORIES = ("doc",)
 LOCALE_DIRECTORIES = ("locale",)
-RELEASE_NOTES = "RELEASE-1.03.md"
+RELEASE_NOTES = "RELEASE-1.04.md"
 _NUMERIC_VERSION = re.compile(r"^\d+\.\d+(?:\.\d+)?$")
 _SAFE_LABEL = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
@@ -60,6 +62,14 @@ def manifest_with_version(manifest: Path, version: str) -> str:
     if replacements != 1:
         raise ValueError("manifest.ini must contain exactly one version entry")
     return packaged
+
+
+def manifest_doc_file_name(manifest_text: str) -> str | None:
+    """Return the manifest's docFileName, the guide NVDA's Add-on Store Help opens."""
+    match = re.search(r'(?m)^\s*docFileName\s*=\s*"?([^"\r\n]*?)"?\s*$', manifest_text)
+    if match is None or not match.group(1).strip():
+        return None
+    return match.group(1).strip()
 
 
 def _add_tree(archive: zipfile.ZipFile, source: Path, prefix: Path) -> None:
@@ -112,6 +122,11 @@ def main() -> None:
             if not source.is_dir():
                 raise SystemExit(f"Missing app module directory: {source}")
             _add_tree(archive, source, Path(relative_path))
+        for relative_path in DOC_DIRECTORIES:
+            source = ROOT / relative_path
+            if not source.is_dir():
+                raise SystemExit(f"Missing documentation directory: {source}")
+            _add_tree(archive, source, Path(relative_path))
         for relative_path in LOCALE_DIRECTORIES:
             source = ROOT / relative_path
             if source.is_dir():
@@ -143,9 +158,14 @@ def main() -> None:
             "globalPlugins/_speech_core/schemes/tagging.py",
             "globalPlugins/_speech_core/settings/schemes_dialog.py",
             "globalPlugins/_speech_core/settings/schemes_panel.py",
+            "globalPlugins/_speech_core/user_guide.py",
             "appModules/msedge.py",
             "locale/es/LC_MESSAGES/nvda.mo",
         }
+        doc_file_name = manifest_doc_file_name(manifest.read_text(encoding="utf-8"))
+        if doc_file_name is None:
+            raise SystemExit("manifest.ini must name the user guide in docFileName")
+        required.add(f"doc/en/{doc_file_name}")
         if not required.issubset(members):
             raise SystemExit(f"Missing required package files: {sorted(required - members)}")
         if "globalPlugins/page_orientation_runtime.py" in members:
