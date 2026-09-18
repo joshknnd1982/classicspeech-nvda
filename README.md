@@ -2,7 +2,7 @@
 
 ClassicSpeech is an NVDA add-on for configurable speech verbosity, conservative text and number processing, Web / Browse Mode tools, and same-synth Voice Profiles.
 
-> **Current release:** [ClassicSpeech 1.02](https://github.com/joshknnd1982/classicspeech-nvda/releases/tag/v1.02) fixes lag in Windows Explorer and file dialogs, reads edit field contents on focus, and adds a Mouse voice profile, document and web formatting voices, and Speech and Sound Schemes. See the [1.02 release notes](docs/RELEASE-1.02.md). The `main` branch remains active development; commits after a release may not yet have completed live NVDA validation.
+> **Current release:** [ClassicSpeech 1.01](https://github.com/trssharp/classicspeech-nvda/releases/tag/v1.01) is the latest stable release. The `main` branch remains active development; commits after a release may not yet have completed live NVDA validation.
 
 ## Settings access
 
@@ -84,7 +84,7 @@ For example, `5'5` remains literal rather than becoming `five'five`.
 
 ## Installation and manual testing
 
-The source manifest currently supports NVDA 2025.1 through 2026.2. Download the `.nvda-addon` from the [latest release](https://github.com/joshknnd1982/classicspeech-nvda/releases/latest), open it in Windows Explorer, and accept NVDA's add-on installation prompt. Restart NVDA when prompted.
+The source manifest currently supports NVDA 2025.1 through 2026.2. Download the `.nvda-addon` from the [latest release](https://github.com/trssharp/classicspeech-nvda/releases/latest), open it in Windows Explorer, and accept NVDA's add-on installation prompt. Restart NVDA when prompted.
 
 For a manual development test, deploy only a verified source tree to the scratchpad using the process in the [development workflow](docs/DEVELOPMENT-WORKFLOW.md). Do not edit the scratchpad copy as the source of a change.
 
