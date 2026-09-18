@@ -2,17 +2,23 @@
 
 A JAWS-style Speech and Sounds Manager for NVDA: named schemes, and for every
 item (object roles, states, window classes, document formatting and web
-elements) an optional WAV sound and an optional voice. Nothing changes until
-OK or Apply; Cancel and Close restore the saved schemes.
+elements) an optional WAV sound and an optional voice. Each scheme is a folder,
+which Open schemes folder shows in File Explorer, and Export and Import share
+schemes as package files. Nothing changes until OK or Apply; Cancel and Close
+restore the saved schemes.
 """
 from __future__ import annotations
+
+import os
 
 import wx
 import logHandler
 from wx.lib import scrolledpanel
 
 from ..localization import _
+from ..schemes import packages as schemePackages
 from ..schemes import store as schemeStore
+from .file_choosers import choose_export_path, choose_import_path
 from .schemes_panel import SchemeItemsPanel
 
 log = logHandler.log
@@ -58,6 +64,15 @@ class SpeechSoundSchemesDialog(wx.Dialog):
 			schemeRow.Add(button, 0, wx.RIGHT, 4)
 		outer.Add(schemeRow, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 8)
 
+		shareRow = wx.BoxSizer(wx.HORIZONTAL)
+		self.exportSchemeButton = wx.Button(self, label=_("E&xport scheme..."))
+		self.importSchemeButton = wx.Button(self, label=_("Import scheme..."))
+		self.openFolderButton = wx.Button(self, label=_("Open schemes folder"))
+		for button in (self.exportSchemeButton, self.importSchemeButton, self.openFolderButton):
+			shareRow.Add(button, 0, wx.RIGHT, 4)
+		outer.Add(shareRow, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 8)
+		self.openFolderButton.Enable(self.store.root is not None)
+
 		self.scroller = scrolledpanel.ScrolledPanel(self, style=wx.TAB_TRAVERSAL | wx.BORDER_THEME)
 		scrollerSizer = wx.BoxSizer(wx.VERTICAL)
 		self.itemsPanel = SchemeItemsPanel(
@@ -97,6 +112,9 @@ class SpeechSoundSchemesDialog(wx.Dialog):
 		self.copySchemeButton.Bind(wx.EVT_BUTTON, lambda evt: self.onAddScheme(copy_current=True))
 		self.renameSchemeButton.Bind(wx.EVT_BUTTON, self.onRenameScheme)
 		self.deleteSchemeButton.Bind(wx.EVT_BUTTON, self.onDeleteScheme)
+		self.exportSchemeButton.Bind(wx.EVT_BUTTON, self.onExportScheme)
+		self.importSchemeButton.Bind(wx.EVT_BUTTON, self.onImportScheme)
+		self.openFolderButton.Bind(wx.EVT_BUTTON, self.onOpenSchemesFolder)
 		self.okButton.Bind(wx.EVT_BUTTON, self.onOK)
 		self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancel)
 		self.applyButton.Bind(wx.EVT_BUTTON, self.onApply)
@@ -171,11 +189,80 @@ class SpeechSoundSchemesDialog(wx.Dialog):
 		self._markDirty()
 		self.schemeChoice.SetFocus()
 
+	# -- sharing -----------------------------------------------------------------
+	def _message(self, text, title, icon=None):
+		if icon is None:
+			icon = wx.ICON_INFORMATION
+		wx.MessageBox(text, title, wx.OK | icon, self)
+
+	def onExportScheme(self, event):
+		name = self.store.active_scheme
+		title = _("Export scheme")
+		path = choose_export_path(
+			self,
+			title,
+			_("ClassicSpeech scheme package"),
+			schemePackages.PACKAGE_EXTENSION,
+			schemeStore.folder_name_for(name),
+		)
+		if not path:
+			return
+		try:
+			missing = self.store.export_scheme(name, path)
+		except Exception:
+			log.exception("ClassicSpeech: exporting a speech and sound scheme failed")
+			self._message(_("The scheme could not be exported. See the NVDA log for details."), title, wx.ICON_ERROR)
+			return
+		text = _("Exported the scheme {name} to {path}.").format(name=name, path=path)
+		if missing:
+			text += "\n\n" + _("These sounds were not found and were left out:") + "\n" + "\n".join(missing)
+		self._message(text, title)
+
+	def onImportScheme(self, event):
+		title = _("Import scheme")
+		path = choose_import_path(self, title, _("ClassicSpeech scheme package"), schemePackages.PACKAGE_EXTENSION)
+		if not path:
+			return
+		try:
+			name = self.store.import_package(path)
+		except schemePackages.PackageError:
+			self._message(_("This file is not a ClassicSpeech scheme package."), title, wx.ICON_ERROR)
+			return
+		except Exception:
+			log.exception("ClassicSpeech: importing a speech and sound scheme failed")
+			self._message(_("The scheme could not be imported. See the NVDA log for details."), title, wx.ICON_ERROR)
+			return
+		self._loadSchemeChoice()
+		self.itemsPanel.rebuildTree()
+		self._markDirty()
+		self._message(
+			_("Imported the scheme {name}. It is now the active scheme. Press OK or Apply to keep it.").format(name=name),
+			title,
+		)
+		self.schemeChoice.SetFocus()
+
+	def onOpenSchemesFolder(self, event):
+		root = self.store.root
+		if not root:
+			return
+		try:
+			os.makedirs(root, exist_ok=True)
+			os.startfile(root)
+		except Exception:
+			log.exception("ClassicSpeech: opening the schemes folder failed")
+			self._message(
+				_("The schemes folder could not be opened. It is {path}.").format(path=root),
+				_("Speech and Sound Schemes"),
+				wx.ICON_ERROR,
+			)
+
 	# -- transaction -----------------------------------------------------------
 	def onApply(self, event=None):
 		try:
 			self.store.apply()
 			self.store.mark_applied()
+			self._loadSchemeChoice()
+			self.itemsPanel.rebuildTree(self.itemsPanel._currentItemId)
 			self.applyButton.Disable()
 			return True
 		except Exception:

@@ -16,7 +16,7 @@ APP_MODULE_DIRECTORIES = ("appModules",)
 # NVDA's Add-on Store Help opens doc/<language>/<docFileName> from the add-on root.
 DOC_DIRECTORIES = ("doc",)
 LOCALE_DIRECTORIES = ("locale",)
-RELEASE_NOTES = "RELEASE-1.04.md"
+RELEASE_NOTES = "RELEASE-1.06.md"
 _NUMERIC_VERSION = re.compile(r"^\d+\.\d+(?:\.\d+)?$")
 _SAFE_LABEL = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
@@ -153,11 +153,14 @@ def main() -> None:
             "globalPlugins/_speech_core/schemes/catalog.py",
             "globalPlugins/_speech_core/schemes/labels.py",
             "globalPlugins/_speech_core/schemes/markers.py",
+            "globalPlugins/_speech_core/schemes/packages.py",
             "globalPlugins/_speech_core/schemes/runtime.py",
             "globalPlugins/_speech_core/schemes/store.py",
             "globalPlugins/_speech_core/schemes/tagging.py",
             "globalPlugins/_speech_core/settings/schemes_dialog.py",
             "globalPlugins/_speech_core/settings/schemes_panel.py",
+            "globalPlugins/_speech_core/settings/file_choosers.py",
+            "globalPlugins/_speech_core/settings/voice_profile_packages.py",
             "globalPlugins/_speech_core/user_guide.py",
             "appModules/msedge.py",
             "locale/es/LC_MESSAGES/nvda.mo",

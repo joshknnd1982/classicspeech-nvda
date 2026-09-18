@@ -1010,6 +1010,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def _install_speech_schemes(self):
         """Mark scheme items in NVDA speech and reset say all state on cancel."""
         try:
+            # Give every scheme its folder, moving schemes an earlier version kept in the config.
+            scheme_store.prepare_scheme_folders()
+        except Exception:
+            log.exception("ClassicSpeech: failed to prepare the Speech and Sound Schemes folder")
+        try:
             self._schemeTagger.install()
         except Exception:
             log.exception("ClassicSpeech: failed to install Speech and Sound Schemes")

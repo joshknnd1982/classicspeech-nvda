@@ -298,6 +298,27 @@ class VoiceProfileStore:
 			capture_variant=self._capture_variant_baseline,
 		)
 
+	def shareable_profiles(self) -> dict:
+		"""Return every synthesizer's working profiles, ready for a voice profiles file."""
+		from .voice_profile_packages import shareable_profiles
+
+		return shareable_profiles(self._working_registry)
+
+	def import_profiles(self, synthesizers) -> list:
+		"""Replace the working profiles for each synthesizer and category in ``synthesizers``.
+
+		Other synthesizers and categories keep their profiles. Nothing is saved
+		until ``apply``. Returns the imported synthesizer names.
+		"""
+		for synth_name, profiles in synthesizers.items():
+			target = self._working_registry.get(synth_name)
+			if not isinstance(target, dict):
+				target = self._working_registry[synth_name] = {}
+			for profile_id, record in profiles.items():
+				target[profile_id] = copy.deepcopy(record)
+		_debug(f"imported profiles for synths={sorted(synthesizers)}")
+		return sorted(synthesizers)
+
 	def apply(self) -> None:
 		"""Commit every working profile and persist it through NVDA's config manager."""
 		payload = _dump_registry(self._working_registry)

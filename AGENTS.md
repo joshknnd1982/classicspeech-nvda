@@ -16,6 +16,7 @@
 - Keep changes narrow and preserve native NVDA behavior unless the specification explicitly changes it.
 - Preserve native literal/review/caret/Say All behavior. Do not route ordinary document text through ClassicSpeech processing without a defined, tested requirement.
 - Speech and Sound Schemes (`_speech_core/schemes`) are that kind of defined requirement: they may mark NVDA speech only for items a user configured, and NVDA's output must stay unchanged when nothing is configured (`tests/classic_speech_schemes_harness.py`).
+- Each speech and sound scheme is a folder under `ClassicSpeech/Schemes` in NVDA's configuration folder (`_speech_core/schemes/store.py`). Tests that use scheme folders must set `store._ROOT_OVERRIDE` to a temporary folder, never NVDA's real configuration.
 - Speech-path code must not walk `obj.parent` chains for the focus; use `_speech_core/focus_ancestry.py`, which reads NVDA's cached focus ancestors (`tests/classic_speech_latency_harness.py`).
 - The token editor owns speech-token ordering and placement. Text Processing owns reporting/filtering transformations; do not move token-placement policy into it.
 - `sequence_merger.py` was removed after an audit confirmed it had no active dependents. Do not reintroduce sequence-merging behavior without a defined, tested requirement.
@@ -33,6 +34,7 @@
 - Add or extend focused harness coverage before changing subtle speech-filter, settings, or routing behavior.
 - At minimum, compile changed Python files and run the relevant project harnesses/tests.
 - Static tests do not prove speech behavior: clearly distinguish them from a live NVDA validation. Never restart NVDA automatically.
+- ClassicSpeech runs on NVDA's bundled Python, which lacks some standard library modules; 1.05 failed to load because it imported `filecmp`. Runtime code may import only modules NVDA ships, which `tests/classic_speech_runtime_imports_harness.py` checks.
 - Before a release candidate, run the project packaging and archive-member checks; report the exact output path and checksum.
 
 ## Scratchpad and live validation
