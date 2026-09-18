@@ -37,6 +37,7 @@ from ._speech_core.prosody_routing import (
     mouse_pointer_profile_routing,
     system_notification_profile_routing,
     wrap_keyboard_entry_sequence,
+    wrap_mouse_sequence,
     wrap_review_literal_sequence,
     wrap_system_notification_sequence,
 )
@@ -1045,9 +1046,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
             if is_mouse_pointer_profile_routing_active():
                 self._clear_hotkey_carryover()
-                output = wrap_review_literal_sequence(speechSequence)
+                output = wrap_mouse_sequence(speechSequence)
                 self._record_history(rawHistorySequence, output)
-                self._debug_log("mouse pointer feedback uses Review profile")
+                self._debug_log("mouse pointer feedback uses Mouse profile")
                 return output
 
             if is_system_notification_profile_routing_active() or self._is_system_voice_script_active():

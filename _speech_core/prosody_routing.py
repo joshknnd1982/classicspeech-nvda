@@ -337,6 +337,11 @@ def wrap_review_literal_sequence(sequence):
     return wrap_profile_sequence(sequence, "reviewObjectNavigation")
 
 
+def wrap_mouse_sequence(sequence):
+    """Apply the Mouse profile to speech produced by NVDA mouse tracking."""
+    return wrap_profile_sequence(sequence, "mouse")
+
+
 def wrap_keyboard_entry_sequence(sequence):
     """Apply Keyboard entry prosody while preserving native typed-entry output."""
     return wrap_profile_sequence(sequence, "keyboardEntry")

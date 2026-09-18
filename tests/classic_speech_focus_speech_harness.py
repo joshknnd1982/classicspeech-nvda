@@ -4,6 +4,7 @@
   Verbosity option is cleared.
 * A held container such as Chrome's "tool bar" is spoken on its own when the
   next sequence is not one of its items, so the field keeps its name and text.
+* Mouse tracking speech uses the Mouse Voice Profile.
 """
 from __future__ import annotations
 
@@ -84,6 +85,37 @@ class ContainerFollowUpTests(LatencyTestBase):
 		self.assertEqual(text[:2], ["Address and search bar", "edit"])
 		# The classifier joins the description and typed contents into one value.
 		self.assertTrue(text[-1].endswith(" A"), text)
+
+
+class MouseRoutingTests(LatencyTestBase):
+	def _plugin(self):
+		plugin = self.module.GlobalPlugin()
+		globalPluginHandler.runningPlugins.append(plugin)
+		self.addCleanup(plugin.terminate)
+		return plugin
+
+	def test_mouse_tracking_speech_uses_the_mouse_profile(self):
+		plugin = self._plugin()
+		used = []
+		self.module.wrap_mouse_sequence = lambda sequence: used.append(list(sequence)) or list(sequence)
+		from globalPlugins._speech_core.prosody_routing import mouse_pointer_profile_routing
+
+		with mouse_pointer_profile_routing():
+			output = plugin._filterSpeechSequence(["Recycle Bin"])
+		self.assertEqual(used, [["Recycle Bin"]])
+		self.assertEqual(output, ["Recycle Bin"])
+
+	def test_mouse_sequence_wrapper_names_the_mouse_profile(self):
+		from globalPlugins._speech_core import prosody_routing
+
+		recorded = []
+		original = prosody_routing.wrap_profile_sequence
+		prosody_routing.wrap_profile_sequence = lambda sequence, profile_id, **kwargs: recorded.append(profile_id) or list(sequence)
+		try:
+			prosody_routing.wrap_mouse_sequence(["Start"])
+		finally:
+			prosody_routing.wrap_profile_sequence = original
+		self.assertEqual(recorded, ["mouse"])
 
 
 if __name__ == "__main__":

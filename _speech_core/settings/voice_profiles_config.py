@@ -59,6 +59,9 @@ class VoiceProfileRow:
 PROFILE_ROWS = (
 	VoiceProfileRow("focusNavigation", "Focus and navigation", True),
 	VoiceProfileRow("reviewObjectNavigation", "Review and object navigation", True),
+	# Speech NVDA produces while tracking the physical mouse or touchpad
+	# (``mouseMove`` events with NVDA's mouse tracking enabled).
+	VoiceProfileRow("mouse", "Mouse", True),
 	VoiceProfileRow("keyboardEntry", "Keyboard entry", True),
 	VoiceProfileRow("systemNotifications", "System and notifications", True),
 )

@@ -146,6 +146,7 @@ class VoiceProfileConfigTests(unittest.TestCase):
 			[
 				("focusNavigation", "Focus and navigation"),
 				("reviewObjectNavigation", "Review and object navigation"),
+				("mouse", "Mouse"),
 				("keyboardEntry", "Keyboard entry"),
 				("systemNotifications", "System and notifications"),
 			],
