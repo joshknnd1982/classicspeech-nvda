@@ -324,6 +324,31 @@ class SchemeStoreTests(SchemeHarnessBase):
 		self.assertTrue(self.store.set_schemes_enabled(True))
 		self.assertIn("role.LINK", self.store.active_items())
 
+	def test_voice_only_reset_keeps_a_sound_the_panel_does_not_show(self):
+		from globalPlugins._speech_core.settings import schemes_panel
+
+		editor = self.store.SchemeStore({"schemeData": "{}"})
+		sound = self.sound()
+		voice = {"enabled": True, "engine": "", "bySynth": {"fakeSynth": _voice_record(pitch=70)}}
+		editor.set_item("fmt.bold", {"sound": sound, "voice": voice})
+		panel = types.SimpleNamespace(
+			_currentItemId="fmt.bold",
+			_currentCategoryKind=None,
+			showSounds=False,
+			store=editor,
+			_showItem=lambda *args: None,
+			_changed=lambda *args: None,
+			tree=types.SimpleNamespace(SetFocus=lambda: None),
+		)
+		# Voice Profiles shows only voices: its Reset this item keeps the scheme sound.
+		schemes_panel.SchemeItemsPanel.onResetItem(panel, None)
+		self.assertEqual(editor.get_item("fmt.bold"), {"sound": sound, "soundOnly": False})
+		# Speech and Sound Schemes shows both, and resets both.
+		editor.set_item("fmt.bold", {"sound": sound, "voice": voice})
+		panel.showSounds = True
+		schemes_panel.SchemeItemsPanel.onResetItem(panel, None)
+		self.assertEqual(editor.get_item("fmt.bold"), {})
+
 
 class SchemeCatalogTests(SchemeHarnessBase):
 	def test_catalog_lists_every_role_state_and_formatting_group(self):

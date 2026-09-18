@@ -678,7 +678,13 @@ class SchemeItemsPanel(wx.Panel):
 		item_id = self._currentItemId
 		if item_id is None:
 			return
-		self.store.clear_item(item_id)
+		if self.showSounds:
+			self.store.clear_item(item_id)
+		else:
+			# Voice Profiles shows only voices, so keep a sound chosen in Speech and Sound Schemes.
+			settings = self.store.get_item(item_id)
+			settings.pop("voice", None)
+			self.store.set_item(item_id, settings)
 		self._showItem(item_id, self._currentCategoryKind)
 		self._changed(item_id)
 		self.tree.SetFocus()
