@@ -16,7 +16,7 @@ APP_MODULE_DIRECTORIES = ("appModules",)
 # NVDA's Add-on Store Help opens doc/<language>/<docFileName> from the add-on root.
 DOC_DIRECTORIES = ("doc",)
 LOCALE_DIRECTORIES = ("locale",)
-RELEASE_NOTES = "RELEASE-1.05.md"
+RELEASE_NOTES = "RELEASE-1.06.md"
 _NUMERIC_VERSION = re.compile(r"^\d+\.\d+(?:\.\d+)?$")
 _SAFE_LABEL = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
