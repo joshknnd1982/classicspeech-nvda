@@ -760,6 +760,21 @@ class VoiceProfileControlAndDialogTests(unittest.TestCase):
 		self.assertNotIn("fakeSynth", persisted)
 
 
+class _SchemeStoreProbe:
+	"""Speech and Sound Schemes store double owned by the Voice Profiles dialog."""
+	def __init__(self, events):
+		self.events = events
+
+	def cancel(self):
+		self.events.append("scheme cancel")
+
+	def apply(self):
+		self.events.append("scheme apply")
+
+	def mark_applied(self):
+		pass
+
+
 class _ResetDialogProbe:
 	"""Small handler receiver that exercises reset without constructing wx widgets."""
 	def __init__(self, store, events=None):
@@ -768,6 +783,10 @@ class _ResetDialogProbe:
 		self.preview_cancellations = 0
 		self.shown_profiles = []
 		self.events = events if events is not None else []
+		self.schemeStore = _SchemeStoreProbe([])
+
+	def _clear_editor(self):
+		pass
 
 	def _cancelPreview(self):
 		self.preview_cancellations += 1
