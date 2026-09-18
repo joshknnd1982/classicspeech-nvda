@@ -49,7 +49,6 @@ in the version 1 JSON.
 from __future__ import annotations
 
 import copy
-import filecmp
 import json
 import os
 import re
@@ -263,17 +262,33 @@ def _absolute_sound_path(folder, sound) -> str:
 	return os.path.normpath(os.path.join(folder, sound))
 
 
+def _same_contents(first, second) -> bool:
+	"""Return whether two files hold the same bytes.
+
+	NVDA's bundled Python does not include ``filecmp``, so compare directly.
+	"""
+	try:
+		if os.path.getsize(first) != os.path.getsize(second):
+			return False
+		with open(first, "rb") as left, open(second, "rb") as right:
+			while True:
+				chunk = left.read(64 * 1024)
+				if chunk != right.read(64 * 1024):
+					return False
+				if not chunk:
+					return True
+	except OSError:
+		return False
+
+
 def _sound_target(sounds_folder, source) -> str:
 	"""Return where ``source`` goes in a Sounds folder, reusing an identical copy."""
 	base, extension = os.path.splitext(os.path.basename(source))
 	candidate = os.path.join(sounds_folder, base + extension)
 	counter = 2
 	while os.path.exists(candidate):
-		try:
-			if filecmp.cmp(candidate, source, shallow=False):
-				return candidate
-		except OSError:
-			pass
+		if _same_contents(candidate, source):
+			return candidate
 		candidate = os.path.join(sounds_folder, f"{base} {counter}{extension}")
 		counter += 1
 	return candidate

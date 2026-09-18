@@ -1085,5 +1085,28 @@ class SchemePackageTests(SchemeFolderHarnessBase):
 		dialog.store.cancel()
 
 
+
+class SchemeSoundCopyTests(SchemeFolderHarnessBase):
+	def test_sounds_with_the_same_name_do_not_overwrite_each_other(self):
+		editor = self.store.SchemeStore(self.section)
+		first = self.sound("beep.wav")
+		other_folder = Path(self.sound_dir.name) / "other"
+		other_folder.mkdir()
+		second = other_folder / "beep.wav"
+		second.write_bytes(b"RIFF-different")
+		editor.set_item("role.LINK", {"sound": first})
+		editor.set_item("role.BUTTON", {"sound": first})
+		editor.set_item("role.CHECKBOX", {"sound": str(second)})
+		self.saved(editor)
+		items = self.scheme_json("Default")["items"]
+		# The same file is copied once; a different file with the same name gets its own copy.
+		self.assertEqual(items["role.LINK"]["sound"], "Sounds/beep.wav")
+		self.assertEqual(items["role.BUTTON"]["sound"], "Sounds/beep.wav")
+		self.assertEqual(items["role.CHECKBOX"]["sound"], "Sounds/beep 2.wav")
+		sounds = Path(self.root) / "Default" / "Sounds"
+		self.assertEqual(sorted(path.name for path in sounds.iterdir()), ["beep 2.wav", "beep.wav"])
+		self.assertEqual((sounds / "beep 2.wav").read_bytes(), b"RIFF-different")
+
+
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
