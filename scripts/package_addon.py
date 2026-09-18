@@ -14,7 +14,7 @@ RUNTIME_FILES = ("classicSpeech.py",)
 RUNTIME_DIRECTORIES = ("_speech_core",)
 APP_MODULE_DIRECTORIES = ("appModules",)
 LOCALE_DIRECTORIES = ("locale",)
-RELEASE_NOTES = "RELEASE-1.02.md"
+RELEASE_NOTES = "RELEASE-1.03.md"
 _NUMERIC_VERSION = re.compile(r"^\d+\.\d+(?:\.\d+)?$")
 _SAFE_LABEL = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
