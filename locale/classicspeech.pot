@@ -10,8 +10,16 @@ msgstr ""
 msgid "&Alignment"
 msgstr ""
 
+#: _speech_core/settings/schemes_dialog.py:79
+msgid "&Apply"
+msgstr ""
+
 #: _speech_core/settings/document_reading_proofing_panel.py:127
 msgid "&Bookmarks"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:193
+msgid "&Browse for sound..."
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:316
@@ -34,6 +42,10 @@ msgstr ""
 msgid "&Enable browse mode on page load"
 msgstr ""
 
+#: _speech_core/settings/schemes_dialog.py:44
+msgid "&Enable speech and sound schemes"
+msgstr ""
+
 #: _speech_core/settings/document_reading_proofing_panel.py:96
 msgid "&Font name"
 msgstr ""
@@ -54,6 +66,10 @@ msgstr ""
 msgid "&Line spacing"
 msgstr ""
 
+#: _speech_core/settings/schemes_panel.py:133
+msgid "&List:"
+msgstr ""
+
 #: _speech_core/settings/web/dialog.py:309
 msgid "&Lists"
 msgstr ""
@@ -72,6 +88,18 @@ msgstr ""
 
 #: _speech_core/settings/document_reading_proofing_panel.py:158
 msgid "&Paragraph indentation"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:194
+msgid "&Play sound"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:232
+msgid "&Reset this item"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:129
+msgid "&Search items:"
 msgstr ""
 
 #: _speech_core/settings/document_reading_proofing_panel.py:165
@@ -118,6 +146,18 @@ msgstr ""
 msgid "6 repeated characters"
 msgstr ""
 
+#: _speech_core/settings/schemes_panel.py:367
+msgid "A voice applies to everything spoken about the object."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:366
+msgid "A voice applies to the announcement and to the formatted text or element content."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:368
+msgid "A voice applies to the announcement."
+msgstr ""
+
 #: _speech_core/settings/constants.py:27
 msgid "Abbreviated without plus"
 msgstr ""
@@ -138,6 +178,50 @@ msgstr ""
 msgid "Active profile:"
 msgstr ""
 
+#: _speech_core/settings/schemes_dialog.py:49
+msgid "Active sc&heme:"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:51
+msgid "Active scheme"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:405
+msgid "Active synthesizer ({name})"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:156
+msgid "Add font &name..."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:689
+msgid "Add font name"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:157
+msgid "Add font si&ze..."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:690
+msgid "Add font size"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:691
+msgid "Add style name"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:158
+msgid "Add style name..."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:164
+msgid "Add window &class..."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:692
+msgid "Add window class"
+msgstr ""
+
 #: _speech_core/settings/advanced_panel.py:29 _speech_core/settings/constants.py:7 _speech_core/settings/dialog.py:76 _speech_core/settings/document_reading_proofing_panel.py:171
 msgid "Advanced"
 msgstr ""
@@ -146,8 +230,36 @@ msgstr ""
 msgid "After each token"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:284
+msgid "Alignment: center"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:286
+msgid "Alignment: justified"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:283
+msgid "Alignment: left"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:287
+msgid "Alignment: other (distributed, fill, general)"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:285
+msgid "Alignment: right"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:134
+msgid "All items"
+msgstr ""
+
 #: _speech_core/settings/text/panel.py:50
 msgid "All repeated characters"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:37
+msgid "Also speak the announcement"
 msgstr ""
 
 #: _speech_core/processors/web/summary.py:28
@@ -194,16 +306,20 @@ msgstr ""
 msgid "Announce only first item"
 msgstr ""
 
-#: classicSpeech.py:1481
+#: classicSpeech.py:1614
 msgid "Announces the default button in the current dialog"
 msgstr ""
 
-#: _speech_core/settings/dialog.py:167 _speech_core/settings/voice_profiles_dialog.py:107 _speech_core/settings/web/dialog.py:158
+#: _speech_core/settings/dialog.py:167 _speech_core/settings/voice_profiles_dialog.py:116 _speech_core/settings/web/dialog.py:158
 msgid "Apply"
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:313
 msgid "Arti&cles"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:320
+msgid "Articles"
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:232
@@ -230,6 +346,22 @@ msgstr ""
 msgid "Automatic page-entry summary delay:"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:234
+msgid "Back to the baseline (not superscript or subscript)"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:246
+msgid "Background color changes"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:247
+msgid "Background pattern"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:114
+msgid "Banner landmark"
+msgstr ""
+
 #: _speech_core/settings/constants.py:67
 msgid "Before each token"
 msgstr ""
@@ -242,8 +374,16 @@ msgstr ""
 msgid "Block &quotes"
 msgstr ""
 
-#: _speech_core/processors/web/summary.py:40
+#: _speech_core/processors/web/summary.py:40 _speech_core/schemes/catalog.py:318
 msgid "Block quotes"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:221
+msgid "Bold"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:257
+msgid "Bookmarks"
 msgstr ""
 
 #: _speech_core/settings/constants.py:18
@@ -274,8 +414,16 @@ msgstr ""
 msgid "C&lear"
 msgstr ""
 
-#: _speech_core/settings/dialog.py:169 _speech_core/settings/voice_profiles_dialog.py:106 _speech_core/settings/web/dialog.py:157
+#: _speech_core/settings/schemes_dialog.py:54
+msgid "C&opy scheme..."
+msgstr ""
+
+#: _speech_core/settings/dialog.py:169 _speech_core/settings/schemes_dialog.py:78 _speech_core/settings/voice_profiles_dialog.py:115 _speech_core/settings/web/dialog.py:157
 msgid "Cancel"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:324
+msgid "Captions"
 msgstr ""
 
 #: _speech_core/settings/dialog.py:105 _speech_core/settings/dialog.py:106 _speech_core/settings/dialog.py:97 _speech_core/settings/web/dialog.py:113 _speech_core/settings/web/dialog.py:121 _speech_core/settings/web/dialog.py:122
@@ -286,12 +434,28 @@ msgstr ""
 msgid "Cell &borders:"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:298
+msgid "Cell borders"
+msgstr ""
+
 #: _speech_core/settings/document_reading_proofing_panel.py:167
 msgid "Cell c&oordinates"
 msgstr ""
 
 #: _speech_core/processors/web/summary.py:45
 msgid "Check boxes"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:553
+msgid "Choose a sound for {item}"
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:159
+msgid "Choose a voice for any document formatting or web element NVDA reports, such as bold text, a font, headings or links. The voice is used for the announcement and for the text itself. Sounds for these items are set in Speech and Sound Schemes."
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:36
+msgid "Choose sounds and voices for object types, object states, window classes, document formatting and web elements. Items without a sound or voice keep NVDA's normal speech. Search for an item by name, or list only the items you have changed."
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:332
@@ -302,7 +466,7 @@ msgstr ""
 msgid "Choose the active verbosity profile and which object details ClassicSpeech speaks for that profile."
 msgstr ""
 
-#: classicSpeech.py:1197 classicSpeech.py:1276 classicSpeech.py:1283 classicSpeech.py:1290 classicSpeech.py:1344 classicSpeech.py:1361 classicSpeech.py:1399 classicSpeech.py:1406 classicSpeech.py:1413 classicSpeech.py:1420 classicSpeech.py:1427 classicSpeech.py:1434 classicSpeech.py:1482
+#: classicSpeech.py:1294 classicSpeech.py:1377 classicSpeech.py:1384 classicSpeech.py:1391 classicSpeech.py:1398 classicSpeech.py:1405 classicSpeech.py:1417 classicSpeech.py:1475 classicSpeech.py:1492 classicSpeech.py:1530 classicSpeech.py:1537 classicSpeech.py:1544 classicSpeech.py:1551 classicSpeech.py:1558 classicSpeech.py:1565 classicSpeech.py:1615
 msgid "ClassicSpeech"
 msgstr ""
 
@@ -310,7 +474,11 @@ msgstr ""
 msgid "ClassicSpeech Settings"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:32
+#: _speech_core/settings/schemes_dialog.py:27
+msgid "ClassicSpeech Speech and Sound Schemes"
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:38
 msgid "ClassicSpeech Voice Profiles"
 msgstr ""
 
@@ -318,12 +486,24 @@ msgstr ""
 msgid "ClassicSpeech Web / Browse Mode Settings"
 msgstr ""
 
+#: _speech_core/settings/schemes_panel.py:447
+msgid "ClassicSpeech could not load the {engine} synthesizer. The item keeps using the active synthesizer."
+msgstr ""
+
 #: _speech_core/settings/rename_list_panel.py:27
 msgid "Clear Rename\tDelete"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:325
+msgid "Clickable"
+msgstr ""
+
 #: _speech_core/history_viewer.py:112
 msgid "Close"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:278
+msgid "Column breaks"
 msgstr ""
 
 #: _speech_core/processors/web/summary.py:30
@@ -336,6 +516,14 @@ msgstr ""
 
 #: _speech_core/settings/document_reading_proofing_panel.py:126
 msgid "Commen&ts"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:253
+msgid "Comments"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:115
+msgid "Complementary landmark"
 msgstr ""
 
 #: _speech_core/settings/advanced_panel.py:30
@@ -366,7 +554,11 @@ msgstr ""
 msgid "Configure web-related native NVDA documentFormatting announcements."
 msgstr ""
 
-#: classicSpeech.py:1426
+#: _speech_core/schemes/catalog.py:116
+msgid "Content information landmark"
+msgstr ""
+
+#: classicSpeech.py:1557
 msgid "Copies the current ClassicSpeech history item to the clipboard"
 msgstr ""
 
@@ -374,7 +566,11 @@ msgstr ""
 msgid "Copy failed"
 msgstr ""
 
-#: classicSpeech.py:1441
+#: _speech_core/settings/schemes_dialog.py:135
+msgid "Copy scheme"
+msgstr ""
+
+#: classicSpeech.py:1572
 msgid "Could not open speech history"
 msgstr ""
 
@@ -398,8 +594,28 @@ msgstr ""
 msgid "Day month year"
 msgstr ""
 
-#: classicSpeech.py:1495 classicSpeech.py:1504
+#: classicSpeech.py:1628 classicSpeech.py:1637
 msgid "Default button {name}"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:244
+msgid "Default style"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:56
+msgid "Dele&te scheme"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:162
+msgid "Delete scheme"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:161
+msgid "Delete the scheme {name} and all of its sounds and voices?"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:261
+msgid "Deleted text (editor revision)"
 msgstr ""
 
 #: _speech_core/settings/constants.py:88 _speech_core/settings/verbosity_panel.py:49
@@ -410,16 +626,36 @@ msgstr ""
 msgid "Dialogs"
 msgstr ""
 
+#: _speech_core/settings/schemes_panel.py:38
+msgid "Do not speak the announcement (sound only)"
+msgstr ""
+
 #: _speech_core/settings/dialog.py:71 _speech_core/settings/document_reading_proofing_panel.py:57
 msgid "Document Reading / Proofing"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:125
+#: _speech_core/settings/voice_profiles_dialog.py:29
+msgid "Document and web formatting"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:143
+msgid "Document and web formatting &items:"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:434 _speech_core/settings/document_reading_proofing_panel.py:125
 msgid "Document information"
 msgstr ""
 
 #: _speech_core/settings/number_processing_panel.py:63
 msgid "Dollars and cents"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:228
+msgid "Double strikethrough"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:254
+msgid "Draft comments"
 msgstr ""
 
 #: _speech_core/settings/document_reading_proofing_panel.py:112
@@ -434,8 +670,16 @@ msgstr ""
 msgid "Eight or more digits"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:437
+msgid "Elements (documents and web pages)"
+msgstr ""
+
 #: _speech_core/processors/web/summary.py:39
 msgid "Embedded objects"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:237
+msgid "Emphasised"
 msgstr ""
 
 #: _speech_core/settings/advanced_panel.py:75
@@ -466,6 +710,10 @@ msgstr ""
 msgid "Fi&gures"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:323
+msgid "Figures"
+msgstr ""
+
 #: _speech_core/settings/number_processing_panel.py:45
 msgid "Five or more digits"
 msgstr ""
@@ -486,8 +734,36 @@ msgstr ""
 msgid "Font &size"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:406
+msgid "Font and text formatting"
+msgstr ""
+
 #: _speech_core/settings/document_reading_proofing_panel.py:102
 msgid "Font attrib&utes"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:217
+msgid "Font name changes (any font)"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:689
+msgid "Font name to add:"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:219
+msgid "Font size changes (any size)"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:690
+msgid "Font size in points to add (for example 13 or 10.5):"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:187
+msgid "Font size {size}"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:185
+msgid "Font: {name}"
 msgstr ""
 
 #: _speech_core/settings/hotkeys_panel.py:81
@@ -498,11 +774,19 @@ msgstr ""
 msgid "Form fields"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:117
+msgid "Form landmark"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:326
+msgid "Forms"
+msgstr ""
+
 #: _speech_core/settings/web/dialog.py:314
 msgid "Fra&mes"
 msgstr ""
 
-#: _speech_core/processors/web/summary.py:38
+#: _speech_core/processors/web/summary.py:38 _speech_core/schemes/catalog.py:321
 msgid "Frames"
 msgstr ""
 
@@ -514,7 +798,7 @@ msgstr ""
 msgid "Full numbers"
 msgstr ""
 
-#: classicSpeech.py:1194
+#: classicSpeech.py:1290
 msgid "General Settings..."
 msgstr ""
 
@@ -530,12 +814,24 @@ msgstr ""
 msgid "Global pause:"
 msgstr ""
 
-#: _speech_core/processors/web/summary.py:34
+#: _speech_core/schemes/catalog.py:267
+msgid "Grammar errors"
+msgstr ""
+
+#: _speech_core/processors/web/summary.py:34 _speech_core/schemes/catalog.py:314 _speech_core/schemes/catalog.py:371
 msgid "Graphics"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:315 _speech_core/schemes/catalog.py:370
+msgid "Graphics without a label"
 msgstr ""
 
 #: _speech_core/settings/number_processing_panel.py:56
 msgid "Grouped digits"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:319
+msgid "Groupings"
 msgstr ""
 
 #: _speech_core/settings/misc_panel.py:41
@@ -546,12 +842,32 @@ msgstr ""
 msgid "H&eaders"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:307
+msgid "Heading level {level}"
+msgstr ""
+
 #: _speech_core/processors/web/summary.py:35 _speech_core/settings/web/dialog.py:188
 msgid "Headings"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:304
+msgid "Headings (all levels)"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:230
+msgid "Hidden text"
+msgstr ""
+
 #: _speech_core/settings/document_reading_proofing_panel.py:113
 msgid "Highlighted (mar&ked) text"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:239
+msgid "Highlighted (marked) text"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:241
+msgid "Highlighted in a color"
 msgstr ""
 
 #: _speech_core/settings/constants.py:89
@@ -578,12 +894,32 @@ msgstr ""
 msgid "Included page summary element types"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:322
+msgid "Inline frames"
+msgstr ""
+
 #: _speech_core/settings/misc_panel.py:51 _speech_core/settings/misc_panel.py:65
 msgid "Insert+Tab reports"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:259
+msgid "Inserted text (editor revision)"
+msgstr ""
+
 #: _speech_core/settings/constants.py:6
 msgid "Intermediate"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:223
+msgid "Italic"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:182
+msgid "Item details"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:180
+msgid "Item details:"
 msgstr ""
 
 #: _speech_core/settings/dialog.py:73 _speech_core/settings/key_labels_panel.py:30
@@ -606,6 +942,30 @@ msgstr ""
 msgid "Landmarks"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:334
+msgid "Landmarks (all types)"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:438
+msgid "Landmarks and regions"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:258
+msgid "Leaving a bookmark"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:256
+msgid "Leaving a comment"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:268
+msgid "Leaving a grammar error"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:266
+msgid "Leaving a spelling error"
+msgstr ""
+
 #: _speech_core/settings/web/dialog.py:306
 msgid "Lin&ks"
 msgstr ""
@@ -618,12 +978,32 @@ msgstr ""
 msgid "Line &numbers"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:280
+msgid "Line indentation"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:279
+msgid "Line numbers"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:282
+msgid "Line spacing"
+msgstr ""
+
 #: _speech_core/settings/web/dialog.py:307
 msgid "Link type"
 msgstr ""
 
-#: _speech_core/processors/web/summary.py:36 _speech_core/settings/web/dialog.py:189
+#: _speech_core/processors/web/summary.py:36 _speech_core/schemes/catalog.py:311 _speech_core/settings/web/dialog.py:189
 msgid "Links"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:135
+msgid "List"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:289
+msgid "List bullets and numbers"
 msgstr ""
 
 #: _speech_core/settings/text/panel.py:126
@@ -634,12 +1014,24 @@ msgstr ""
 msgid "List item state reporting:"
 msgstr ""
 
-#: _speech_core/processors/web/summary.py:37 _speech_core/settings/web/dialog.py:191
+#: _speech_core/schemes/catalog.py:317
+msgid "List items"
+msgstr ""
+
+#: _speech_core/processors/web/summary.py:37 _speech_core/schemes/catalog.py:316 _speech_core/settings/web/dialog.py:191
 msgid "Lists"
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:264
 msgid "Load Chromium virtual buffer when document busy."
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:118
+msgid "Main landmark"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:327
+msgid "Math"
 msgstr ""
 
 #: _speech_core/settings/menus_panel.py:61
@@ -698,11 +1090,11 @@ msgstr ""
 msgid "Month day year"
 msgstr ""
 
-#: classicSpeech.py:1419
+#: classicSpeech.py:1550
 msgid "Moves to the newest ClassicSpeech history item"
 msgstr ""
 
-#: classicSpeech.py:1412
+#: classicSpeech.py:1543
 msgid "Moves to the oldest ClassicSpeech history item"
 msgstr ""
 
@@ -712,6 +1104,14 @@ msgstr ""
 
 #: _speech_core/settings/rename_list_panel.py:80
 msgid "Muted"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:218
+msgid "NVDA announces the new font name. Specific fonts are listed separately."
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:220
+msgid "NVDA announces the new font size. Specific sizes are listed separately."
 msgstr ""
 
 #: _speech_core/settings/constants.py:52 _speech_core/settings/number_processing_panel.py:32 _speech_core/settings/text/panel.py:35 _speech_core/settings/text/panel.py:45
@@ -734,8 +1134,16 @@ msgstr ""
 msgid "Native shortcut as is"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:119
+msgid "Navigation landmark"
+msgstr ""
+
 #: _speech_core/settings/constants.py:54
 msgid "Navigator object"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:53
+msgid "Ne&w scheme..."
 msgstr ""
 
 #: _speech_core/settings/text/panel.py:88
@@ -746,15 +1154,19 @@ msgstr ""
 msgid "New line message:"
 msgstr ""
 
+#: _speech_core/settings/schemes_dialog.py:135
+msgid "New scheme"
+msgstr ""
+
 #: _speech_core/settings/web/dialog.py:386
 msgid "No additional delay"
 msgstr ""
 
-#: classicSpeech.py:1502 classicSpeech.py:1507
+#: classicSpeech.py:1635 classicSpeech.py:1640
 msgid "No default button"
 msgstr ""
 
-#: classicSpeech.py:1396
+#: classicSpeech.py:1527
 msgid "No focus"
 msgstr ""
 
@@ -762,7 +1174,55 @@ msgstr ""
 msgid "No history item selected"
 msgstr ""
 
-#: classicSpeech.py:1379 classicSpeech.py:1389
+#: _speech_core/schemes/catalog.py:222
+msgid "No longer bold"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:262
+msgid "No longer deleted"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:238
+msgid "No longer emphasised"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:231
+msgid "No longer hidden"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:242
+msgid "No longer highlighted"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:260
+msgid "No longer inserted"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:224
+msgid "No longer italic"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:240
+msgid "No longer marked"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:264
+msgid "No longer revised"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:229
+msgid "No longer strikethrough"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:236
+msgid "No longer strong"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:226
+msgid "No longer underlined"
+msgstr ""
+
+#: classicSpeech.py:1510 classicSpeech.py:1520
 msgid "No object"
 msgstr ""
 
@@ -806,7 +1266,7 @@ msgstr ""
 msgid "Numeric date processing:"
 msgstr ""
 
-#: _speech_core/settings/dialog.py:168 _speech_core/settings/voice_profiles_dialog.py:105 _speech_core/settings/web/dialog.py:156
+#: _speech_core/settings/dialog.py:168 _speech_core/settings/schemes_dialog.py:77 _speech_core/settings/voice_profiles_dialog.py:114 _speech_core/settings/web/dialog.py:156
 msgid "OK"
 msgstr ""
 
@@ -814,23 +1274,39 @@ msgstr ""
 msgid "Object navigation processing"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:440
+msgid "Object states"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:439
+msgid "Object types (control types and roles)"
+msgstr ""
+
 #: _speech_core/settings/constants.py:15 _speech_core/settings/constants.py:43 _speech_core/settings/constants.py:71 _speech_core/settings/text/panel.py:27 _speech_core/settings/verbosity_panel.py:104
 msgid "Off"
 msgstr ""
 
-#: classicSpeech.py:1289
+#: _speech_core/settings/schemes_panel.py:134
+msgid "Only items with a sound or voice"
+msgstr ""
+
+#: classicSpeech.py:1397
+msgid "Opens ClassicSpeech Speech and Sound Schemes"
+msgstr ""
+
+#: classicSpeech.py:1390
 msgid "Opens ClassicSpeech Voice Profiles"
 msgstr ""
 
-#: classicSpeech.py:1282
+#: classicSpeech.py:1383
 msgid "Opens ClassicSpeech Web / Browse Mode Settings"
 msgstr ""
 
-#: classicSpeech.py:1275
+#: classicSpeech.py:1376
 msgid "Opens ClassicSpeech settings"
 msgstr ""
 
-#: classicSpeech.py:1433
+#: classicSpeech.py:1564
 msgid "Opens the ClassicSpeech history dialog"
 msgstr ""
 
@@ -846,6 +1322,10 @@ msgstr ""
 msgid "Ordinals as words"
 msgstr ""
 
+#: _speech_core/settings/schemes_panel.py:420
+msgid "Other synthesizers..."
+msgstr ""
+
 #: _speech_core/settings/web/dialog.py:334 _speech_core/settings/web/dialog.py:93
 msgid "Page Summary"
 msgstr ""
@@ -854,11 +1334,15 @@ msgstr ""
 msgid "Page Summary choices:"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:274
+msgid "Page numbers"
+msgstr ""
+
 #: _speech_core/settings/web/dialog.py:344 _speech_core/settings/web/dialog.py:350
 msgid "Page ready message:"
 msgstr ""
 
-#: classicSpeech.py:1351 classicSpeech.py:1356
+#: classicSpeech.py:1482 classicSpeech.py:1487
 msgid "Page summary is not available here."
 msgstr ""
 
@@ -866,12 +1350,16 @@ msgstr ""
 msgid "Page-load summary:"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:136
+#: _speech_core/schemes/catalog.py:435 _speech_core/settings/document_reading_proofing_panel.py:136
 msgid "Pages and spacing"
 msgstr ""
 
 #: _speech_core/settings/number_processing_panel.py:37
 msgid "Pairs"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:281
+msgid "Paragraph indentation"
 msgstr ""
 
 #: _speech_core/settings/speech_timing_panel.py:89
@@ -906,7 +1394,7 @@ msgstr ""
 msgid "Position announcements:"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:101 _speech_core/settings/voice_profiles_dialog.py:257
+#: _speech_core/settings/voice_profiles_dialog.py:110 _speech_core/settings/voice_profiles_dialog.py:314
 msgid "Pre&view selected profile"
 msgstr ""
 
@@ -914,24 +1402,32 @@ msgstr ""
 msgid "Prevent automatic speech interruptions"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:94
+#: _speech_core/settings/voice_profiles_dialog.py:103
 msgid "Preview &text:"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:96
+#: _speech_core/settings/voice_profiles_dialog.py:105
 msgid "Preview text:"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:259
+#: _speech_core/settings/voice_profiles_dialog.py:316
 msgid "Previewing selected profile."
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:257
+#: _speech_core/settings/voice_profiles_dialog.py:314
 msgid "Previewing selected profile..."
 msgstr ""
 
 #: _speech_core/processors/web/summary.py:41
 msgid "Radio buttons"
+msgstr ""
+
+#: _speech_core/settings/verbosity_panel.py:118
+msgid "Read edit field &contents when focused"
+msgstr ""
+
+#: _speech_core/settings/verbosity_panel.py:120
+msgid "Read edit field contents when focused"
 msgstr ""
 
 #: _speech_core/settings/number_processing_panel.py:206 _speech_core/settings/number_processing_panel.py:208
@@ -942,12 +1438,32 @@ msgstr ""
 msgid "Reduce repeated heading levels on continuation lines"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:271
+#: _speech_core/schemes/catalog.py:335
+msgid "Regions"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:167
+msgid "Remove adde&d entry"
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:328
 msgid "Remove every saved ClassicSpeech Voice Profile override for the active synthesizer? NVDA's native Voice Settings will be used until you save a new profile."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:195
+msgid "Remove so&und"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:55
+msgid "Rena&me scheme..."
 msgstr ""
 
 #: _speech_core/settings/rename_list_panel.py:26
 msgid "Rename\tF2"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:148
+msgid "Rename scheme"
 msgstr ""
 
 #: _speech_core/settings/text/panel.py:143
@@ -978,7 +1494,7 @@ msgstr ""
 msgid "Report transparent color values"
 msgstr ""
 
-#: classicSpeech.py:1343
+#: classicSpeech.py:1474
 msgid "Reports selected Browse Mode element counts for the current page"
 msgstr ""
 
@@ -990,7 +1506,7 @@ msgstr ""
 msgid "Reset Key Labels to Defaults Now"
 msgstr ""
 
-#: _speech_core/settings/verbosity_panel.py:226
+#: _speech_core/settings/verbosity_panel.py:247
 msgid "Reset Profile"
 msgstr ""
 
@@ -1006,7 +1522,7 @@ msgstr ""
 msgid "Reset Tokens to Defaults Now"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:103 _speech_core/settings/voice_profiles_dialog.py:104 _speech_core/settings/voice_profiles_dialog.py:273
+#: _speech_core/settings/voice_profiles_dialog.py:112 _speech_core/settings/voice_profiles_dialog.py:113 _speech_core/settings/voice_profiles_dialog.py:330
 msgid "Reset all Voice Profile overrides"
 msgstr ""
 
@@ -1014,7 +1530,7 @@ msgstr ""
 msgid "Reset key label settings to defaults now?\n\nThis will immediately clear all custom key renames and muted keys.\n\nCancel will not undo this reset.\n\nChoose Yes to reset now, or No to keep your current settings."
 msgstr ""
 
-#: _speech_core/settings/verbosity_panel.py:218
+#: _speech_core/settings/verbosity_panel.py:239
 msgid "Reset the {profile} profile to its default settings now?\n\nThis will immediately clear saved overrides for this profile.\n\nCancel will not undo this reset.\n\nChoose Yes to reset now, or No to keep your current settings."
 msgstr ""
 
@@ -1022,16 +1538,24 @@ msgstr ""
 msgid "Reset token editor settings to defaults now?\n\nThis will immediately clear all global token renames and muted labels, and restore the default token order.\n\nCancel will not undo this reset.\n\nChoose Yes to reset now, or No to keep your current settings."
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:255
+msgid "Resolved comments"
+msgstr ""
+
 #: _speech_core/settings/edge_notifications_panel.py:44
 msgid "Restore native message\tDelete"
 msgstr ""
 
-#: classicSpeech.py:1405
+#: classicSpeech.py:1536
 msgid "Reviews the next ClassicSpeech history item"
 msgstr ""
 
-#: classicSpeech.py:1398
+#: classicSpeech.py:1529
 msgid "Reviews the previous ClassicSpeech history item"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:263
+msgid "Revised text"
 msgstr ""
 
 #: _speech_core/settings/constants.py:84 _speech_core/settings/verbosity_panel.py:47
@@ -1040,6 +1564,14 @@ msgstr ""
 
 #: _speech_core/settings/token_editor_panel.py:64
 msgid "Roles"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:213
+msgid "S&ynthesizer:"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:313
+msgid "Same page links"
 msgstr ""
 
 #: _speech_core/settings/text/panel.py:39
@@ -1056,6 +1588,42 @@ msgstr ""
 
 #: _speech_core/settings/text/panel.py:38
 msgid "Say selected"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:143
+msgid "Scheme &items:"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:129
+msgid "Scheme name:"
+msgstr ""
+
+#: classicSpeech.py:1422
+msgid "Scheme {name}"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:131
+msgid "Search items"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:120
+msgid "Search landmark"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:277
+msgid "Section breaks"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:275
+msgid "Section numbers"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:363
+msgid "Select an item in the tree to change its sound or voice."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:177
+msgid "Selected item"
 msgstr ""
 
 #: _speech_core/processors/web/summary.py:42
@@ -1090,8 +1658,20 @@ msgstr ""
 msgid "Some"
 msgstr ""
 
+#: _speech_core/settings/schemes_panel.py:187
+msgid "Sound &file:"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:189
+msgid "Sound file"
+msgstr ""
+
 #: _speech_core/settings/edge_notifications_panel.py:18
 msgid "Space: announce or suppress. F2: set a custom announcement. Delete: restore the native Edge announcement. Shift+F10: menu."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:231
+msgid "Spea&k a voice preview"
 msgstr ""
 
 #: _speech_core/settings/advanced_panel.py:44
@@ -1114,8 +1694,20 @@ msgstr ""
 msgid "Speak single digits if number contains:"
 msgstr ""
 
-#: classicSpeech.py:1360
+#: classicSpeech.py:1491
 msgid "Speaks the current object. Press twice quickly to spell and copy it"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:409
+msgid "Specific font names"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:419
+msgid "Specific font sizes"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:426
+msgid "Specific styles"
 msgstr ""
 
 #: _speech_core/history_viewer.py:96
@@ -1124,6 +1716,22 @@ msgstr ""
 
 #: _speech_core/settings/dialog.py:68 _speech_core/settings/speech_timing_panel.py:38
 msgid "Speech Timing"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:185 _speech_core/settings/schemes_panel.py:448 _speech_core/settings/schemes_panel.py:579
+msgid "Speech and Sound Schemes"
+msgstr ""
+
+#: classicSpeech.py:1293
+msgid "Speech and Sound Schemes..."
+msgstr ""
+
+#: classicSpeech.py:1411
+msgid "Speech and sound schemes off"
+msgstr ""
+
+#: classicSpeech.py:1411
+msgid "Speech and sound schemes on"
 msgstr ""
 
 #: _speech_core/history_viewer.py:161
@@ -1162,6 +1770,10 @@ msgstr ""
 msgid "Spell mixed letters and numbers phonetically"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:265
+msgid "Spelling errors"
+msgstr ""
+
 #: _speech_core/settings/document_reading_proofing_panel.py:130
 msgid "Spelling or grammar e&rrors"
 msgstr ""
@@ -1198,12 +1810,40 @@ msgstr ""
 msgid "States"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:227
+msgid "Strikethrough"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:235
+msgid "Strong (emphasis)"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:243
+msgid "Style changes (any style)"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:691
+msgid "Style name to add, as NVDA reports it (for example Heading 1 or Quote):"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:191
+msgid "Style: {name}"
+msgstr ""
+
 #: _speech_core/settings/document_reading_proofing_panel.py:110
 msgid "Su&perscripts and subscripts"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:233
+msgid "Subscript"
+msgstr ""
+
 #: _speech_core/settings/web/dialog.py:368
 msgid "Summary after page is ready"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:232
+msgid "Superscript"
 msgstr ""
 
 #: _speech_core/settings/edge_notifications_panel.py:46
@@ -1214,15 +1854,31 @@ msgstr ""
 msgid "Suppress dashes inside words, such as sister-in-law"
 msgstr ""
 
+#: classicSpeech.py:1416
+msgid "Switches to the next ClassicSpeech speech and sound scheme"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:215
+msgid "Synthesizer"
+msgstr ""
+
 #: _speech_core/settings/web/dialog.py:249
 msgid "T&ouch navigation elements:"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:164
+#: _speech_core/schemes/catalog.py:296
+msgid "Table cell coordinates (row and column numbers)"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:436 _speech_core/settings/document_reading_proofing_panel.py:164
 msgid "Table information"
 msgstr ""
 
-#: _speech_core/processors/web/summary.py:43 _speech_core/settings/web/dialog.py:192
+#: _speech_core/schemes/catalog.py:297
+msgid "Table row and column headers"
+msgstr ""
+
+#: _speech_core/processors/web/summary.py:43 _speech_core/schemes/catalog.py:295 _speech_core/settings/web/dialog.py:192
 msgid "Tables"
 msgstr ""
 
@@ -1230,12 +1886,36 @@ msgstr ""
 msgid "Text Processing"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:144
+#: _speech_core/schemes/catalog.py:245
+msgid "Text color changes"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:276
+msgid "Text columns"
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:196
 msgid "The active synthesizer exposes no editable settings."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:220
+msgid "The active synthesizer switches voices fastest. Another synthesizer is loaded each time this item is spoken and unloaded afterwards, which adds a noticeable delay."
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:184
+msgid "The schemes could not be saved. See the NVDA log for details."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:578
+msgid "The sound file could not be found:\n{path}"
 msgstr ""
 
 #: _speech_core/settings/token_editor_panel.py:30
 msgid "The token editor is global. Use it to rename or mute individual role and state labels for all verbosity profiles.\nUse Control+Up and Control+Down to reorder the spoken token sequence.\nSpace: mute or unmute. F2: rename. Delete: clear rename. Shift+F10: menu."
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:507
+msgid "This synthesizer exposes no editable settings."
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:400
@@ -1258,6 +1938,22 @@ msgstr ""
 msgid "Turning the speech hook off leaves ClassicSpeech commands available, but lets NVDA speech pass through without ClassicSpeech processing."
 msgstr ""
 
+#: classicSpeech.py:1404
+msgid "Turns ClassicSpeech speech and sound schemes on or off"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:225
+msgid "Underlined"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:441
+msgid "Unknown and unlabeled objects"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:367
+msgid "Unknown objects"
+msgstr ""
+
 #: _speech_core/settings/rename_list_panel.py:28
 msgid "Unmute"
 msgstr ""
@@ -1268,6 +1964,10 @@ msgstr ""
 
 #: _speech_core/settings/number_processing_panel.py:214 _speech_core/settings/number_processing_panel.py:216
 msgid "Use Windows locale for date format"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:210
+msgid "Use a custom &voice for this item"
 msgstr ""
 
 #: _speech_core/settings/number_processing_panel.py:146 _speech_core/settings/number_processing_panel.py:148
@@ -1286,20 +1986,40 @@ msgstr ""
 msgid "Verbosity"
 msgstr ""
 
-#: classicSpeech.py:1196
+#: _speech_core/schemes/catalog.py:288
+msgid "Vertical alignment"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:312
+msgid "Visited links"
+msgstr ""
+
+#: classicSpeech.py:1292
 msgid "Voice Profiles..."
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:70 _speech_core/settings/voice_profiles_dialog.py:75 _speech_core/settings/voice_profiles_dialog.py:76
+#: _speech_core/settings/voice_profiles_dialog.py:78 _speech_core/settings/voice_profiles_dialog.py:83 _speech_core/settings/voice_profiles_dialog.py:84
 msgid "Voice profiles"
 msgstr ""
 
-#: classicSpeech.py:1195
+#: _speech_core/settings/schemes_panel.py:555
+msgid "Wave files (*.wav)|*.wav"
+msgstr ""
+
+#: classicSpeech.py:1291
 msgid "Web / Browse Mode Settings..."
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:291 _speech_core/settings/web/dialog.py:92
 msgid "Web Element Reporting"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:200
+msgid "When playin&g the sound:"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:202
+msgid "When playing the sound"
 msgstr ""
 
 #: _speech_core/settings/hotkeys_panel.py:75
@@ -1308,6 +2028,18 @@ msgstr ""
 
 #: _speech_core/settings/hotkeys_panel.py:70
 msgid "Which shortcuts to speak:"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:692
+msgid "Window class name to add:"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:189
+msgid "Window class {name}"
+msgstr ""
+
+#: _speech_core/schemes/catalog.py:444
+msgid "Window classes"
 msgstr ""
 
 #: _speech_core/settings/number_processing_panel.py:86
@@ -1382,6 +2114,10 @@ msgstr ""
 msgid "list"
 msgstr ""
 
+#: _speech_core/schemes/catalog.py:107
+msgid "not {state}"
+msgstr ""
+
 #: _speech_core/processors/web/summary.py:41
 msgid "radio button"
 msgstr ""
@@ -1394,16 +2130,36 @@ msgstr ""
 msgid "separator"
 msgstr ""
 
+#: _speech_core/settings/schemes_panel.py:71
+msgid "sound"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:71
+msgid "sound only"
+msgstr ""
+
 #: _speech_core/processors/web/summary.py:43
 msgid "table"
 msgstr ""
 
-#: classicSpeech.py:1494
+#: classicSpeech.py:1627
 msgid "unknown"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:74
+msgid "voice"
+msgstr ""
+
+#: _speech_core/settings/schemes_panel.py:74
+msgid "voice on {engine}"
 msgstr ""
 
 #: _speech_core/settings/constants.py:71 _speech_core/settings/constants.py:72
 msgid "{ms} ms"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:136
+msgid "{name} copy"
 msgstr ""
 
 #: _speech_core/settings/speech_timing_panel.py:81
