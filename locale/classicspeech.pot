@@ -10,7 +10,7 @@ msgstr ""
 msgid "&Alignment"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:79
+#: _speech_core/settings/schemes_dialog.py:94
 msgid "&Apply"
 msgstr ""
 
@@ -42,7 +42,7 @@ msgstr ""
 msgid "&Enable browse mode on page load"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:44
+#: _speech_core/settings/schemes_dialog.py:50
 msgid "&Enable speech and sound schemes"
 msgstr ""
 
@@ -178,11 +178,11 @@ msgstr ""
 msgid "Active profile:"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:49
+#: _speech_core/settings/schemes_dialog.py:55
 msgid "Active sc&heme:"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:51
+#: _speech_core/settings/schemes_dialog.py:57
 msgid "Active scheme"
 msgstr ""
 
@@ -306,11 +306,11 @@ msgstr ""
 msgid "Announce only first item"
 msgstr ""
 
-#: classicSpeech.py:1625
+#: classicSpeech.py:1630
 msgid "Announces the default button in the current dialog"
 msgstr ""
 
-#: _speech_core/settings/dialog.py:167 _speech_core/settings/voice_profiles_dialog.py:116 _speech_core/settings/web/dialog.py:158
+#: _speech_core/settings/dialog.py:167 _speech_core/settings/voice_profiles_dialog.py:127 _speech_core/settings/web/dialog.py:158
 msgid "Apply"
 msgstr ""
 
@@ -414,11 +414,11 @@ msgstr ""
 msgid "C&lear"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:54
+#: _speech_core/settings/schemes_dialog.py:60
 msgid "C&opy scheme..."
 msgstr ""
 
-#: _speech_core/settings/dialog.py:169 _speech_core/settings/schemes_dialog.py:78 _speech_core/settings/voice_profiles_dialog.py:115 _speech_core/settings/web/dialog.py:157
+#: _speech_core/settings/dialog.py:169 _speech_core/settings/schemes_dialog.py:93 _speech_core/settings/voice_profiles_dialog.py:126 _speech_core/settings/web/dialog.py:157
 msgid "Cancel"
 msgstr ""
 
@@ -450,11 +450,11 @@ msgstr ""
 msgid "Choose a sound for {item}"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:159
+#: _speech_core/settings/voice_profiles_dialog.py:172
 msgid "Choose a voice for any document formatting or web element NVDA reports, such as bold text, a font, headings or links. The voice is used for the announcement and for the text itself. Sounds for these items are set in Speech and Sound Schemes."
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:36
+#: _speech_core/settings/schemes_dialog.py:42
 msgid "Choose sounds and voices for object types, object states, window classes, document formatting and web elements. Items without a sound or voice keep NVDA's normal speech. Search for an item by name, or list only the items you have changed."
 msgstr ""
 
@@ -466,7 +466,7 @@ msgstr ""
 msgid "Choose the active verbosity profile and which object details ClassicSpeech speaks for that profile."
 msgstr ""
 
-#: classicSpeech.py:1295 classicSpeech.py:1378 classicSpeech.py:1385 classicSpeech.py:1392 classicSpeech.py:1399 classicSpeech.py:1406 classicSpeech.py:1416 classicSpeech.py:1428 classicSpeech.py:1486 classicSpeech.py:1503 classicSpeech.py:1541 classicSpeech.py:1548 classicSpeech.py:1555 classicSpeech.py:1562 classicSpeech.py:1569 classicSpeech.py:1576 classicSpeech.py:1626
+#: classicSpeech.py:1300 classicSpeech.py:1383 classicSpeech.py:1390 classicSpeech.py:1397 classicSpeech.py:1404 classicSpeech.py:1411 classicSpeech.py:1421 classicSpeech.py:1433 classicSpeech.py:1491 classicSpeech.py:1508 classicSpeech.py:1546 classicSpeech.py:1553 classicSpeech.py:1560 classicSpeech.py:1567 classicSpeech.py:1574 classicSpeech.py:1581 classicSpeech.py:1631
 msgid "ClassicSpeech"
 msgstr ""
 
@@ -474,11 +474,11 @@ msgstr ""
 msgid "ClassicSpeech Settings"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:27
+#: _speech_core/settings/schemes_dialog.py:33
 msgid "ClassicSpeech Speech and Sound Schemes"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:38
+#: _speech_core/settings/voice_profiles_dialog.py:45
 msgid "ClassicSpeech Voice Profiles"
 msgstr ""
 
@@ -488,6 +488,14 @@ msgstr ""
 
 #: _speech_core/settings/schemes_panel.py:447
 msgid "ClassicSpeech could not load the {engine} synthesizer. The item keeps using the active synthesizer."
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:204 _speech_core/settings/schemes_dialog.py:223
+msgid "ClassicSpeech scheme package"
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:372 _speech_core/settings/voice_profiles_dialog.py:387
+msgid "ClassicSpeech voice profiles"
 msgstr ""
 
 #: _speech_core/settings/rename_list_panel.py:27
@@ -558,7 +566,7 @@ msgstr ""
 msgid "Content information landmark"
 msgstr ""
 
-#: classicSpeech.py:1568
+#: classicSpeech.py:1573
 msgid "Copies the current ClassicSpeech history item to the clipboard"
 msgstr ""
 
@@ -566,11 +574,11 @@ msgstr ""
 msgid "Copy failed"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:135
+#: _speech_core/settings/schemes_dialog.py:153
 msgid "Copy scheme"
 msgstr ""
 
-#: classicSpeech.py:1583
+#: classicSpeech.py:1588
 msgid "Could not open speech history"
 msgstr ""
 
@@ -594,7 +602,7 @@ msgstr ""
 msgid "Day month year"
 msgstr ""
 
-#: classicSpeech.py:1639 classicSpeech.py:1648
+#: classicSpeech.py:1644 classicSpeech.py:1653
 msgid "Default button {name}"
 msgstr ""
 
@@ -602,15 +610,15 @@ msgstr ""
 msgid "Default style"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:56
+#: _speech_core/settings/schemes_dialog.py:62
 msgid "Dele&te scheme"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:162
+#: _speech_core/settings/schemes_dialog.py:180
 msgid "Delete scheme"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:161
+#: _speech_core/settings/schemes_dialog.py:179
 msgid "Delete the scheme {name} and all of its sounds and voices?"
 msgstr ""
 
@@ -634,7 +642,7 @@ msgstr ""
 msgid "Document Reading / Proofing"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:29
+#: _speech_core/settings/voice_profiles_dialog.py:36
 msgid "Document and web formatting"
 msgstr ""
 
@@ -660,6 +668,14 @@ msgstr ""
 
 #: _speech_core/settings/document_reading_proofing_panel.py:112
 msgid "E&mphasis"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:68
+msgid "E&xport scheme..."
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:123
+msgid "E&xport voice profiles..."
 msgstr ""
 
 #: _speech_core/processors/web/summary.py:32
@@ -704,6 +720,22 @@ msgstr ""
 
 #: _speech_core/settings/web/dialog.py:271
 msgid "Experimental heading presentation"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:200
+msgid "Export scheme"
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:366
+msgid "Export voice profiles"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:216
+msgid "Exported the scheme {name} to {path}."
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:382
+msgid "Exported voice profiles to {path}."
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:315
@@ -798,7 +830,7 @@ msgstr ""
 msgid "Full numbers"
 msgstr ""
 
-#: classicSpeech.py:1291
+#: classicSpeech.py:1296
 msgid "General Settings..."
 msgstr ""
 
@@ -882,8 +914,32 @@ msgstr ""
 msgid "Hotkeys"
 msgstr ""
 
+#: _speech_core/settings/voice_profiles_dialog.py:124
+msgid "I&mport voice profiles..."
+msgstr ""
+
 #: _speech_core/settings/document_reading_proofing_panel.py:151
 msgid "Ignore &blank lines for line indentation reporting"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:222
+msgid "Import scheme"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:69
+msgid "Import scheme..."
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:386
+msgid "Import voice profiles"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:239
+msgid "Imported the scheme {name}. It is now the active scheme. Press OK or Apply to keep it."
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:403
+msgid "Imported voice profiles for {synthesizers}. Press OK or Apply to keep them."
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:304
@@ -1090,11 +1146,11 @@ msgstr ""
 msgid "Month day year"
 msgstr ""
 
-#: classicSpeech.py:1561
+#: classicSpeech.py:1566
 msgid "Moves to the newest ClassicSpeech history item"
 msgstr ""
 
-#: classicSpeech.py:1554
+#: classicSpeech.py:1559
 msgid "Moves to the oldest ClassicSpeech history item"
 msgstr ""
 
@@ -1142,7 +1198,7 @@ msgstr ""
 msgid "Navigator object"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:53
+#: _speech_core/settings/schemes_dialog.py:59
 msgid "Ne&w scheme..."
 msgstr ""
 
@@ -1154,7 +1210,7 @@ msgstr ""
 msgid "New line message:"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:135
+#: _speech_core/settings/schemes_dialog.py:153
 msgid "New scheme"
 msgstr ""
 
@@ -1162,11 +1218,11 @@ msgstr ""
 msgid "No additional delay"
 msgstr ""
 
-#: classicSpeech.py:1646 classicSpeech.py:1651
+#: classicSpeech.py:1651 classicSpeech.py:1656
 msgid "No default button"
 msgstr ""
 
-#: classicSpeech.py:1538
+#: classicSpeech.py:1543
 msgid "No focus"
 msgstr ""
 
@@ -1222,7 +1278,7 @@ msgstr ""
 msgid "No longer underlined"
 msgstr ""
 
-#: classicSpeech.py:1521 classicSpeech.py:1531
+#: classicSpeech.py:1526 classicSpeech.py:1536
 msgid "No object"
 msgstr ""
 
@@ -1266,7 +1322,7 @@ msgstr ""
 msgid "Numeric date processing:"
 msgstr ""
 
-#: _speech_core/settings/dialog.py:168 _speech_core/settings/schemes_dialog.py:77 _speech_core/settings/voice_profiles_dialog.py:114 _speech_core/settings/web/dialog.py:156
+#: _speech_core/settings/dialog.py:168 _speech_core/settings/schemes_dialog.py:92 _speech_core/settings/voice_profiles_dialog.py:125 _speech_core/settings/web/dialog.py:156
 msgid "OK"
 msgstr ""
 
@@ -1290,27 +1346,31 @@ msgstr ""
 msgid "Only items with a sound or voice"
 msgstr ""
 
-#: classicSpeech.py:1398
+#: _speech_core/settings/schemes_dialog.py:70
+msgid "Open schemes folder"
+msgstr ""
+
+#: classicSpeech.py:1403
 msgid "Opens ClassicSpeech Speech and Sound Schemes"
 msgstr ""
 
-#: classicSpeech.py:1391
+#: classicSpeech.py:1396
 msgid "Opens ClassicSpeech Voice Profiles"
 msgstr ""
 
-#: classicSpeech.py:1384
+#: classicSpeech.py:1389
 msgid "Opens ClassicSpeech Web / Browse Mode Settings"
 msgstr ""
 
-#: classicSpeech.py:1377
+#: classicSpeech.py:1382
 msgid "Opens ClassicSpeech settings"
 msgstr ""
 
-#: classicSpeech.py:1575
+#: classicSpeech.py:1580
 msgid "Opens the ClassicSpeech history dialog"
 msgstr ""
 
-#: classicSpeech.py:1405
+#: classicSpeech.py:1410
 msgid "Opens the ClassicSpeech user guide"
 msgstr ""
 
@@ -1346,7 +1406,7 @@ msgstr ""
 msgid "Page ready message:"
 msgstr ""
 
-#: classicSpeech.py:1493 classicSpeech.py:1498
+#: classicSpeech.py:1498 classicSpeech.py:1503
 msgid "Page summary is not available here."
 msgstr ""
 
@@ -1398,7 +1458,7 @@ msgstr ""
 msgid "Position announcements:"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:110 _speech_core/settings/voice_profiles_dialog.py:314
+#: _speech_core/settings/voice_profiles_dialog.py:119 _speech_core/settings/voice_profiles_dialog.py:327
 msgid "Pre&view selected profile"
 msgstr ""
 
@@ -1406,19 +1466,19 @@ msgstr ""
 msgid "Prevent automatic speech interruptions"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:103
+#: _speech_core/settings/voice_profiles_dialog.py:112
 msgid "Preview &text:"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:105
+#: _speech_core/settings/voice_profiles_dialog.py:114
 msgid "Preview text:"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:316
+#: _speech_core/settings/voice_profiles_dialog.py:329
 msgid "Previewing selected profile."
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:314
+#: _speech_core/settings/voice_profiles_dialog.py:327
 msgid "Previewing selected profile..."
 msgstr ""
 
@@ -1450,7 +1510,7 @@ msgstr ""
 msgid "Remove adde&d entry"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:328
+#: _speech_core/settings/voice_profiles_dialog.py:341
 msgid "Remove every saved ClassicSpeech Voice Profile override for the active synthesizer? NVDA's native Voice Settings will be used until you save a new profile."
 msgstr ""
 
@@ -1458,7 +1518,7 @@ msgstr ""
 msgid "Remove so&und"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:55
+#: _speech_core/settings/schemes_dialog.py:61
 msgid "Rena&me scheme..."
 msgstr ""
 
@@ -1466,7 +1526,7 @@ msgstr ""
 msgid "Rename\tF2"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:148
+#: _speech_core/settings/schemes_dialog.py:166
 msgid "Rename scheme"
 msgstr ""
 
@@ -1498,7 +1558,7 @@ msgstr ""
 msgid "Report transparent color values"
 msgstr ""
 
-#: classicSpeech.py:1485
+#: classicSpeech.py:1490
 msgid "Reports selected Browse Mode element counts for the current page"
 msgstr ""
 
@@ -1526,7 +1586,7 @@ msgstr ""
 msgid "Reset Tokens to Defaults Now"
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:112 _speech_core/settings/voice_profiles_dialog.py:113 _speech_core/settings/voice_profiles_dialog.py:330
+#: _speech_core/settings/voice_profiles_dialog.py:121 _speech_core/settings/voice_profiles_dialog.py:122 _speech_core/settings/voice_profiles_dialog.py:343
 msgid "Reset all Voice Profile overrides"
 msgstr ""
 
@@ -1550,11 +1610,11 @@ msgstr ""
 msgid "Restore native message\tDelete"
 msgstr ""
 
-#: classicSpeech.py:1547
+#: classicSpeech.py:1552
 msgid "Reviews the next ClassicSpeech history item"
 msgstr ""
 
-#: classicSpeech.py:1540
+#: classicSpeech.py:1545
 msgid "Reviews the previous ClassicSpeech history item"
 msgstr ""
 
@@ -1598,11 +1658,11 @@ msgstr ""
 msgid "Scheme &items:"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:129
+#: _speech_core/settings/schemes_dialog.py:147
 msgid "Scheme name:"
 msgstr ""
 
-#: classicSpeech.py:1433
+#: classicSpeech.py:1438
 msgid "Scheme {name}"
 msgstr ""
 
@@ -1698,7 +1758,7 @@ msgstr ""
 msgid "Speak single digits if number contains:"
 msgstr ""
 
-#: classicSpeech.py:1502
+#: classicSpeech.py:1507
 msgid "Speaks the current object. Press twice quickly to spell and copy it"
 msgstr ""
 
@@ -1722,19 +1782,19 @@ msgstr ""
 msgid "Speech Timing"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:185 _speech_core/settings/schemes_panel.py:448 _speech_core/settings/schemes_panel.py:579
+#: _speech_core/settings/schemes_dialog.py:255 _speech_core/settings/schemes_dialog.py:272 _speech_core/settings/schemes_panel.py:448 _speech_core/settings/schemes_panel.py:579
 msgid "Speech and Sound Schemes"
 msgstr ""
 
-#: classicSpeech.py:1294
+#: classicSpeech.py:1299
 msgid "Speech and Sound Schemes..."
 msgstr ""
 
-#: classicSpeech.py:1422
+#: classicSpeech.py:1427
 msgid "Speech and sound schemes off"
 msgstr ""
 
-#: classicSpeech.py:1422
+#: classicSpeech.py:1427
 msgid "Speech and sound schemes on"
 msgstr ""
 
@@ -1858,7 +1918,7 @@ msgstr ""
 msgid "Suppress dashes inside words, such as sister-in-law"
 msgstr ""
 
-#: classicSpeech.py:1427
+#: classicSpeech.py:1432
 msgid "Switches to the next ClassicSpeech speech and sound scheme"
 msgstr ""
 
@@ -1906,7 +1966,7 @@ msgstr ""
 msgid "The ClassicSpeech user guide could not be opened."
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:196
+#: _speech_core/settings/voice_profiles_dialog.py:209
 msgid "The active synthesizer exposes no editable settings."
 msgstr ""
 
@@ -1914,8 +1974,24 @@ msgstr ""
 msgid "The active synthesizer switches voices fastest. Another synthesizer is loaded each time this item is spoken and unloaded afterwards, which adds a noticeable delay."
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:184
+#: _speech_core/settings/voice_profiles_dialog.py:407
+msgid "The file has no voice profiles for your current synthesizer. They are used when you switch to one of those synthesizers."
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:214
+msgid "The scheme could not be exported. See the NVDA log for details."
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:233
+msgid "The scheme could not be imported. See the NVDA log for details."
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:271
 msgid "The schemes could not be saved. See the NVDA log for details."
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:254
+msgid "The schemes folder could not be opened. It is {path}."
 msgstr ""
 
 #: _speech_core/settings/schemes_panel.py:578
@@ -1924,6 +2000,30 @@ msgstr ""
 
 #: _speech_core/settings/token_editor_panel.py:30
 msgid "The token editor is global. Use it to rename or mute individual role and state labels for all verbosity profiles.\nUse Control+Up and Control+Down to reorder the spoken token sequence.\nSpace: mute or unmute. F2: rename. Delete: clear rename. Shift+F10: menu."
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:380
+msgid "The voice profiles could not be exported. See the NVDA log for details."
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:397
+msgid "The voice profiles could not be imported. See the NVDA log for details."
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:369
+msgid "There are no voice profiles to export."
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:218
+msgid "These sounds were not found and were left out:"
+msgstr ""
+
+#: _speech_core/settings/schemes_dialog.py:229
+msgid "This file is not a ClassicSpeech scheme package."
+msgstr ""
+
+#: _speech_core/settings/voice_profiles_dialog.py:393
+msgid "This file is not a ClassicSpeech voice profiles file, or it has no voice profiles."
 msgstr ""
 
 #: _speech_core/settings/schemes_panel.py:507
@@ -1950,7 +2050,7 @@ msgstr ""
 msgid "Turning the speech hook off leaves ClassicSpeech commands available, but lets NVDA speech pass through without ClassicSpeech processing."
 msgstr ""
 
-#: classicSpeech.py:1415
+#: classicSpeech.py:1420
 msgid "Turns ClassicSpeech speech and sound schemes on or off"
 msgstr ""
 
@@ -2006,11 +2106,11 @@ msgstr ""
 msgid "Visited links"
 msgstr ""
 
-#: classicSpeech.py:1293
+#: classicSpeech.py:1298
 msgid "Voice Profiles..."
 msgstr ""
 
-#: _speech_core/settings/voice_profiles_dialog.py:78 _speech_core/settings/voice_profiles_dialog.py:83 _speech_core/settings/voice_profiles_dialog.py:84
+#: _speech_core/settings/voice_profiles_dialog.py:87 _speech_core/settings/voice_profiles_dialog.py:92 _speech_core/settings/voice_profiles_dialog.py:93
 msgid "Voice profiles"
 msgstr ""
 
@@ -2018,7 +2118,7 @@ msgstr ""
 msgid "Wave files (*.wav)|*.wav"
 msgstr ""
 
-#: classicSpeech.py:1292
+#: classicSpeech.py:1297
 msgid "Web / Browse Mode Settings..."
 msgstr ""
 
@@ -2154,7 +2254,7 @@ msgstr ""
 msgid "table"
 msgstr ""
 
-#: classicSpeech.py:1638
+#: classicSpeech.py:1643
 msgid "unknown"
 msgstr ""
 
@@ -2170,7 +2270,7 @@ msgstr ""
 msgid "{ms} ms"
 msgstr ""
 
-#: _speech_core/settings/schemes_dialog.py:136
+#: _speech_core/settings/schemes_dialog.py:154
 msgid "{name} copy"
 msgstr ""
 

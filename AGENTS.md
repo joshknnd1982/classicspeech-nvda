@@ -16,6 +16,7 @@
 - Keep changes narrow and preserve native NVDA behavior unless the specification explicitly changes it.
 - Preserve native literal/review/caret/Say All behavior. Do not route ordinary document text through ClassicSpeech processing without a defined, tested requirement.
 - Speech and Sound Schemes (`_speech_core/schemes`) are that kind of defined requirement: they may mark NVDA speech only for items a user configured, and NVDA's output must stay unchanged when nothing is configured (`tests/classic_speech_schemes_harness.py`).
+- Each speech and sound scheme is a folder under `ClassicSpeech/Schemes` in NVDA's configuration folder (`_speech_core/schemes/store.py`). Tests that use scheme folders must set `store._ROOT_OVERRIDE` to a temporary folder, never NVDA's real configuration.
 - Speech-path code must not walk `obj.parent` chains for the focus; use `_speech_core/focus_ancestry.py`, which reads NVDA's cached focus ancestors (`tests/classic_speech_latency_harness.py`).
 - The token editor owns speech-token ordering and placement. Text Processing owns reporting/filtering transformations; do not move token-placement policy into it.
 - `sequence_merger.py` was removed after an audit confirmed it had no active dependents. Do not reintroduce sequence-merging behavior without a defined, tested requirement.
