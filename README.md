@@ -2,7 +2,7 @@
 
 ClassicSpeech is an NVDA add-on for configurable speech verbosity, conservative text and number processing, Web / Browse Mode tools, and same-synth Voice Profiles.
 
-> **Current release:** [ClassicSpeech 1.06](https://github.com/joshknnd1982/classicspeech-nvda/releases/tag/v1.06) keeps each speech and sound scheme in its own folder, and lets you export and import schemes and voice profiles. It fixes the 1.05 test build, which did not load in NVDA. See the [1.06](docs/RELEASE-1.06.md) and [1.05](docs/RELEASE-1.05.md) release notes, and the [1.04](docs/RELEASE-1.04.md), [1.03](docs/RELEASE-1.03.md) and [1.02](docs/RELEASE-1.02.md) notes for earlier changes. The `main` branch remains active development; commits after a release may not yet have completed live NVDA validation.
+> **Current release:** [ClassicSpeech 1.07](https://github.com/joshknnd1982/classicspeech-nvda/releases/tag/v1.07) keeps all ClassicSpeech settings in their own file, `%APPDATA%\nvda\ClassicSpeech\settings.ini`, puts NVDA back the way it was when you reset or remove ClassicSpeech, stops scheme voices from changing your NVDA voice settings, and checks GitHub for updates. See the [1.07](docs/RELEASE-1.07.md) release notes, and the [1.06](docs/RELEASE-1.06.md), [1.05](docs/RELEASE-1.05.md), [1.04](docs/RELEASE-1.04.md), [1.03](docs/RELEASE-1.03.md) and [1.02](docs/RELEASE-1.02.md) notes for earlier changes. The `main` branch remains active development; commits after a release may not yet have completed live NVDA validation.
 
 ## Settings access
 
