@@ -2,6 +2,31 @@
 from __future__ import annotations
 
 
+def _do_not_save_settings(*args, **kwargs):
+	return None
+
+
+def keep_settings_out_of_nvda_config(driver):
+	"""Stop a synthesizer instance from saving its settings as the user's NVDA voice settings.
+
+	NVDA saves a synthesizer's current settings to its configuration whenever
+	it saves the configuration, and when it unloads the synthesizer. A
+	synthesizer ClassicSpeech loads only to speak or edit a scheme voice holds
+	that voice's settings, which must never become the user's settings.
+	Use it only on such a synthesizer, never on the one NVDA speaks with.
+	"""
+	if driver is None:
+		return
+	try:
+		driver._unregisterConfigSaveAction()
+	except Exception:
+		pass
+	try:
+		driver.saveSettings = _do_not_save_settings
+	except Exception:
+		pass
+
+
 class VoiceProfileDirectSettingsTransaction:
 	"""A Preview-style full setting transaction executed only at a speech queue boundary."""
 
@@ -71,18 +96,32 @@ class CrossSynthProfileTrigger:
 	synthesizer exactly as NVDA's own configuration-profile triggers do, and
 	loads the user's synthesizer again after ``exit``. Loading a synthesizer
 	takes time, so each switch adds a delay; the Voice editor says so.
+
+	NVDA saves a synthesizer's settings when it unloads it. Before ``exit``
+	lets NVDA unload the other synthesizer, it stops that synthesizer from
+	saving, so the item's voice never replaces the user's own settings for it.
 	"""
 
 	_shouldNotifyProfileSwitch = False
 	hasProfile = True
 
-	def __init__(self, item_id: str, synth_name: str, settings: dict, config_manager=None, profile_factory=None):
+	def __init__(
+		self,
+		item_id: str,
+		synth_name: str,
+		settings: dict,
+		config_manager=None,
+		profile_factory=None,
+		active_synth_getter=None,
+	):
 		self._item_id = str(item_id)
 		self._synth_name = str(synth_name)
 		self._settings = dict(settings or {})
 		self._config = config_manager
 		self._profile_factory = profile_factory
+		self._active_synth_getter = active_synth_getter
 		self._profile = None
+		self._switched = False
 
 	@property
 	def spec(self):
@@ -107,11 +146,26 @@ class CrossSynthProfileTrigger:
 			pass
 		return profile
 
+	def _active_synth(self):
+		try:
+			if self._active_synth_getter is not None:
+				return self._active_synth_getter()
+			from synthDriverHandler import getSynth
+
+			return getSynth()
+		except Exception:
+			return None
+
+	def _active_synth_name(self):
+		return str(getattr(self._active_synth(), "name", "") or "")
+
 	def enter(self):
 		if self._profile is not None:
 			return
 		manager = self._config_manager()
 		profile = self._new_profile()
+		# Only a synthesizer this trigger makes NVDA load may be kept from saving.
+		self._switched = self._active_synth_name() != self._synth_name
 		manager.profiles.append(profile)
 		try:
 			manager._handleProfileSwitch(shouldNotify=False)
@@ -126,6 +180,10 @@ class CrossSynthProfileTrigger:
 			return
 		manager = self._config_manager()
 		self._profile = None
+		if self._switched:
+			driver = self._active_synth()
+			if str(getattr(driver, "name", "") or "") == self._synth_name:
+				keep_settings_out_of_nvda_config(driver)
 		try:
 			if manager.profiles and manager.profiles[-1] is profile:
 				manager.profiles.pop()

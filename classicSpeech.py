@@ -41,7 +41,9 @@ from ._speech_core.prosody_routing import (
     wrap_review_literal_sequence,
     wrap_system_notification_sequence,
 )
-from ._speech_core.key_labels import get_key_label_runtime
+from ._speech_core import nvda_settings_backup
+from ._speech_core import settings_file
+from ._speech_core.key_labels import apply_key_labels_live, get_key_label_config, get_key_label_runtime
 from ._speech_core.processors.core_ui import CoreUISpeechProcessor
 from ._speech_core.settings import (
     ClassicSpeechDialog,
@@ -54,6 +56,8 @@ from ._speech_core.settings import (
     QUERY_OBJECT_SOURCE_NATIVE,
     QUERY_OBJECT_SOURCE_NAVIGATOR,
 )
+from ._speech_core.settings.config_core import _forget_normalized_section
+from ._speech_core.settings.profile_config import nvda_settings_set_by_saved_settings
 from ._speech_core.settings.web import WebBrowseSettingsDialog
 from ._speech_core.settings.voice_profiles_dialog import VoiceProfilesDialog
 from ._speech_core.schemes import store as scheme_store
@@ -606,13 +610,15 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def __init__(self):
         super().__init__()
 
-        _initClassicSpeechConfig()
+        hadSettings = _initClassicSpeechConfig()
 
         section = _getClassicSpeechSection()
         defaultProfile = section.get("defaultProfile", "Beginner")
 
         self.processor = CoreUISpeechProcessor()
         self.processor.set_profile(defaultProfile)
+        self._record_nvda_settings_changed_earlier(hadSettings)
+        self._install_config_reset_handler()
         self.history = SpeechHistoryBuffer()
         self._settingsDialog = None
         self._webBrowseDialog = None
@@ -660,6 +666,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         log.info(f"ClassicSpeech loaded (profile: {defaultProfile}, hook: {self._speechHookRegistered})")
 
     def terminate(self):
+        self._remove_config_reset_handler()
         self._get_web_page_lifecycle().cancel()
         restore_page_orientation(self, getattr(self, "_pageOrientationRoutes", ()))
         self._pageOrientationRoutes = []
@@ -1297,15 +1304,20 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             webItem = classicSpeechMenu.Append(wx.ID_ANY, _("Web / Browse Mode Settings..."))
             voiceProfilesItem = classicSpeechMenu.Append(wx.ID_ANY, _("Voice Profiles..."))
             schemesItem = classicSpeechMenu.Append(wx.ID_ANY, _("Speech and Sound Schemes..."))
+            classicSpeechMenu.AppendSeparator()
+            resetItem = classicSpeechMenu.Append(wx.ID_ANY, _("Reset All ClassicSpeech Settings..."))
             submenuItem = preferencesMenu.AppendSubMenu(classicSpeechMenu, _("ClassicSpeech"))
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechGeneralSettingsMenu, generalItem)
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechWebBrowseSettingsMenu, webItem)
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechVoiceProfilesMenu, voiceProfilesItem)
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechSchemesMenu, schemesItem)
+            sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechResetMenu, resetItem)
             self._classicSpeechPreferencesMenu = preferencesMenu
             self._classicSpeechMenu = classicSpeechMenu
             self._classicSpeechMenuItem = submenuItem
-            self._classicSpeechMenuItems = [generalItem, webItem, voiceProfilesItem, schemesItem]
+            self._classicSpeechMenuItems = [
+                generalItem, webItem, voiceProfilesItem, schemesItem, resetItem,
+            ]
         except Exception:
             self._classicSpeechPreferencesMenu = None
             self._classicSpeechMenu = None
@@ -1378,6 +1390,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def onClassicSpeechSchemesMenu(self, evt):
         queueHandler.queueFunction(queueHandler.eventQueue, self._openSpeechSchemes)
 
+    def onClassicSpeechResetMenu(self, evt):
+        queueHandler.queueFunction(queueHandler.eventQueue, self._confirmResetAllSettings)
+
     @scriptHandler.script(
         description=_("Opens ClassicSpeech settings"),
         category=_("ClassicSpeech"),
@@ -1415,6 +1430,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             open_user_guide()
         except Exception:
             log.exception("ClassicSpeech: opening the user guide failed")
+
+    @scriptHandler.script(
+        description=_("Resets all ClassicSpeech settings and restores the NVDA settings it changed"),
+        category=_("ClassicSpeech"),
+    )
+    def script_resetAllClassicSpeechSettings(self, gesture):
+        queueHandler.queueFunction(queueHandler.eventQueue, self._confirmResetAllSettings)
 
     @scriptHandler.script(
         description=_("Turns ClassicSpeech speech and sound schemes on or off"),
@@ -1684,6 +1706,159 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 gui.mainFrame.postPopup()
             except Exception:
                 pass
+
+    # -- settings storage, reset and removal --------------------------------------
+
+    def _record_nvda_settings_changed_earlier(self, hadSettings):
+        """Record NVDA settings that ClassicSpeech 1.06 or earlier changed, once.
+
+        Those versions did not record NVDA's earlier values, so a reset puts
+        NVDA's defaults back for the Object Presentation options they set.
+        """
+        try:
+            if nvda_settings_backup.legacy_checked():
+                return
+            if hadSettings:
+                recorded = nvda_settings_backup.record_legacy_changes(
+                    nvda_settings_set_by_saved_settings(self.processor.verbosity)
+                )
+                if recorded:
+                    log.info(f"ClassicSpeech: recorded NVDA settings set by an earlier version: {recorded}")
+            else:
+                nvda_settings_backup.mark_legacy_checked()
+        except Exception:
+            log.debug("ClassicSpeech: could not record NVDA settings set by an earlier version", exc_info=True)
+
+    def _install_config_reset_handler(self):
+        """Reload ClassicSpeech's settings file when NVDA reverts or resets its configuration."""
+        self._configResetAction = None
+        try:
+            action = getattr(config, "post_configReset", None)
+            if action is not None:
+                action.register(self._onConfigReset)
+                self._configResetAction = action
+        except Exception:
+            log.debug("ClassicSpeech: could not watch for configuration resets", exc_info=True)
+
+    def _remove_config_reset_handler(self):
+        action = getattr(self, "_configResetAction", None)
+        if action is None:
+            return
+        try:
+            action.unregister(self._onConfigReset)
+        except Exception:
+            pass
+        self._configResetAction = None
+
+    def _onConfigReset(self, factoryDefaults=False):
+        try:
+            settings_file.load_into_nvda(factory_defaults=bool(factoryDefaults))
+            self._reload_settings()
+        except Exception:
+            log.exception("ClassicSpeech: could not reload its settings after NVDA's configuration was reset")
+
+    def _reload_settings(self):
+        """Use the ClassicSpeech settings now in NVDA's configuration, as at startup."""
+        _forget_normalized_section()
+        _initClassicSpeechConfig()
+        section = _getClassicSpeechSection()
+        verbosity = getattr(self.processor, "verbosity", None)
+        if verbosity is not None and hasattr(verbosity, "load_from_config"):
+            verbosity.load_from_config()
+        self.processor.set_profile(section.get("defaultProfile", "Beginner"))
+        try:
+            apply_key_labels_live(get_key_label_config())
+        except Exception:
+            log.debug("ClassicSpeech: failed to reload key labels", exc_info=True)
+        try:
+            scheme_store.invalidate_runtime_cache()
+            scheme_store.prepare_scheme_folders()
+        except Exception:
+            log.debug("ClassicSpeech: failed to reload Speech and Sound Schemes", exc_info=True)
+        self.set_speech_hook_enabled(get_speech_hook_enabled())
+
+    def _open_settings_dialogs(self):
+        dialogs = []
+        for name in ("_settingsDialog", "_webBrowseDialog", "_voiceProfilesDialog", "_schemesDialog"):
+            dialog = getattr(self, name, None)
+            if dialog:
+                dialogs.append(dialog)
+        return dialogs
+
+    def _show_message(self, message, title, style):
+        """Show a message box from a command or the NVDA menu and return the answer."""
+        gui.mainFrame.prePopup()
+        try:
+            return wx.MessageBox(message, title, style, gui.mainFrame)
+        finally:
+            gui.mainFrame.postPopup()
+
+    def _confirmResetAllSettings(self):
+        if self._is_secure_context():
+            return
+        title = _("Reset ClassicSpeech")
+        if self._open_settings_dialogs():
+            self._show_message(
+                _("Close the ClassicSpeech settings dialogs first, then choose Reset All ClassicSpeech Settings again."),
+                title,
+                wx.OK | wx.ICON_INFORMATION,
+            )
+            return
+        answer = self._show_message(
+            _(
+                "Reset all ClassicSpeech settings?\n\n"
+                "This deletes every ClassicSpeech setting, voice profile and speech and sound scheme, "
+                "including the sounds copied into your schemes, and puts back the NVDA settings "
+                "ClassicSpeech changed. To keep your schemes or voice profiles, export them first. "
+                "You can't undo a reset.\n\n"
+                "NVDA saves its configuration after the reset."
+            ),
+            title,
+            wx.YES_NO | wx.NO_DEFAULT | wx.ICON_WARNING,
+        )
+        if answer != wx.YES:
+            return
+        try:
+            result = self.reset_all_settings()
+        except Exception:
+            log.exception("ClassicSpeech: reset failed")
+            self._show_message(
+                _("ClassicSpeech could not finish the reset. Details are in the NVDA log."),
+                title,
+                wx.OK | wx.ICON_ERROR,
+            )
+            return
+        message = _(
+            "ClassicSpeech settings were reset, and the NVDA settings it changed were put back. "
+            "ClassicSpeech now uses its default settings. "
+            "To remove ClassicSpeech, uninstall it from the Add-on Store."
+        )
+        if result.get("kept"):
+            message += "\n\n" + _(
+                "{count} NVDA settings were left as they are, because they were changed "
+                "in NVDA's own settings after ClassicSpeech last changed them."
+            ).format(count=len(result["kept"]))
+        if result.get("notDeleted"):
+            message += "\n\n" + _(
+                "Some files could not be deleted. Delete this folder yourself: {folder}"
+            ).format(folder=result["notDeleted"])
+        self._show_message(message, title, wx.OK | wx.ICON_INFORMATION)
+
+    def reset_all_settings(self):
+        """Delete every ClassicSpeech setting and put back the NVDA settings it changed.
+
+        ClassicSpeech keeps running from its default settings, and NVDA's
+        configuration is saved, so the reset lasts even if NVDA doesn't save
+        its configuration on exit.
+        """
+        result = nvda_settings_backup.reset_all(save=False)
+        log.info(
+            f"ClassicSpeech: reset all settings; restored {result['restored']}, kept {result['kept']}"
+        )
+        self._reload_settings()
+        nvda_settings_backup.mark_legacy_checked()
+        nvda_settings_backup.save_nvda_configuration()
+        return result
 
     def _openSettings(self):
         try:

@@ -56,6 +56,14 @@ li { margin: .25em 0; }
 <li><a href="#speech-history">Speech history</a></li>
 <li><a href="#object-commands">Current object, default button and page summary commands</a></li>
 <li><a href="#commands">Commands and gestures</a></li>
+<li><a href="#settings-storage">Where ClassicSpeech keeps its settings</a>
+<ol>
+<li><a href="#nvda-settings-changed">NVDA settings ClassicSpeech changes</a></li>
+<li><a href="#resetting">Resetting ClassicSpeech</a></li>
+<li><a href="#removing">Removing ClassicSpeech</a></li>
+<li><a href="#removing-by-hand">Removing ClassicSpeech settings by hand</a></li>
+</ol>
+</li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>
 <li><a href="#credits">Credits and license</a></li>
 </ol>
@@ -72,12 +80,13 @@ li { margin: .25em 0; }
 
 <h2 id="getting-started">Getting started</h2>
 <p>ClassicSpeech starts working when NVDA restarts after installation. It supports NVDA 2025.1 through 2026.2.</p>
-<p>Its settings are in the NVDA menu: press <kbd>NVDA+N</kbd>, then choose Preferences, then ClassicSpeech. The ClassicSpeech submenu has four items:</p>
+<p>Its settings are in the NVDA menu: press <kbd>NVDA+N</kbd>, then choose Preferences, then ClassicSpeech. The ClassicSpeech submenu has five items:</p>
 <ul>
 <li><strong>General Settings...</strong>: how much ClassicSpeech says about objects, token order and timing, text and number processing, menus, key names, shortcut keys, and other speech options. See <a href="#general-settings">General Settings</a>.</li>
 <li><strong>Web / Browse Mode Settings...</strong>: browse mode, web element reporting, Page Summary and Microsoft Edge notifications. See <a href="#web-browse-mode-settings">Web / Browse Mode Settings</a>.</li>
 <li><strong>Voice Profiles...</strong>: different voice settings for different kinds of speech. See <a href="#voice-profiles">Voice Profiles</a>.</li>
 <li><strong>Speech and Sound Schemes...</strong>: sounds and voices for object types, states, formatting and web elements. See <a href="#speech-and-sound-schemes">Speech and Sound Schemes</a>.</li>
+<li><strong>Reset All ClassicSpeech Settings...</strong>: delete every ClassicSpeech setting and put back the NVDA settings ClassicSpeech changed. See <a href="#resetting">Resetting ClassicSpeech</a>.</li>
 </ul>
 <p>These commands work as soon as ClassicSpeech is installed:</p>
 <ul>
@@ -96,7 +105,8 @@ li { margin: .25em 0; }
 <li><strong>Cancel</strong>, <kbd>Escape</kbd>, or closing the window puts back the settings you had when you opened the dialog, or when you last pressed Apply.</li>
 <li>Reset buttons work immediately, and Cancel does not undo them, so ClassicSpeech asks you to confirm first.</li>
 </ul>
-<p>ClassicSpeech keeps its own settings in NVDA's normal configuration, so they stay the same when an NVDA configuration profile is active. Some pages also show options that belong to NVDA itself, such as Document Reading / Proofing and Browse Mode. NVDA saves those in the usual way.</p>
+<p>ClassicSpeech keeps its own settings in its own file, not in NVDA's configuration file, so they stay the same when an NVDA configuration profile is active. They are saved whenever NVDA saves its configuration, for example when you press <kbd>NVDA+Control+C</kbd> or when NVDA exits, and <kbd>NVDA+Control+R</kbd> (Revert to saved configuration) reloads them. See <a href="#settings-storage">Where ClassicSpeech keeps its settings</a>.</p>
+<p>Some pages also show options that belong to NVDA itself, such as Document Reading / Proofing and Browse Mode. NVDA saves those in its own configuration, as usual. Before ClassicSpeech changes one of NVDA's settings for the first time, it records the value NVDA had, so resetting or removing ClassicSpeech can put it back.</p>
 
 <h2 id="general-settings">General Settings</h2>
 <p>Open this dialog from the NVDA menu: Preferences, then ClassicSpeech, then General Settings. The dialog is called ClassicSpeech Settings, and its Categories list has eleven pages, described below in order.</p>
@@ -497,6 +507,7 @@ li { margin: .25em 0; }
 <tr><td>Opens ClassicSpeech Voice Profiles</td><td>None</td></tr>
 <tr><td>Opens ClassicSpeech Speech and Sound Schemes</td><td>None</td></tr>
 <tr><td>Opens the ClassicSpeech user guide</td><td>None</td></tr>
+<tr><td>Resets all ClassicSpeech settings and restores the NVDA settings it changed</td><td>None</td></tr>
 <tr><td>Turns ClassicSpeech speech and sound schemes on or off</td><td>None</td></tr>
 <tr><td>Switches to the next ClassicSpeech speech and sound scheme</td><td>None</td></tr>
 <tr><td>Speaks the current object. Press twice quickly to spell and copy it</td><td><kbd>NVDA+Tab</kbd></td></tr>
@@ -521,6 +532,67 @@ li { margin: .25em 0; }
 </ol>
 <p>To change a default gesture, select the gesture under its command, press <strong>Remove</strong>, then add a new one.</p>
 
+<h2 id="settings-storage">Where ClassicSpeech keeps its settings</h2>
+<p>Everything ClassicSpeech remembers is in one folder called ClassicSpeech, in NVDA's user configuration folder. For an installed copy of NVDA, that is <strong>%APPDATA%\nvda\ClassicSpeech</strong>. For a portable copy of NVDA, it is the ClassicSpeech folder inside the portable copy's userConfig folder. To open NVDA's user configuration folder, open the Start menu, then NVDA, then <strong>Explore NVDA user configuration directory</strong>, or type %APPDATA%\nvda in the Run dialog (<kbd>Windows+R</kbd>).</p>
+<table>
+<caption>What the ClassicSpeech folder holds</caption>
+<thead>
+<tr><th scope="col">File or folder</th><th scope="col">What it holds</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">settings.ini</th><td>Every ClassicSpeech setting: the pages of General Settings and Web / Browse Mode Settings, verbosity profiles, the Token Editor, key labels, voice profiles, and which speech and sound scheme is active. For an installed copy of NVDA, its full name is <strong>%APPDATA%\nvda\ClassicSpeech\settings.ini</strong>. It has the same format as NVDA's own nvda.ini, and you can read it in Notepad.</td></tr>
+<tr><th scope="row">Schemes</th><td>One folder for each speech and sound scheme, with its sounds. See <a href="#scheme-folders">Where schemes are kept</a>.</td></tr>
+<tr><th scope="row">nvda-settings-backup.json</th><td>The NVDA settings ClassicSpeech has changed, and the value each one had before. ClassicSpeech uses it to put NVDA back when you reset or remove ClassicSpeech. See <a href="#nvda-settings-changed">NVDA settings ClassicSpeech changes</a>.</td></tr>
+</tbody>
+</table>
+<p>The add-on's program files are in a different folder, <strong>%APPDATA%\nvda\addons\ClassicSpeech</strong>. NVDA's Add-on Store manages that folder; don't change it yourself.</p>
+<p>ClassicSpeech 1.06 and earlier kept their settings in the <strong>[classicSpeech]</strong> section of NVDA's configuration file, nvda.ini. The first time ClassicSpeech 1.07 or later starts, it moves them into settings.ini, and the next time NVDA saves its configuration, the section is removed from nvda.ini. Nothing else changes.</p>
+
+<h3 id="nvda-settings-changed">NVDA settings ClassicSpeech changes</h3>
+<p>Some ClassicSpeech settings change NVDA's own settings, which NVDA keeps in nvda.ini and in your configuration profiles:</p>
+<ul>
+<li><strong>Object presentation</strong>: Report object descriptions, Report tooltips and Report object position information follow the active <a href="#verbosity">verbosity profile</a>. Report shortcut keys follows Speak hotkeys on the <a href="#hotkeys">Hotkeys</a> page. Guess object position information when unavailable is on the <a href="#misc">Misc</a> page.</li>
+<li><strong>Keyboard</strong>: Speech interrupt for typed characters and Speech interrupt for Enter key, on the Misc page.</li>
+<li><strong>Document formatting</strong>: every option on the <a href="#document-reading-proofing">Document Reading / Proofing</a> and <a href="#web-element-reporting">Web Element Reporting</a> pages.</li>
+<li><strong>Browse mode</strong>: NVDA's options on the <a href="#browse-mode">Browse Mode</a> page.</li>
+<li><strong>Annotations and braille</strong>: Report 'has details' for structured annotations, Report aria-description always, and Braille report live regions, on the Web Element Reporting page.</li>
+<li><strong>Speech</strong>: when you choose another synthesizer for a scheme item, NVDA adds that synthesizer's default settings to its configuration if you have never used it. ClassicSpeech never saves a scheme voice or a voice profile as your NVDA voice settings.</li>
+</ul>
+<p>Before ClassicSpeech changes one of these settings for the first time, it records in nvda-settings-backup.json whether the setting was set, and its value, in the configuration it changes: your normal configuration, or the configuration profile that was active. After each change, it records the value it gave the setting.</p>
+<p>ClassicSpeech 1.06 and earlier did not record these values. When ClassicSpeech 1.07 or later first starts, it records the Object presentation options that your saved ClassicSpeech settings show it set, as changed from NVDA's defaults. A reset then puts NVDA's defaults back for them: Report object descriptions, Report object position information and Report shortcut keys on, and Report tooltips off. Earlier versions left no record for the other NVDA settings, so check those in NVDA's own settings.</p>
+<p>ClassicSpeech 1.06 and earlier could also save a scheme item's voice, or a voice being previewed, as your NVDA voice settings for a synthesizer. ClassicSpeech 1.07 no longer does. If a synthesizer sounds different from what you chose in NVDA, choose that synthesizer and check its voice settings: press <kbd>NVDA+Control+V</kbd>.</p>
+
+<h3 id="resetting">Resetting ClassicSpeech</h3>
+<p>Reset ClassicSpeech to put NVDA back the way it was before you installed and customized ClassicSpeech, for example before you remove it. Press <kbd>NVDA+N</kbd>, then choose Preferences, then ClassicSpeech, then <strong>Reset All ClassicSpeech Settings...</strong>. You can also assign a gesture to the <strong>Resets all ClassicSpeech settings and restores the NVDA settings it changed</strong> command.</p>
+<p>Close the ClassicSpeech settings dialogs first. ClassicSpeech asks you to confirm, because you can't undo a reset. To keep your schemes or voice profiles, <a href="#sharing-schemes">export your schemes</a> and <a href="#sharing-voice-profiles">export your voice profiles</a> first. When you confirm, ClassicSpeech:</p>
+<ol>
+<li>puts back each NVDA setting it changed, with the value it had before, in your normal configuration and in each configuration profile where it changed one;</li>
+<li>deletes the ClassicSpeech folder, including settings.ini, every scheme and the sounds copied into your schemes, and any [classicSpeech] section an earlier version left in nvda.ini;</li>
+<li>starts again with its default settings;</li>
+<li>saves NVDA's configuration, so the reset lasts even if NVDA doesn't save its configuration when it exits.</li>
+</ol>
+<p>If you changed one of those NVDA settings in NVDA's own settings after ClassicSpeech last changed it, the reset keeps your value, and the final message says how many settings it kept.</p>
+
+<h3 id="removing">Removing ClassicSpeech</h3>
+<p>Remove ClassicSpeech in NVDA's Add-on Store: press <kbd>NVDA+N</kbd>, then choose Tools, then Add-on Store. On the Installed add-ons tab, select ClassicSpeech, press the <kbd>Applications</kbd> key, choose <strong>Remove</strong>, and restart NVDA when asked.</p>
+<p>When NVDA restarts, ClassicSpeech 1.07 and later clean up before any add-on runs. They put back the NVDA settings ClassicSpeech changed and delete every ClassicSpeech setting, exactly as <a href="#resetting">Resetting ClassicSpeech</a> does, then NVDA saves its configuration. You don't need to reset before you remove ClassicSpeech, but a reset lets you check the result while ClassicSpeech is still installed.</p>
+<ul>
+<li>Updating ClassicSpeech, by opening a new add-on file, keeps your settings.</li>
+<li>Disabling ClassicSpeech in the Add-on Store keeps its settings, and the NVDA settings it changed stay as they are until you enable it again, reset it or remove it.</li>
+<li>If you copied your settings to NVDA's system configuration, for sign-in and secure screens, copy them again after removing ClassicSpeech: in NVDA's General settings, press <strong>Use currently saved settings during sign-in and on secure screens</strong>.</li>
+</ul>
+
+<h3 id="removing-by-hand">Removing ClassicSpeech settings by hand</h3>
+<p>ClassicSpeech 1.06 and earlier leave their settings behind when you remove them. The easiest way to remove those settings is to install ClassicSpeech 1.07 or later, restart NVDA, then remove it again, or choose Reset All ClassicSpeech Settings first.</p>
+<p>To remove the settings by hand instead, while ClassicSpeech is removed or disabled:</p>
+<ol>
+<li>Open NVDA's user configuration folder, as described above, and delete the ClassicSpeech folder.</li>
+<li>Open nvda.ini in that folder with Notepad. If it has a line that says [classicSpeech], delete that line and every line after it, up to the next line that starts with a single [. Lines that start with [[ belong to the section, so delete them too. Save the file.</li>
+<li>Press <kbd>NVDA+Control+R</kbd> once (Revert to saved configuration), so NVDA reads the edited nvda.ini, then press <kbd>NVDA+Control+C</kbd> to save it.</li>
+<li>Check the NVDA settings listed in <a href="#nvda-settings-changed">NVDA settings ClassicSpeech changes</a>, in NVDA's Object Presentation, Keyboard, Document Formatting and Browse Mode settings. If you kept a copy of nvda-settings-backup.json, it lists each setting ClassicSpeech changed. "before" shows its earlier value, and "set": false means NVDA's default.</li>
+</ol>
+<p>To go back to all of NVDA's default settings, choose <strong>Reset configuration to factory defaults</strong> in the NVDA menu. That resets every NVDA setting, not only the ones ClassicSpeech changed.</p>
+
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>
 <li><strong>Speech feels slow.</strong> In General Settings, clear Enable ClassicSpeech diagnostic logging on the Advanced page. On the Misc page, Prevent automatic speech interruptions also makes some speech wait for current speech to finish.</li>
@@ -530,6 +602,7 @@ li { margin: .25em 0; }
 <li><strong>A scheme sound doesn't play.</strong> Check that Enable speech and sound schemes is checked and that the right scheme is active. Make sure the file is a WAV file and hasn't been moved; Play sound tells you if the file can't be found.</li>
 <li><strong>A scheme you copied into the Schemes folder yourself isn't used.</strong> Open Speech and Sound Schemes and choose it in Active scheme. A scheme folder needs its scheme.json file. To add a scheme someone sent you as a file, Import scheme is easier.</li>
 <li><strong>An item doesn't use the other synthesizer you chose.</strong> ClassicSpeech tells you when it can't load a synthesizer, and uses your active synthesizer instead. The active synthesizer is also the fastest choice.</li>
+<li><strong>You want NVDA exactly as it was before ClassicSpeech.</strong> Choose Reset All ClassicSpeech Settings, or remove ClassicSpeech. See <a href="#resetting">Resetting ClassicSpeech</a>.</li>
 </ul>
 
 <h3 id="reporting-a-problem">Reporting a problem</h3>

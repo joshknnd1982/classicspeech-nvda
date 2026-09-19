@@ -10,6 +10,8 @@ import copy
 import config
 import logHandler
 
+from ..nvda_settings_backup import set_nvda_setting
+
 log = logHandler.log
 
 DOCUMENT_READING_PROOFING_KEYS = (
@@ -193,8 +195,7 @@ def _get_document_formatting_setting(key: str):
 def _set_document_formatting_setting(key: str, value) -> None:
 	if key not in DOCUMENT_READING_PROOFING_KEYS:
 		raise KeyError(key)
-	section = _ensure_document_formatting_section()
-	section[key] = _coerce_document_formatting_value(key, value)
+	set_nvda_setting(("documentFormatting",), key, _coerce_document_formatting_value(key, value))
 
 
 def _capture_document_formatting_state() -> dict:
@@ -206,10 +207,9 @@ def _capture_document_formatting_state() -> dict:
 
 
 def _restore_document_formatting_state(state: dict) -> None:
-	section = _ensure_document_formatting_section()
 	for key in DOCUMENT_READING_PROOFING_KEYS:
 		if key in state:
-			section[key] = _coerce_document_formatting_value(key, state[key])
+			set_nvda_setting(("documentFormatting",), key, _coerce_document_formatting_value(key, state[key]))
 
 
 def _is_ignore_blank_lines_for_rli_enabled() -> bool:
