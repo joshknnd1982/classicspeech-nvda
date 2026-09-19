@@ -790,7 +790,7 @@ def preview_with_active_synthesizer(item_id, driver, snapshot, text):
 
 	from ..voice_profile_runtime import make_voice_profile_overlay_trigger
 
-	trigger = make_voice_profile_overlay_trigger(f"schemePreview:{item_id}", config.conf, driver, snapshot)
+	trigger = make_voice_profile_overlay_trigger(f"schemePreview:{item_id}", config.conf, driver, snapshot, preview=True)
 	speech.speak([ConfigProfileTriggerCommand(trigger, True), text, ConfigProfileTriggerCommand(trigger, False)])
 
 

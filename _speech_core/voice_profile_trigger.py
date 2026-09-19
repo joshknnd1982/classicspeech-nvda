@@ -6,6 +6,23 @@ def _do_not_save_settings(*args, **kwargs):
 	return None
 
 
+def settings_gui_open():
+	"""True while the NVDA menu or a settings dialog is open.
+
+	NVDA doesn't switch configuration profiles then, so that settings changed in
+	a dialog are saved in the profile the user was using. ClassicSpeech's voice
+	overlays follow the same rule: the settings dialogs of NVDA and ClassicSpeech
+	mark themselves with ``shouldSuspendConfigProfileTriggers``.
+	"""
+	try:
+		import gui
+
+		check = getattr(gui, "shouldConfigProfileTriggersBeSuspended", None)
+		return bool(check()) if callable(check) else False
+	except Exception:
+		return False
+
+
 def keep_settings_out_of_nvda_config(driver):
 	"""Stop a synthesizer instance from saving its settings as the user's NVDA voice settings.
 
@@ -100,6 +117,11 @@ class CrossSynthProfileTrigger:
 	NVDA saves a synthesizer's settings when it unloads it. Before ``exit``
 	lets NVDA unload the other synthesizer, it stops that synthesizer from
 	saving, so the item's voice never replaces the user's own settings for it.
+
+	While a settings dialog or the NVDA menu is open, the item speaks with the
+	active synthesizer instead (``settings_gui_open``). Settings NVDA stores
+	while the other synthesizer speaks are kept when it exits, apart from speech
+	settings, which belong to the synthesizers being switched.
 	"""
 
 	_shouldNotifyProfileSwitch = False
@@ -122,6 +144,7 @@ class CrossSynthProfileTrigger:
 		self._active_synth_getter = active_synth_getter
 		self._profile = None
 		self._switched = False
+		self._paused = False
 
 	@property
 	def spec(self):
@@ -159,8 +182,17 @@ class CrossSynthProfileTrigger:
 	def _active_synth_name(self):
 		return str(getattr(self._active_synth(), "name", "") or "")
 
+	def _belongs_to_overlay(self, path, key, value):
+		"""Speech settings belong to the synthesizer switch, except a synthesizer the user chose."""
+		if path[:1] != ("speech",):
+			return False
+		return not (path == ("speech",) and key == "synth" and str(value) != self._synth_name)
+
 	def enter(self):
-		if self._profile is not None:
+		if self._profile is not None or self._paused:
+			return
+		if settings_gui_open():
+			self._paused = True
 			return
 		manager = self._config_manager()
 		profile = self._new_profile()
@@ -175,6 +207,7 @@ class CrossSynthProfileTrigger:
 		self._profile = profile
 
 	def exit(self):
+		self._paused = False
 		profile = self._profile
 		if profile is None:
 			return
@@ -184,6 +217,9 @@ class CrossSynthProfileTrigger:
 			driver = self._active_synth()
 			if str(getattr(driver, "name", "") or "") == self._synth_name:
 				keep_settings_out_of_nvda_config(driver)
+		from .voice_profile_overlay import carry_writes, writes_to_carry
+
+		writes = writes_to_carry(profile, self._belongs_to_overlay)
 		try:
 			if manager.profiles and manager.profiles[-1] is profile:
 				manager.profiles.pop()
@@ -192,6 +228,7 @@ class CrossSynthProfileTrigger:
 		except ValueError:
 			return
 		manager._handleProfileSwitch(shouldNotify=False)
+		carry_writes(manager, writes)
 
 
 class VoiceProfileOverlayTrigger:
@@ -200,15 +237,21 @@ class VoiceProfileOverlayTrigger:
 	SpeechManager only needs ``hasProfile``, ``enter``, ``exit``, and a stable
 	``spec`` here. ``_shouldNotifyProfileSwitch=False`` prevents unrelated NVDA
 	profile consumers (such as braille) from being notified for speech-only scope.
+
+	While a settings dialog or the NVDA menu is open, the trigger does nothing,
+	so NVDA speaks with the user's own voice settings and changes to them are
+	kept (``settings_gui_open``). A preview the user asked for still applies.
 	"""
 
 	_shouldNotifyProfileSwitch = False
 	hasProfile = True
 
-	def __init__(self, profile_id: str, overlay, direct_transaction=None):
+	def __init__(self, profile_id: str, overlay, direct_transaction=None, preview=False):
 		self._profile_id = str(profile_id)
 		self._overlay = overlay
 		self._direct_transaction = direct_transaction
+		self._preview = bool(preview)
+		self._paused = False
 
 	@property
 	def spec(self):
@@ -226,6 +269,10 @@ class VoiceProfileOverlayTrigger:
 	def enter(self):
 		from .voice_profile_overlay import _trace
 		_trace(f"trigger enter profile={self._profile_id}")
+		if not self._preview and settings_gui_open():
+			_trace(f"trigger paused while settings are open profile={self._profile_id}")
+			self._paused = True
+			return
 		if self._overlay is not None:
 			self._overlay.enter()
 		try:
@@ -246,6 +293,8 @@ class VoiceProfileOverlayTrigger:
 	def exit(self):
 		from .voice_profile_overlay import _trace
 		_trace(f"trigger exit profile={self._profile_id}")
+		# After a paused enter, nothing is active and both exits do nothing.
+		self._paused = False
 		if self._direct_transaction is not None:
 			self._direct_transaction.exit()
 		if self._overlay is not None:

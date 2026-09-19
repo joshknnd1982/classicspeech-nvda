@@ -27,6 +27,11 @@ log = logHandler.log
 class SpeechSoundSchemesDialog(wx.Dialog):
 	"""Edit Speech and Sound Schemes transactionally."""
 
+	# Like NVDA's own settings dialogs: while this dialog is open, NVDA and
+	# ClassicSpeech keep their configuration profiles as they were, so changed
+	# settings are saved in the profile the user was using (gui.shouldConfigProfileTriggersBeSuspended).
+	shouldSuspendConfigProfileTriggers = True
+
 	def __init__(self, parent, focus_class_name=""):
 		super().__init__(
 			parent,
