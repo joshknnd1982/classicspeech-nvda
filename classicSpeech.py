@@ -1401,11 +1401,21 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def onClassicSpeechSchemesMenu(self, evt):
         queueHandler.queueFunction(queueHandler.eventQueue, self._openSpeechSchemes)
 
+    def _outside_nvda_core(self, function):
+        """Run ``function`` from wx's event loop, never inside NVDA's core queue.
+
+        Scripts and ``queueHandler`` functions run inside NVDA's core pump. A
+        modal dialog opened there, such as a Yes/No message box, stops the pump,
+        so NVDA freezes and can't even speak the dialog. NVDA opens modal dialogs
+        for scripts the same way (``gui.runScriptModalDialog`` used wx.CallAfter).
+        """
+        wx.CallAfter(function)
+
     def onClassicSpeechUpdateMenu(self, evt):
-        queueHandler.queueFunction(queueHandler.eventQueue, self._checkForUpdates)
+        self._outside_nvda_core(self._checkForUpdates)
 
     def onClassicSpeechResetMenu(self, evt):
-        queueHandler.queueFunction(queueHandler.eventQueue, self._confirmResetAllSettings)
+        self._outside_nvda_core(self._confirmResetAllSettings)
 
     @scriptHandler.script(
         description=_("Opens ClassicSpeech settings"),
@@ -1450,14 +1460,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         category=_("ClassicSpeech"),
     )
     def script_resetAllClassicSpeechSettings(self, gesture):
-        queueHandler.queueFunction(queueHandler.eventQueue, self._confirmResetAllSettings)
+        self._outside_nvda_core(self._confirmResetAllSettings)
 
     @scriptHandler.script(
         description=_("Checks for ClassicSpeech updates"),
         category=_("ClassicSpeech"),
     )
     def script_checkForClassicSpeechUpdates(self, gesture):
-        queueHandler.queueFunction(queueHandler.eventQueue, self._checkForUpdates)
+        self._outside_nvda_core(self._checkForUpdates)
 
     def _checkForUpdates(self):
         if self._is_secure_context():
@@ -1818,7 +1828,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         return dialogs
 
     def _show_message(self, message, title, style):
-        """Show a message box from a command or the NVDA menu and return the answer."""
+        """Show a message box from a command or the NVDA menu and return the answer.
+
+        It waits for the user, so call it only through ``_outside_nvda_core``.
+        """
         gui.mainFrame.prePopup()
         try:
             return wx.MessageBox(message, title, style, gui.mainFrame)
@@ -1838,7 +1851,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             return
         answer = self._show_message(
             _(
-                "Reset all ClassicSpeech settings?\n\n"
+                "Do you really want to reset all ClassicSpeech settings?\n\n"
                 "This deletes every ClassicSpeech setting, voice profile and speech and sound scheme, "
                 "including the sounds copied into your schemes, and puts back the NVDA settings "
                 "ClassicSpeech changed. To keep your schemes or voice profiles, export them first. "

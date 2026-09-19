@@ -21,7 +21,7 @@ The current automated baseline includes:
 - the **Mouse** and **Document and web formatting** Voice Profile categories;
 - **Speech and Sound Schemes**: per-item sounds and voices for object roles, states, window classes, document formatting and web elements, with named schemes.
 
-The 1.02 baseline passed the local harness gate and a wxPython build of the new dialogs. It still requires live NVDA validation of the items listed in `RELEASE-1.02.md`. 1.03 changes only the manifest's author credits. 1.04 adds the user guide and the command that opens it. 1.05 keeps each scheme in its own folder and shares schemes and voice profiles as files. 1.06 fixes loading in NVDA: the 1.05 build imported a module NVDA does not include, and was never published. 1.07 keeps ClassicSpeech settings in `ClassicSpeech/settings.ini`, restores NVDA's settings on reset and removal, stops scheme voices from changing NVDA voice settings, and checks GitHub for updates. 1.08 keeps NVDA settings changed while a voice profile overlay is active, pauses voice overlays while settings dialogs are open, and fixes Cancel in Web / Browse Mode Settings.
+The 1.02 baseline passed the local harness gate and a wxPython build of the new dialogs. It still requires live NVDA validation of the items listed in `RELEASE-1.02.md`. 1.03 changes only the manifest's author credits. 1.04 adds the user guide and the command that opens it. 1.05 keeps each scheme in its own folder and shares schemes and voice profiles as files. 1.06 fixes loading in NVDA: the 1.05 build imported a module NVDA does not include, and was never published. 1.07 keeps ClassicSpeech settings in `ClassicSpeech/settings.ini`, restores NVDA's settings on reset and removal, stops scheme voices from changing NVDA voice settings, and checks GitHub for updates. 1.08 keeps NVDA settings changed while a voice profile overlay is active, pauses voice overlays while settings dialogs are open, and fixes Cancel in Web / Browse Mode Settings. 1.09 stops Reset All ClassicSpeech Settings from freezing NVDA: its Yes/No question opened inside NVDA's core event queue.
 
 ## Current boundaries
 
@@ -38,7 +38,8 @@ The 1.02 baseline passed the local harness gate and a wxPython build of the new 
 | `../doc/en/readme.html` | User guide for every setting and command; NVDA's Add-on Store Help opens it. |
 | `DEVELOPMENT-WORKFLOW.md` | Source, branch, CI, scratchpad, and live-validation procedure. |
 | `VERSIONING.md` | CI artifact and official-release versioning rules. |
-| `RELEASE-1.08.md` | Current release notes, packaged with the add-on. |
+| `RELEASE-1.09.md` | Current release notes, packaged with the add-on. |
+| `RELEASE-1.08.md` | 1.08 notes: settings kept during voice overlays, Web / Browse Mode Cancel. |
 | `RELEASE-1.07.md` | 1.07 notes: settings file, reset and removal, voice leak fixes, update checks. |
 | `RELEASE-1.06.md` | 1.06 notes: loading fix; includes the 1.05 scheme folders and sharing. |
 | `RELEASE-1.05.md` | 1.05 notes: scheme folders and sharing (built, never published; 1.06 includes it). |

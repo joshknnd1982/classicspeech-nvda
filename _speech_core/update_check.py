@@ -327,7 +327,11 @@ class UpdateChecker:
 		addon = installed_addon()
 		if addon is None:
 			if manual:
-				self._message(
+				# Never block the caller, which may be NVDA's core queue: see _message.
+				import wx
+
+				wx.CallAfter(
+					self._message,
 					_("This copy of ClassicSpeech doesn't know where its updates are published, so it can't check for them."),
 					wx_icon="error",
 				)
@@ -440,6 +444,8 @@ class UpdateChecker:
 			shutil.rmtree(folder, ignore_errors=True)
 
 	def _message(self, message, wx_icon="information"):
+		"""Show a message box. It waits for the user, so it runs only from wx's event loop
+		(``wx.CallAfter``), never inside NVDA's core queue, which it would freeze."""
 		import gui
 		import wx
 
