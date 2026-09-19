@@ -64,6 +64,7 @@ from ._speech_core.schemes import store as scheme_store
 from ._speech_core.history import SpeechHistoryBuffer, consume_history_native_passthrough
 from ._speech_core.history_viewer import show_history_dialog, is_history_list_focus
 from ._speech_core.interrupt_control import SpeechInterruptController
+from ._speech_core.update_check import UpdateChecker
 from ._speech_core.user_guide import open_user_guide
 from ._speech_core.processors.web.summary import build_summary, format_summary_with_document_title
 from ._speech_core.processors.web.lifecycle import WebPageLifecycle
@@ -662,11 +663,19 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
         self._installClassicSpeechMenu()
         self.set_speech_hook_enabled(get_speech_hook_enabled())
+        self._updateChecker = UpdateChecker()
+        try:
+            self._updateChecker.schedule_automatic_check()
+        except Exception:
+            log.debug("ClassicSpeech: could not schedule the automatic update check", exc_info=True)
 
         log.info(f"ClassicSpeech loaded (profile: {defaultProfile}, hook: {self._speechHookRegistered})")
 
     def terminate(self):
         self._remove_config_reset_handler()
+        checker = getattr(self, "_updateChecker", None)
+        if checker is not None:
+            checker.stop()
         self._get_web_page_lifecycle().cancel()
         restore_page_orientation(self, getattr(self, "_pageOrientationRoutes", ()))
         self._pageOrientationRoutes = []
@@ -1305,18 +1314,20 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             voiceProfilesItem = classicSpeechMenu.Append(wx.ID_ANY, _("Voice Profiles..."))
             schemesItem = classicSpeechMenu.Append(wx.ID_ANY, _("Speech and Sound Schemes..."))
             classicSpeechMenu.AppendSeparator()
+            updateItem = classicSpeechMenu.Append(wx.ID_ANY, _("Check for Updates..."))
             resetItem = classicSpeechMenu.Append(wx.ID_ANY, _("Reset All ClassicSpeech Settings..."))
             submenuItem = preferencesMenu.AppendSubMenu(classicSpeechMenu, _("ClassicSpeech"))
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechGeneralSettingsMenu, generalItem)
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechWebBrowseSettingsMenu, webItem)
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechVoiceProfilesMenu, voiceProfilesItem)
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechSchemesMenu, schemesItem)
+            sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechUpdateMenu, updateItem)
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechResetMenu, resetItem)
             self._classicSpeechPreferencesMenu = preferencesMenu
             self._classicSpeechMenu = classicSpeechMenu
             self._classicSpeechMenuItem = submenuItem
             self._classicSpeechMenuItems = [
-                generalItem, webItem, voiceProfilesItem, schemesItem, resetItem,
+                generalItem, webItem, voiceProfilesItem, schemesItem, updateItem, resetItem,
             ]
         except Exception:
             self._classicSpeechPreferencesMenu = None
@@ -1390,6 +1401,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def onClassicSpeechSchemesMenu(self, evt):
         queueHandler.queueFunction(queueHandler.eventQueue, self._openSpeechSchemes)
 
+    def onClassicSpeechUpdateMenu(self, evt):
+        queueHandler.queueFunction(queueHandler.eventQueue, self._checkForUpdates)
+
     def onClassicSpeechResetMenu(self, evt):
         queueHandler.queueFunction(queueHandler.eventQueue, self._confirmResetAllSettings)
 
@@ -1437,6 +1451,24 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     )
     def script_resetAllClassicSpeechSettings(self, gesture):
         queueHandler.queueFunction(queueHandler.eventQueue, self._confirmResetAllSettings)
+
+    @scriptHandler.script(
+        description=_("Checks for ClassicSpeech updates"),
+        category=_("ClassicSpeech"),
+    )
+    def script_checkForClassicSpeechUpdates(self, gesture):
+        queueHandler.queueFunction(queueHandler.eventQueue, self._checkForUpdates)
+
+    def _checkForUpdates(self):
+        if self._is_secure_context():
+            return
+        checker = getattr(self, "_updateChecker", None)
+        if checker is None:
+            checker = self._updateChecker = UpdateChecker()
+        try:
+            checker.check(manual=True)
+        except Exception:
+            log.exception("ClassicSpeech: update check failed")
 
     @scriptHandler.script(
         description=_("Turns ClassicSpeech speech and sound schemes on or off"),

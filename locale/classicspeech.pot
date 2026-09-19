@@ -34,6 +34,10 @@ msgstr ""
 msgid "&Copy"
 msgstr ""
 
+#: _speech_core/update_check.py:461
+msgid "&Download and install"
+msgstr ""
+
 #: _speech_core/settings/document_reading_proofing_panel.py:128
 msgid "&Editor revisions"
 msgstr ""
@@ -76,6 +80,10 @@ msgstr ""
 
 #: _speech_core/settings/web/dialog.py:218
 msgid "&Maximum number of characters on one line"
+msgstr ""
+
+#: _speech_core/update_check.py:461
+msgid "&Not now"
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:226
@@ -222,7 +230,7 @@ msgstr ""
 msgid "Add window class"
 msgstr ""
 
-#: _speech_core/settings/advanced_panel.py:29 _speech_core/settings/constants.py:7 _speech_core/settings/dialog.py:81 _speech_core/settings/document_reading_proofing_panel.py:171
+#: _speech_core/settings/advanced_panel.py:30 _speech_core/settings/constants.py:7 _speech_core/settings/dialog.py:81 _speech_core/settings/document_reading_proofing_panel.py:171
 msgid "Advanced"
 msgstr ""
 
@@ -306,7 +314,7 @@ msgstr ""
 msgid "Announce only first item"
 msgstr ""
 
-#: classicSpeech.py:1652
+#: classicSpeech.py:1684
 msgid "Announces the default button in the current dialog"
 msgstr ""
 
@@ -446,6 +454,22 @@ msgstr ""
 msgid "Check boxes"
 msgstr ""
 
+#: _speech_core/settings/advanced_panel.py:83
+msgid "Check for ClassicSpeech updates automatically"
+msgstr ""
+
+#: classicSpeech.py:1317
+msgid "Check for Updates..."
+msgstr ""
+
+#: _speech_core/update_check.py:342
+msgid "Checking for ClassicSpeech updates"
+msgstr ""
+
+#: classicSpeech.py:1456
+msgid "Checks for ClassicSpeech updates"
+msgstr ""
+
 #: _speech_core/settings/schemes_panel.py:571
 msgid "Choose a sound for {item}"
 msgstr ""
@@ -466,7 +490,7 @@ msgstr ""
 msgid "Choose the active verbosity profile and which object details ClassicSpeech speaks for that profile."
 msgstr ""
 
-#: classicSpeech.py:1309 classicSpeech.py:1398 classicSpeech.py:1405 classicSpeech.py:1412 classicSpeech.py:1419 classicSpeech.py:1426 classicSpeech.py:1436 classicSpeech.py:1443 classicSpeech.py:1455 classicSpeech.py:1513 classicSpeech.py:1530 classicSpeech.py:1568 classicSpeech.py:1575 classicSpeech.py:1582 classicSpeech.py:1589 classicSpeech.py:1596 classicSpeech.py:1603 classicSpeech.py:1653
+#: classicSpeech.py:1319 classicSpeech.py:1412 classicSpeech.py:1419 classicSpeech.py:1426 classicSpeech.py:1433 classicSpeech.py:1440 classicSpeech.py:1450 classicSpeech.py:1457 classicSpeech.py:1475 classicSpeech.py:1487 classicSpeech.py:1545 classicSpeech.py:1562 classicSpeech.py:1600 classicSpeech.py:1607 classicSpeech.py:1614 classicSpeech.py:1621 classicSpeech.py:1628 classicSpeech.py:1635 classicSpeech.py:1685
 msgid "ClassicSpeech"
 msgstr ""
 
@@ -486,7 +510,15 @@ msgstr ""
 msgid "ClassicSpeech Web / Browse Mode Settings"
 msgstr ""
 
-#: classicSpeech.py:1826
+#: _speech_core/update_check.py:369
+msgid "ClassicSpeech could not check for updates. {reason}"
+msgstr ""
+
+#: _speech_core/update_check.py:427
+msgid "ClassicSpeech could not download the update. {reason}"
+msgstr ""
+
+#: classicSpeech.py:1858
 msgid "ClassicSpeech could not finish the reset. Details are in the NVDA log."
 msgstr ""
 
@@ -494,16 +526,28 @@ msgstr ""
 msgid "ClassicSpeech could not load the {engine} synthesizer. The item keeps using the active synthesizer."
 msgstr ""
 
+#: _speech_core/update_check.py:378
+msgid "ClassicSpeech is up to date. You have version {version}, the latest release."
+msgstr ""
+
 #: _speech_core/settings/schemes_dialog.py:209 _speech_core/settings/schemes_dialog.py:228
 msgid "ClassicSpeech scheme package"
 msgstr ""
 
-#: classicSpeech.py:1831
+#: classicSpeech.py:1863
 msgid "ClassicSpeech settings were reset, and the NVDA settings it changed were put back. ClassicSpeech now uses its default settings. To remove ClassicSpeech, uninstall it from the Add-on Store."
+msgstr ""
+
+#: _speech_core/update_check.py:403 _speech_core/update_check.py:449
+msgid "ClassicSpeech update"
 msgstr ""
 
 #: _speech_core/settings/voice_profiles_dialog.py:377 _speech_core/settings/voice_profiles_dialog.py:392
 msgid "ClassicSpeech voice profiles"
+msgstr ""
+
+#: _speech_core/update_check.py:386
+msgid "ClassicSpeech {new} is available. You have version {installed}."
 msgstr ""
 
 #: _speech_core/settings/rename_list_panel.py:27
@@ -518,7 +562,7 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: classicSpeech.py:1802
+#: classicSpeech.py:1834
 msgid "Close the ClassicSpeech settings dialogs first, then choose Reset All ClassicSpeech Settings again."
 msgstr ""
 
@@ -546,8 +590,8 @@ msgstr ""
 msgid "Complementary landmark"
 msgstr ""
 
-#: _speech_core/settings/advanced_panel.py:30
-msgid "Configure ClassicSpeech diagnostic logging and the speech processing hook."
+#: _speech_core/settings/advanced_panel.py:31
+msgid "Configure ClassicSpeech diagnostic logging, the speech processing hook and update checks."
 msgstr ""
 
 #: _speech_core/settings/text/panel.py:66
@@ -578,7 +622,7 @@ msgstr ""
 msgid "Content information landmark"
 msgstr ""
 
-#: classicSpeech.py:1595
+#: classicSpeech.py:1627
 msgid "Copies the current ClassicSpeech history item to the clipboard"
 msgstr ""
 
@@ -590,7 +634,7 @@ msgstr ""
 msgid "Copy scheme"
 msgstr ""
 
-#: classicSpeech.py:1610
+#: classicSpeech.py:1642
 msgid "Could not open speech history"
 msgstr ""
 
@@ -614,7 +658,7 @@ msgstr ""
 msgid "Day month year"
 msgstr ""
 
-#: classicSpeech.py:1666 classicSpeech.py:1675
+#: classicSpeech.py:1698 classicSpeech.py:1707
 msgid "Default button {name}"
 msgstr ""
 
@@ -674,6 +718,14 @@ msgstr ""
 msgid "Double strikethrough"
 msgstr ""
 
+#: _speech_core/update_check.py:399
+msgid "Download and install it now? NVDA asks you to confirm the installation, then offers to restart. Your ClassicSpeech settings are kept."
+msgstr ""
+
+#: _speech_core/update_check.py:413
+msgid "Downloading ClassicSpeech {version}"
+msgstr ""
+
 #: _speech_core/schemes/catalog.py:254
 msgid "Draft comments"
 msgstr ""
@@ -710,11 +762,11 @@ msgstr ""
 msgid "Emphasised"
 msgstr ""
 
-#: _speech_core/settings/advanced_panel.py:75
+#: _speech_core/settings/advanced_panel.py:76
 msgid "Enable ClassicSpeech diagnostic logging"
 msgstr ""
 
-#: _speech_core/settings/advanced_panel.py:37
+#: _speech_core/settings/advanced_panel.py:38
 msgid "Enable ClassicSpeech speech processing hook"
 msgstr ""
 
@@ -842,8 +894,20 @@ msgstr ""
 msgid "Full numbers"
 msgstr ""
 
-#: classicSpeech.py:1303
+#: classicSpeech.py:1312
 msgid "General Settings..."
+msgstr ""
+
+#: _speech_core/update_check.py:200 _speech_core/update_check.py:240
+msgid "GitHub answered with error {code}."
+msgstr ""
+
+#: _speech_core/update_check.py:196
+msgid "GitHub could not be reached. Check your internet connection."
+msgstr ""
+
+#: _speech_core/update_check.py:204
+msgid "GitHub's answer could not be read."
 msgstr ""
 
 #: _speech_core/settings/speech_timing_panel.py:57
@@ -1158,11 +1222,11 @@ msgstr ""
 msgid "Month day year"
 msgstr ""
 
-#: classicSpeech.py:1588
+#: classicSpeech.py:1620
 msgid "Moves to the newest ClassicSpeech history item"
 msgstr ""
 
-#: classicSpeech.py:1581
+#: classicSpeech.py:1613
 msgid "Moves to the oldest ClassicSpeech history item"
 msgstr ""
 
@@ -1182,6 +1246,10 @@ msgstr ""
 msgid "NVDA announces the new font size. Specific sizes are listed separately."
 msgstr ""
 
+#: _speech_core/update_check.py:435
+msgid "NVDA could not install the update. Details are in the NVDA log."
+msgstr ""
+
 #: _speech_core/settings/constants.py:52 _speech_core/settings/number_processing_panel.py:32 _speech_core/settings/text/panel.py:35 _speech_core/settings/text/panel.py:45
 msgid "NVDA native"
 msgstr ""
@@ -1192,6 +1260,10 @@ msgstr ""
 
 #: _speech_core/settings/web/dialog.py:373
 msgid "NVDA native, no summary"
+msgstr ""
+
+#: _speech_core/update_check.py:175
+msgid "NVDA's internet support is not available."
 msgstr ""
 
 #: _speech_core/settings/constants.py:83 _speech_core/settings/verbosity_panel.py:46
@@ -1230,11 +1302,11 @@ msgstr ""
 msgid "No additional delay"
 msgstr ""
 
-#: classicSpeech.py:1673 classicSpeech.py:1678
+#: classicSpeech.py:1705 classicSpeech.py:1710
 msgid "No default button"
 msgstr ""
 
-#: classicSpeech.py:1565
+#: classicSpeech.py:1597
 msgid "No focus"
 msgstr ""
 
@@ -1290,7 +1362,7 @@ msgstr ""
 msgid "No longer underlined"
 msgstr ""
 
-#: classicSpeech.py:1548 classicSpeech.py:1558
+#: classicSpeech.py:1580 classicSpeech.py:1590
 msgid "No object"
 msgstr ""
 
@@ -1362,27 +1434,27 @@ msgstr ""
 msgid "Open schemes folder"
 msgstr ""
 
-#: classicSpeech.py:1418
+#: classicSpeech.py:1432
 msgid "Opens ClassicSpeech Speech and Sound Schemes"
 msgstr ""
 
-#: classicSpeech.py:1411
+#: classicSpeech.py:1425
 msgid "Opens ClassicSpeech Voice Profiles"
 msgstr ""
 
-#: classicSpeech.py:1404
+#: classicSpeech.py:1418
 msgid "Opens ClassicSpeech Web / Browse Mode Settings"
 msgstr ""
 
-#: classicSpeech.py:1397
+#: classicSpeech.py:1411
 msgid "Opens ClassicSpeech settings"
 msgstr ""
 
-#: classicSpeech.py:1602
+#: classicSpeech.py:1634
 msgid "Opens the ClassicSpeech history dialog"
 msgstr ""
 
-#: classicSpeech.py:1425
+#: classicSpeech.py:1439
 msgid "Opens the ClassicSpeech user guide"
 msgstr ""
 
@@ -1418,7 +1490,7 @@ msgstr ""
 msgid "Page ready message:"
 msgstr ""
 
-#: classicSpeech.py:1520 classicSpeech.py:1525
+#: classicSpeech.py:1552 classicSpeech.py:1557
 msgid "Page summary is not available here."
 msgstr ""
 
@@ -1570,15 +1642,15 @@ msgstr ""
 msgid "Report transparent color values"
 msgstr ""
 
-#: classicSpeech.py:1512
+#: classicSpeech.py:1544
 msgid "Reports selected Browse Mode element counts for the current page"
 msgstr ""
 
-#: classicSpeech.py:1308
+#: classicSpeech.py:1318
 msgid "Reset All ClassicSpeech Settings..."
 msgstr ""
 
-#: classicSpeech.py:1799
+#: classicSpeech.py:1831
 msgid "Reset ClassicSpeech"
 msgstr ""
 
@@ -1606,7 +1678,7 @@ msgstr ""
 msgid "Reset Tokens to Defaults Now"
 msgstr ""
 
-#: classicSpeech.py:1808
+#: classicSpeech.py:1840
 msgid "Reset all ClassicSpeech settings?\n\nThis deletes every ClassicSpeech setting, voice profile and speech and sound scheme, including the sounds copied into your schemes, and puts back the NVDA settings ClassicSpeech changed. To keep your schemes or voice profiles, export them first. You can't undo a reset.\n\nNVDA saves its configuration after the reset."
 msgstr ""
 
@@ -1626,7 +1698,7 @@ msgstr ""
 msgid "Reset token editor settings to defaults now?\n\nThis will immediately clear all global token renames and muted labels, and restore the default token order.\n\nCancel will not undo this reset.\n\nChoose Yes to reset now, or No to keep your current settings."
 msgstr ""
 
-#: classicSpeech.py:1435
+#: classicSpeech.py:1449
 msgid "Resets all ClassicSpeech settings and restores the NVDA settings it changed"
 msgstr ""
 
@@ -1638,11 +1710,11 @@ msgstr ""
 msgid "Restore native message\tDelete"
 msgstr ""
 
-#: classicSpeech.py:1574
+#: classicSpeech.py:1606
 msgid "Reviews the next ClassicSpeech history item"
 msgstr ""
 
-#: classicSpeech.py:1567
+#: classicSpeech.py:1599
 msgid "Reviews the previous ClassicSpeech history item"
 msgstr ""
 
@@ -1690,7 +1762,7 @@ msgstr ""
 msgid "Scheme name:"
 msgstr ""
 
-#: classicSpeech.py:1460
+#: classicSpeech.py:1492
 msgid "Scheme {name}"
 msgstr ""
 
@@ -1750,7 +1822,7 @@ msgstr ""
 msgid "Some"
 msgstr ""
 
-#: classicSpeech.py:1842
+#: classicSpeech.py:1874
 msgid "Some files could not be deleted. Delete this folder yourself: {folder}"
 msgstr ""
 
@@ -1770,7 +1842,7 @@ msgstr ""
 msgid "Spea&k a voice preview"
 msgstr ""
 
-#: _speech_core/settings/advanced_panel.py:44
+#: _speech_core/settings/advanced_panel.py:45
 msgid "Speak a message when the speech hook loads"
 msgstr ""
 
@@ -1790,7 +1862,7 @@ msgstr ""
 msgid "Speak single digits if number contains:"
 msgstr ""
 
-#: classicSpeech.py:1529
+#: classicSpeech.py:1561
 msgid "Speaks the current object. Press twice quickly to spell and copy it"
 msgstr ""
 
@@ -1818,15 +1890,15 @@ msgstr ""
 msgid "Speech and Sound Schemes"
 msgstr ""
 
-#: classicSpeech.py:1306
+#: classicSpeech.py:1315
 msgid "Speech and Sound Schemes..."
 msgstr ""
 
-#: classicSpeech.py:1449
+#: classicSpeech.py:1481
 msgid "Speech and sound schemes off"
 msgstr ""
 
-#: classicSpeech.py:1449
+#: classicSpeech.py:1481
 msgid "Speech and sound schemes on"
 msgstr ""
 
@@ -1834,11 +1906,11 @@ msgstr ""
 msgid "Speech history cleared"
 msgstr ""
 
-#: _speech_core/settings/advanced_panel.py:60
+#: _speech_core/settings/advanced_panel.py:61
 msgid "Speech hook loaded message"
 msgstr ""
 
-#: _speech_core/settings/advanced_panel.py:52
+#: _speech_core/settings/advanced_panel.py:53
 msgid "Speech hook loaded message:"
 msgstr ""
 
@@ -1950,7 +2022,7 @@ msgstr ""
 msgid "Suppress dashes inside words, such as sister-in-law"
 msgstr ""
 
-#: classicSpeech.py:1454
+#: classicSpeech.py:1486
 msgid "Switches to the next ClassicSpeech speech and sound scheme"
 msgstr ""
 
@@ -2006,8 +2078,40 @@ msgstr ""
 msgid "The active synthesizer switches voices fastest. Another synthesizer is loaded each time this item is spoken and unloaded afterwards, which adds a noticeable delay."
 msgstr ""
 
+#: _speech_core/update_check.py:257
+msgid "The add-on file could not be downloaded."
+msgstr ""
+
+#: _speech_core/update_check.py:221 _speech_core/update_check.py:247
+msgid "The add-on file is larger than expected."
+msgstr ""
+
+#: _speech_core/update_check.py:232
+msgid "The checksum file could not be downloaded."
+msgstr ""
+
+#: _speech_core/update_check.py:234
+msgid "The checksum file could not be read."
+msgstr ""
+
+#: _speech_core/update_check.py:261
+msgid "The downloaded file does not match its checksum, so it was deleted."
+msgstr ""
+
 #: _speech_core/settings/voice_profiles_dialog.py:412
 msgid "The file has no voice profiles for your current synthesizer. They are used when you switch to one of those synthesizers."
+msgstr ""
+
+#: _speech_core/update_check.py:206
+msgid "The latest release on GitHub has no version number ClassicSpeech understands."
+msgstr ""
+
+#: _speech_core/update_check.py:217
+msgid "The release has no add-on file."
+msgstr ""
+
+#: _speech_core/update_check.py:219
+msgid "The release has no checksum file, so its add-on file can't be checked."
 msgstr ""
 
 #: _speech_core/settings/schemes_dialog.py:219
@@ -2042,6 +2146,10 @@ msgstr ""
 msgid "The voice profiles could not be imported. See the NVDA log for details."
 msgstr ""
 
+#: _speech_core/update_check.py:198
+msgid "There are no ClassicSpeech releases on GitHub yet."
+msgstr ""
+
 #: _speech_core/settings/voice_profiles_dialog.py:374
 msgid "There are no voice profiles to export."
 msgstr ""
@@ -2050,12 +2158,20 @@ msgstr ""
 msgid "These sounds were not found and were left out:"
 msgstr ""
 
+#: _speech_core/update_check.py:331
+msgid "This copy of ClassicSpeech doesn't know where its updates are published, so it can't check for them."
+msgstr ""
+
 #: _speech_core/settings/schemes_dialog.py:234
 msgid "This file is not a ClassicSpeech scheme package."
 msgstr ""
 
 #: _speech_core/settings/voice_profiles_dialog.py:398
 msgid "This file is not a ClassicSpeech voice profiles file, or it has no voice profiles."
+msgstr ""
+
+#: _speech_core/update_check.py:394
+msgid "This release has no add-on file to install. Download it from {url}"
 msgstr ""
 
 #: _speech_core/settings/schemes_panel.py:525
@@ -2078,11 +2194,11 @@ msgstr ""
 msgid "Top of speech history"
 msgstr ""
 
-#: _speech_core/settings/advanced_panel.py:67
+#: _speech_core/settings/advanced_panel.py:68
 msgid "Turning the speech hook off leaves ClassicSpeech commands available, but lets NVDA speech pass through without ClassicSpeech processing."
 msgstr ""
 
-#: classicSpeech.py:1442
+#: classicSpeech.py:1474
 msgid "Turns ClassicSpeech speech and sound schemes on or off"
 msgstr ""
 
@@ -2138,7 +2254,7 @@ msgstr ""
 msgid "Visited links"
 msgstr ""
 
-#: classicSpeech.py:1305
+#: classicSpeech.py:1314
 msgid "Voice Profiles..."
 msgstr ""
 
@@ -2150,12 +2266,16 @@ msgstr ""
 msgid "Wave files (*.wav)|*.wav"
 msgstr ""
 
-#: classicSpeech.py:1304
+#: classicSpeech.py:1313
 msgid "Web / Browse Mode Settings..."
 msgstr ""
 
 #: _speech_core/settings/web/dialog.py:297 _speech_core/settings/web/dialog.py:98
 msgid "Web Element Reporting"
+msgstr ""
+
+#: _speech_core/update_check.py:392
+msgid "What's new:"
 msgstr ""
 
 #: _speech_core/settings/schemes_panel.py:219
@@ -2286,7 +2406,7 @@ msgstr ""
 msgid "table"
 msgstr ""
 
-#: classicSpeech.py:1665
+#: classicSpeech.py:1697
 msgid "unknown"
 msgstr ""
 
@@ -2298,7 +2418,7 @@ msgstr ""
 msgid "voice on {engine}"
 msgstr ""
 
-#: classicSpeech.py:1837
+#: classicSpeech.py:1869
 msgid "{count} NVDA settings were left as they are, because they were changed in NVDA's own settings after ClassicSpeech last changed them."
 msgstr ""
 
