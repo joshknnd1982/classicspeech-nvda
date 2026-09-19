@@ -11,12 +11,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
 RUNTIME_FILES = ("classicSpeech.py",)
+# NVDA runs installTasks.py from the add-on root when the add-on is installed or removed.
+ROOT_FILES = ("installTasks.py",)
 RUNTIME_DIRECTORIES = ("_speech_core",)
 APP_MODULE_DIRECTORIES = ("appModules",)
 # NVDA's Add-on Store Help opens doc/<language>/<docFileName> from the add-on root.
 DOC_DIRECTORIES = ("doc",)
 LOCALE_DIRECTORIES = ("locale",)
-RELEASE_NOTES = "RELEASE-1.06.md"
+RELEASE_NOTES = "RELEASE-1.07.md"
 _NUMERIC_VERSION = re.compile(r"^\d+\.\d+(?:\.\d+)?$")
 _SAFE_LABEL = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
@@ -112,6 +114,11 @@ def main() -> None:
             if not source.is_file():
                 raise SystemExit(f"Missing runtime file: {source}")
             archive.write(source, f"globalPlugins/{relative_path}")
+        for relative_path in ROOT_FILES:
+            source = ROOT / relative_path
+            if not source.is_file():
+                raise SystemExit(f"Missing add-on root file: {source}")
+            archive.write(source, relative_path)
         for relative_path in RUNTIME_DIRECTORIES:
             source = ROOT / relative_path
             if not source.is_dir():
@@ -143,7 +150,10 @@ def main() -> None:
         members = set(archive.namelist())
         required = {
             "manifest.ini",
+            "installTasks.py",
             "globalPlugins/classicSpeech.py",
+            "globalPlugins/_speech_core/nvda_settings_backup.py",
+            "globalPlugins/_speech_core/settings_file.py",
             "globalPlugins/_speech_core/processors/web/page_entry.py",
             "globalPlugins/_speech_core/settings/text/__init__.py",
             "globalPlugins/_speech_core/settings/text/config.py",

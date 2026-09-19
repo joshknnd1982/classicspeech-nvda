@@ -3,6 +3,7 @@
 import config
 import logHandler
 
+from .nvda_settings_backup import classic_speech_settings_exist
 from .settings.edge_notifications_config import DEFAULT_ENABLED_ACTIVITY_IDS
 
 log = logHandler.log
@@ -20,6 +21,9 @@ _CLASSIC_SPEECH_SPEC = {
     "announceSpeechHookLoaded": "boolean(default=False)",
     "speechHookLoadedMessage": "string(default='ClassicSpeech hook loaded')",
     "debugLogging": "boolean(default=False)",
+    "checkForUpdatesAutomatically": "boolean(default=True)",
+    # Seconds since the epoch of the last successful update check.
+    "lastUpdateCheck": "integer(default=0)",
     "announceMenuOpen": "boolean(default=True)",
     "announceMenuClose": "boolean(default=True)",
     "announceMenuBarFocus": "boolean(default=True)",
@@ -135,8 +139,11 @@ _CLASSIC_SPEECH_SPEC = {
 
 def _initClassicSpeechConfig():
     """
-    Register and validate the ClassicSpeech config section early, and force it to
-    live in the base config instead of riding NVDA config profiles.
+    Register the ClassicSpeech config section early, force it to live in the
+    base config instead of riding NVDA config profiles, and load ClassicSpeech's
+    settings into it from its own settings file (``settings_file``).
+
+    Returns True when ClassicSpeech settings existed before this start.
     """
     try:
         config.conf.BASE_ONLY_SECTIONS.add("classicSpeech")
@@ -147,7 +154,15 @@ def _initClassicSpeechConfig():
         config.conf.spec["classicSpeech"] = _CLASSIC_SPEECH_SPEC
     except Exception:
         log.exception("ClassicSpeech: failed to register config spec")
-        return
+        return False
+
+    try:
+        from .settings_file import load_into_nvda
+
+        load_into_nvda()
+    except Exception:
+        log.exception("ClassicSpeech: failed to load its settings file")
+    had_settings = classic_speech_settings_exist()
 
     # The NVDA config manager owns validation of its base ConfigObj. A late
     # add-on section is safe to register in ``config.conf.spec`` here, but
@@ -164,6 +179,7 @@ def _initClassicSpeechConfig():
         )
     except Exception:
         log.debug("ClassicSpeech: could not normalize late Boolean config values", exc_info=True)
+    return had_settings
 
 
 def _getClassicSpeechSection():

@@ -190,10 +190,13 @@ class ClassicSpeechNVDAConfigStartupTests(unittest.TestCase):
 				item = FakeItem(len(self.items) + 1, label)
 				self.items.append(item)
 				return item
+			def AppendSeparator(self):
+				self.items.append(FakeItem(len(self.items) + 1, "-"))
 			def Destroy(self): pass
 
 		class FakePreferencesMenu:
 			def AppendSubMenu(self, menu, label):
+				self.submenu = menu
 				return FakeItem(99, label)
 
 		bindings = []
@@ -211,10 +214,17 @@ class ClassicSpeechNVDAConfigStartupTests(unittest.TestCase):
 
 		self.assertEqual([item.label for item in plugin._classicSpeechMenuItems], [
 			"General Settings...", "Web / Browse Mode Settings...", "Voice Profiles...",
-			"Speech and Sound Schemes...",
+			"Speech and Sound Schemes...", "Check for Updates...", "Reset All ClassicSpeech Settings...",
 		])
+		# A separator keeps the update check and the reset apart from the settings dialogs.
+		self.assertEqual(
+			[item.label for item in sys_tray_icon.preferencesMenu.submenu.items][4:],
+			["-", "Check for Updates...", "Reset All ClassicSpeech Settings..."],
+		)
 		self.assertIn(("onClassicSpeechVoiceProfilesMenu", "Voice Profiles..."), bindings)
 		self.assertIn(("onClassicSpeechSchemesMenu", "Speech and Sound Schemes..."), bindings)
+		self.assertIn(("onClassicSpeechUpdateMenu", "Check for Updates..."), bindings)
+		self.assertIn(("onClassicSpeechResetMenu", "Reset All ClassicSpeech Settings..."), bindings)
 		self.assertEqual(plugin._classicSpeechMenuItem.label, "ClassicSpeech")
 
 	def test_preferences_submenu_cleanup_removes_and_destroys_classic_speech_item(self):

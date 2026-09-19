@@ -10,6 +10,8 @@ import config
 import globalPluginHandler
 import logHandler
 
+from ..nvda_settings_backup import set_nvda_setting
+
 
 log = logHandler.log
 
@@ -183,10 +185,9 @@ def _get_nvda_setting(section: str, key: str, default=False):
 
 
 def _set_nvda_setting(section: str, key: str, value):
+	"""Set one of NVDA's own settings, recording its earlier value for a reset."""
 	try:
-		if section not in config.conf:
-			config.conf[section] = {}
-		config.conf[section][key] = bool(value)
+		set_nvda_setting((section,), key, bool(value))
 	except Exception:
 		log.exception(f"Failed to set NVDA config {section}.{key}")
 

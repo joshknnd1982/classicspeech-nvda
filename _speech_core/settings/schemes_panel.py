@@ -21,7 +21,9 @@ import wx
 import logHandler
 
 from ..localization import _
+from ..nvda_settings_backup import recording_nvda_change
 from ..schemes import catalog as schemeCatalog
+from ..voice_profile_trigger import keep_settings_out_of_nvda_config
 from .voice_profile_controls import VoiceProfileControls
 from .voice_profiles_config import (
 	get_synth_id,
@@ -43,6 +45,23 @@ SHOW_CUSTOMIZED = 1
 #: Installed synthesizers as ``[(name, description)]``; discovered on request
 #: because discovery imports every synthesizer driver.
 _synth_list_cache = None
+
+
+def load_editing_synthesizer(engine):
+	"""Load another synthesizer only to edit and preview its voices.
+
+	The dialog changes this copy's settings freely, so it must never save them
+	as the user's NVDA voice settings, which NVDA would otherwise do when it
+	saves its configuration and when the copy is unloaded. Loading a
+	synthesizer NVDA has never used adds its default settings to NVDA's
+	configuration; that is recorded, so resetting ClassicSpeech removes them.
+	"""
+	import synthDriverHandler
+
+	with recording_nvda_change(("speech",), engine):
+		probe = synthDriverHandler.getSynthInstance(engine)
+	keep_settings_out_of_nvda_config(probe)
+	return probe
 
 
 def _installed_font_names():
@@ -439,8 +458,7 @@ class SchemeItemsPanel(wx.Panel):
 		if probe is not None:
 			return probe
 		try:
-			import synthDriverHandler
-			probe = synthDriverHandler.getSynthInstance(engine)
+			probe = load_editing_synthesizer(engine)
 		except Exception:
 			log.error("ClassicSpeech schemes: could not load synthesizer %s", engine, exc_info=True)
 			wx.MessageBox(

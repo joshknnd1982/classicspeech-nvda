@@ -12,6 +12,8 @@ import copy
 import config
 import logHandler
 
+from ...nvda_settings_backup import set_nvda_setting
+
 log = logHandler.log
 
 VIRTUAL_BUFFER_KEYS = (
@@ -98,14 +100,6 @@ _LIST_VIRTUAL_BUFFER_KEYS = {"browseModeTouchNavigationElements"}
 _FEATURE_FLAG_VIRTUAL_BUFFER_KEYS = {"loadChromiumVBufOnBusyState"}
 
 
-def _ensure_section(section_name: str):
-	section = _get_section(section_name)
-	if section is None:
-		config.conf[section_name] = {}
-		section = config.conf[section_name]
-	return section
-
-
 def _coerce_virtual_buffer_value(key: str, value):
 	if key in _INTEGER_VIRTUAL_BUFFER_KEYS:
 		try:
@@ -145,8 +139,7 @@ def get_virtual_buffer_setting(key: str):
 def set_virtual_buffer_setting(key: str, value) -> None:
 	if key not in VIRTUAL_BUFFER_KEYS:
 		raise KeyError(key)
-	section = _ensure_section("virtualBuffers")
-	section[key] = _coerce_virtual_buffer_value(key, value)
+	set_nvda_setting(("virtualBuffers",), key, _coerce_virtual_buffer_value(key, value))
 
 
 def get_web_document_formatting_setting(key: str):
@@ -160,8 +153,7 @@ def get_web_document_formatting_setting(key: str):
 def set_web_document_formatting_setting(key: str, value) -> None:
 	if key not in WEB_DOCUMENT_FORMATTING_KEYS:
 		raise KeyError(key)
-	section = _ensure_section("documentFormatting")
-	section[key] = _coerce_document_formatting_value(key, value)
+	set_nvda_setting(("documentFormatting",), key, _coerce_document_formatting_value(key, value))
 
 
 def get_annotation_setting(key: str):
@@ -174,8 +166,7 @@ def get_annotation_setting(key: str):
 def set_annotation_setting(key: str, value) -> None:
 	if key not in ANNOTATION_KEYS:
 		raise KeyError(key)
-	section = _ensure_section("annotations")
-	section[key] = bool(value)
+	set_nvda_setting(("annotations",), key, bool(value))
 
 
 def _capture_section(section_name: str) -> dict:
