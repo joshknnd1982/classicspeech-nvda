@@ -11,14 +11,29 @@ Callers that build text for other purposes (NVDA+F formatting reports, the
 spelled and copied result of NVDA+Tab pressed twice) run outside those scopes
 and receive NVDA's output unchanged. Every wrapper returns NVDA's original
 result whenever schemes are disabled or nothing relevant is configured.
+
+One ``getTextInfoSpeech`` call can yield more than one sequence: NVDA speaks a
+single character by yielding its fields first and the spelled character after,
+and Say All flattens every sequence of a reading chunk into one list. Each
+sequence therefore starts with the formatting and elements that were in force
+when it began, so an item's voice and sound keep applying whichever reading
+command produced the speech.
+
+NVDA also only fetches the document formatting it was asked to announce, and by
+default looks no further than the first character of the range it is speaking.
+``format_needs`` turns the configured items into the settings NVDA needs to
+fetch them; NVDA's own announcement builders are given the user's real settings
+back, so what NVDA says never changes.
 """
 from __future__ import annotations
 
 import functools
+import weakref
 from contextvars import ContextVar
 
 import logHandler
 
+from . import format_needs
 from . import labels as schemeLabels
 from . import store
 from .markers import (
@@ -36,12 +51,17 @@ log = logHandler.log
 _object_output = ContextVar("classicSpeechSchemeObjectOutput", default=False)
 #: The object whose properties NVDA is currently describing.
 _object_context = ContextVar("classicSpeechSchemeObject", default=None)
-#: A list collecting container elements while getTextInfoSpeech runs.
-_text_collector = ContextVar("classicSpeechSchemeTextCollector", default=None)
+#: The ``_TextCallState`` of the ``getTextInfoSpeech`` call that is running.
+_text_state = ContextVar("classicSpeechSchemeTextState", default=None)
 #: True while NVDA builds control field (element) speech.
 _in_control_field = ContextVar("classicSpeechSchemeControlField", default=False)
 
 _WRAPPED_MARK = "_classicSpeechSchemeWrapper"
+
+#: NVDA units that make ``getTextInfoSpeech`` ask for extra detail. For those it
+#: does not repeat the elements that already contain the text, so the element
+#: stack has to be carried over from the previous call for the same object.
+_EXTRA_DETAIL_UNITS = ("character", "word")
 
 
 def _configured_items():
@@ -66,12 +86,16 @@ def _reason_name(reason) -> str:
 	return str(getattr(reason, "name", "") or "")
 
 
-def _voice_items(items_cfg):
-	return {
-		item_id
-		for item_id, settings in items_cfg.items()
-		if isinstance(settings.get("voice"), dict) and settings["voice"].get("enabled")
-	}
+def _marking_items(items_cfg):
+	"""Items whose voice or sound applies to a run of text or a whole element."""
+	marking = set()
+	for item_id, settings in items_cfg.items():
+		voice = settings.get("voice")
+		if isinstance(voice, dict) and voice.get("enabled"):
+			marking.add(item_id)
+		elif settings.get("sound"):
+			marking.add(item_id)
+	return marking
 
 
 def _insert_label_markers(sequence, table, items_cfg, start=0):
@@ -98,12 +122,65 @@ def _argument(args, kwargs, index, name, default=None):
 	return default
 
 
+def _replace_argument(args, kwargs, index, name, value):
+	"""Return ``(args, kwargs)`` with one argument replaced, however it was passed."""
+	if name in kwargs:
+		kwargs = dict(kwargs)
+		kwargs[name] = value
+		return args, kwargs
+	if len(args) > index:
+		args = list(args)
+		args[index] = value
+		return tuple(args), kwargs
+	kwargs = dict(kwargs)
+	kwargs[name] = value
+	return args, kwargs
+
+
+class _TextCallState:
+	"""What one ``getTextInfoSpeech`` call has marked so far."""
+
+	__slots__ = (
+		"items_cfg", "marking_items", "real_format_config", "enriched_format_config",
+		"extra_detail", "stack", "removed", "relative", "format_range", "format_delivered",
+	)
+
+	def __init__(self, items_cfg, marking_items, real_format_config, enriched_format_config, extra_detail):
+		self.items_cfg = items_cfg
+		self.marking_items = marking_items
+		self.real_format_config = real_format_config
+		self.enriched_format_config = enriched_format_config
+		self.extra_detail = extra_detail
+		#: ``[key, items, presented]`` for every control field containing the text.
+		self.stack = []
+		#: Control fields NVDA reported leaving before it described this text.
+		self.removed = 0
+		#: ``(key, items)`` for elements opened inside the text and still open.
+		self.relative = []
+		#: The scheme items describing the text being spoken right now.
+		self.format_range = ()
+		#: True once a sequence carrying that formatting has been handed to NVDA.
+		self.format_delivered = False
+
+	def marking_config(self, format_config):
+		"""The configuration that decides what a scheme may mark."""
+		return self.enriched_format_config or format_config or self.real_format_config
+
+	def element_markers(self):
+		"""``(key, items)`` pairs for every element the next sequence starts inside."""
+		elements = [(key, items) for key, items, presented in self.stack if presented and items]
+		elements.extend(self.relative)
+		return elements
+
+
 class SchemeTagger:
 	"""Installs and removes the speech-builder wrappers."""
 
 	def __init__(self, is_active=None):
 		self._is_active = is_active or (lambda: True)
 		self._patches = []
+		#: ``(weak reference to the object, stack)`` from the last text call.
+		self._element_stack_cache = None
 
 	# -- helpers -----------------------------------------------------------
 	def _enabled_items(self):
@@ -175,6 +252,7 @@ class SchemeTagger:
 			except Exception:
 				log.debug("ClassicSpeech schemes: could not restore %s", attribute, exc_info=True)
 		self._patches = []
+		self._element_stack_cache = None
 
 	@property
 	def installed(self):
@@ -281,87 +359,238 @@ class SchemeTagger:
 		return wrapped
 
 	# -- text speech -------------------------------------------------------
+	@staticmethod
+	def _document_format_config():
+		try:
+			import config
+			return config.conf["documentFormatting"]
+		except Exception:
+			return None
+
+	def _new_text_state(self, args, kwargs, items_cfg):
+		"""Build the call state and the arguments NVDA should run with."""
+		unit = str(_argument(args, kwargs, 3, "unit", "") or "")
+		extra_detail = unit in _EXTRA_DETAIL_UNITS
+		base_config = _argument(args, kwargs, 2, "formatConfig") or self._document_format_config()
+		enriched = None
+		try:
+			keys, detect = format_needs.requirements(items_cfg)
+			enriched = format_needs.enrich(base_config, keys, detect)
+		except Exception:
+			log.debug("ClassicSpeech schemes: format requirements failed", exc_info=True)
+			enriched = None
+		real_config = None
+		if enriched is not None:
+			args, kwargs = _replace_argument(args, kwargs, 2, "formatConfig", enriched)
+			# What NVDA would have built for itself, to hand back to its own
+			# announcement builders. NVDA adds extraDetail to its copy the same
+			# way, so they see exactly the configuration they would have seen.
+			real_config = format_needs.as_dict(base_config)
+			if real_config is not None and extra_detail:
+				real_config["extraDetail"] = True
+		state = _TextCallState(
+			items_cfg,
+			_marking_items(items_cfg),
+			real_config,
+			enriched,
+			extra_detail,
+		)
+		return state, args, kwargs
+
+	def _cached_element_stack(self, obj):
+		cache = self._element_stack_cache
+		if not cache or obj is None:
+			return []
+		reference, stack = cache
+		try:
+			cached_obj = reference()
+		except Exception:
+			return []
+		if cached_obj is None or cached_obj is not obj:
+			return []
+		return [list(entry) for entry in stack]
+
+	def _store_element_stack(self, obj, stack):
+		if obj is None:
+			self._element_stack_cache = None
+			return
+		try:
+			self._element_stack_cache = (weakref.ref(obj), [tuple(entry) for entry in stack])
+		except Exception:
+			self._element_stack_cache = None
+
+	def _resolve_element_stack(self, state, obj):
+		"""The full element stack, including the part NVDA did not repeat.
+
+		Reading by character or word asks NVDA for extra detail, and it then
+		leaves out the elements the caret was already inside. Those elements
+		still contain the text, so they come from the previous call for the same
+		object, minus the ones NVDA reported leaving.
+		"""
+		if not state.extra_detail:
+			return state.stack
+		cached = self._cached_element_stack(obj)
+		if not cached:
+			return state.stack
+		kept = cached[: max(0, len(cached) - state.removed)]
+		return kept + state.stack
+
 	def _wrap_get_text_info_speech(self, original):
 		tagger = self
 
 		@functools.wraps(original)
 		def wrapped(*args, **kwargs):
-			if not tagger._enabled_items():
+			items_cfg = tagger._enabled_items()
+			if not items_cfg:
 				return (yield from original(*args, **kwargs))
-			collector = []
+			try:
+				state, args, kwargs = tagger._new_text_state(args, kwargs, items_cfg)
+			except Exception:
+				log.debug("ClassicSpeech schemes: text call state failed", exc_info=True)
+				return (yield from original(*args, **kwargs))
+			try:
+				obj = getattr(_argument(args, kwargs, 0, "info", None), "obj", None)
+			except Exception:
+				obj = None
 			generator = original(*args, **kwargs)
 			while True:
-				token = _text_collector.set(collector)
+				token = _text_state.set(state)
 				try:
 					try:
 						sequence = next(generator)
 					except StopIteration as stop:
 						return stop.value
 				finally:
-					_text_collector.reset(token)
+					_text_state.reset(token)
 				try:
+					state.stack = tagger._resolve_element_stack(state, obj)
+					state.removed = 0
+					tagger._store_element_stack(obj, state.stack)
 					if isinstance(sequence, list):
-						sequence.insert(0, TextStartMarker(collector))
+						tagger._start_sequence(sequence, state)
 				except Exception:
 					log.debug("ClassicSpeech schemes: text start marker failed", exc_info=True)
-				collector = []
 				yield sequence
 
 		return wrapped
+
+	@staticmethod
+	def _start_sequence(sequence, state):
+		"""Give ``sequence`` the formatting and elements it starts inside.
+
+		NVDA can split one reading command into several sequences: the fields of
+		a character and then the spelled character, or a Say All chunk that is
+		flattened into one list. It also drops a sequence that holds nothing but
+		fields, which is exactly what happens when a single character is spelled.
+		Every sequence therefore repeats the state it starts in, so the second
+		and later ones are marked exactly like the first.
+		"""
+		carries_format = any(isinstance(entry, FormatMarker) for entry in sequence)
+		prefix = [TextStartMarker(state.element_markers())]
+		if not carries_format and state.format_range:
+			# The item's sound belongs to the first sequence that reaches the
+			# listener, not to every repeat of the same formatting.
+			prefix.append(FormatMarker(state.format_range, restate=state.format_delivered))
+			carries_format = True
+		sequence[0:0] = prefix
+		if carries_format:
+			state.format_delivered = True
 
 	def _wrap_get_control_field_speech(self, original):
 		tagger = self
 
 		@functools.wraps(original)
 		def wrapped(*args, **kwargs):
-			collector = _text_collector.get()
-			if collector is None:
+			state = _text_state.get()
+			if state is None:
 				return original(*args, **kwargs)
-			items_cfg = tagger._enabled_items()
+			marking_config = state.marking_config(_argument(args, kwargs, 3, "formatConfig"))
+			if state.real_format_config is not None:
+				# NVDA decides what to say from the user's own settings, never
+				# from the settings a scheme needed turned on to fetch fields.
+				args, kwargs = _replace_argument(args, kwargs, 3, "formatConfig", state.real_format_config)
+			items_cfg = state.items_cfg
 			if not items_cfg or not _interested(items_cfg, _CONTROL_FIELD_PREFIXES):
-				return original(*args, **kwargs)
+				return tagger._track_control_field(original(*args, **kwargs), args, kwargs, state, marking_config)
 			token = _in_control_field.set(True)
 			try:
 				result = original(*args, **kwargs)
 			finally:
 				_in_control_field.reset(token)
 			try:
-				return tagger._tag_control_field(result, args, kwargs, items_cfg, collector)
+				return tagger._tag_control_field(result, args, kwargs, state, marking_config)
 			except Exception:
 				log.debug("ClassicSpeech schemes: control field tagging failed", exc_info=True)
 				return result
 
 		return wrapped
 
-	def _tag_control_field(self, result, args, kwargs, items_cfg, collector):
+	@staticmethod
+	def _field_entry(attrs, state, marking_config, ancestors, extra_detail, reason):
+		items = tuple(
+			item_id
+			for item_id in schemeLabels.element_range_items(attrs)
+			if item_id in state.marking_items
+		)
+		presented = SchemeTagger._is_presented(attrs, ancestors, marking_config, reason, extra_detail)
+		return [id(attrs), items, presented]
+
+	def _track_control_field(self, result, args, kwargs, state, marking_config):
+		"""Keep the element stack accurate even when nothing about it is marked."""
+		try:
+			field_type = str(_argument(args, kwargs, 2, "fieldType", "") or "")
+			if field_type == "end_removedFromControlFieldStack":
+				state.removed += 1
+			elif field_type in ("start_inControlFieldStack", "start_addedToControlFieldStack"):
+				attrs = _argument(args, kwargs, 0, "attrs")
+				if attrs is not None:
+					state.stack.append(self._field_entry(
+						attrs,
+						state,
+						marking_config,
+						_argument(args, kwargs, 1, "ancestorAttrs", []),
+						_argument(args, kwargs, 4, "extraDetail", False),
+						_argument(args, kwargs, 5, "reason"),
+					))
+		except Exception:
+			log.debug("ClassicSpeech schemes: element stack tracking failed", exc_info=True)
+		return result
+
+	def _tag_control_field(self, result, args, kwargs, state, marking_config):
 		attrs = _argument(args, kwargs, 0, "attrs")
 		if attrs is None:
 			return result
+		items_cfg = state.items_cfg
 		ancestors = _argument(args, kwargs, 1, "ancestorAttrs", [])
 		field_type = str(_argument(args, kwargs, 2, "fieldType", "") or "")
-		format_config = _argument(args, kwargs, 3, "formatConfig")
 		extra_detail = _argument(args, kwargs, 4, "extraDetail", False)
 		reason = _argument(args, kwargs, 5, "reason")
 		output = list(result or ())
 		if output:
 			table = schemeLabels.control_field_label_table(attrs, reason)
 			output = _insert_label_markers(output, table, items_cfg)
-		voice_items = _voice_items(items_cfg)
-		range_items = [item_id for item_id in schemeLabels.element_range_items(attrs) if item_id in voice_items]
-		if not range_items:
+		key, range_items, presented = self._field_entry(attrs, state, marking_config, ancestors, extra_detail, reason)
+		if field_type == "end_removedFromControlFieldStack":
+			state.removed += 1
 			return output
-		key = id(attrs)
 		if field_type in ("start_inControlFieldStack", "start_addedToControlFieldStack"):
 			# These elements contain all text of this speech sequence. The text
 			# speech wrapper marks them at the start of the sequence instead of
 			# changing NVDA's field speech (which decides blank-line reporting).
-			if self._is_presented(attrs, ancestors, format_config, reason, extra_detail):
-				collector.append((key, tuple(range_items)))
-		elif field_type == "start_relative":
-			if self._is_presented(attrs, ancestors, format_config, reason, extra_detail):
+			state.stack.append([key, range_items, presented])
+			return output
+		if not range_items:
+			return output
+		if field_type == "start_relative":
+			if presented:
 				output.insert(0, ElementStartMarker(key, range_items))
+				state.relative.append((key, range_items))
 		elif field_type == "end_relative":
 			output.insert(0, ElementEndMarker(key))
+			for index in range(len(state.relative) - 1, -1, -1):
+				if state.relative[index][0] == key:
+					del state.relative[index]
+					break
 		return output
 
 	@staticmethod
@@ -381,9 +610,12 @@ class SchemeTagger:
 
 		@functools.wraps(original)
 		def wrapped(*args, **kwargs):
-			if _text_collector.get() is None:
+			state = _text_state.get()
+			if state is None:
 				return original(*args, **kwargs)
-			items_cfg = tagger._enabled_items()
+			if state.real_format_config is not None:
+				args, kwargs = _replace_argument(args, kwargs, 2, "formatConfig", state.real_format_config)
+			items_cfg = state.items_cfg
 			if not items_cfg or not _interested(items_cfg, _FORMAT_FIELD_PREFIXES):
 				return original(*args, **kwargs)
 			attrs = _argument(args, kwargs, 0, "attrs")
@@ -394,28 +626,34 @@ class SchemeTagger:
 				old = {}
 			result = original(*args, **kwargs)
 			try:
-				return tagger._tag_format_field(result, attrs, old, args, kwargs, items_cfg)
+				return tagger._tag_format_field(result, attrs, old, args, kwargs, state)
 			except Exception:
 				log.debug("ClassicSpeech schemes: format field tagging failed", exc_info=True)
 				return result
 
 		return wrapped
 
-	def _tag_format_field(self, result, attrs, old, args, kwargs, items_cfg):
+	def _tag_format_field(self, result, attrs, old, args, kwargs, state):
 		if attrs is None:
 			return result
+		items_cfg = state.items_cfg
 		extra_detail = _argument(args, kwargs, 5, "extraDetail", False)
-		initial = bool(_argument(args, kwargs, 6, "initialFormat", False))
 		output = list(result or ())
 		if output:
 			table = schemeLabels.format_field_label_table(attrs, old, extra_detail=extra_detail)
 			output = _insert_label_markers(output, table, items_cfg)
-		voice_items = _voice_items(items_cfg)
-		if not voice_items:
+		if not state.marking_items:
 			return output
-		new_range = [item_id for item_id in schemeLabels.format_range_items(attrs) if item_id in voice_items]
-		old_range = [item_id for item_id in schemeLabels.format_range_items(old) if item_id in voice_items]
-		if new_range != old_range or (initial and new_range):
+		new_range = tuple(
+			item_id
+			for item_id in schemeLabels.format_range_items(attrs)
+			if item_id in state.marking_items
+		)
+		# The scheme follows the formatting of the text itself, not whether NVDA
+		# announced a change, so a user who turned an announcement off still gets
+		# the voice and sound they configured for that formatting.
+		if new_range != state.format_range:
+			state.format_range = new_range
 			output.append(FormatMarker(new_range))
 		return output
 
@@ -424,11 +662,13 @@ class SchemeTagger:
 
 		@functools.wraps(original)
 		def wrapped(*args, **kwargs):
+			state = _text_state.get()
+			if state is None:
+				return original(*args, **kwargs)
+			if state.real_format_config is not None:
+				args, kwargs = _replace_argument(args, kwargs, 1, "formatConfig", state.real_format_config)
 			result = original(*args, **kwargs)
-			if _text_collector.get() is None or not result:
-				return result
-			items_cfg = tagger._enabled_items()
-			if "fmt.lineIndentation" not in items_cfg:
+			if not result or "fmt.lineIndentation" not in state.items_cfg:
 				return result
 			try:
 				output = []

@@ -5,7 +5,14 @@ sequence. It always removes markers. When schemes are enabled it also:
 
 * plays an item's WAV file where its announcement or object starts, optionally
   instead of speaking the announcement;
+* plays that WAV file again where a run of formatting or an element begins in
+  document text, so the change is heard even when NVDA announces nothing;
 * speaks announcements and formatted/element text in the item's voice.
+
+Reading by character, word, line, sentence or paragraph and Say All all arrive
+here the same way: the tagging wrappers give every speech sequence the
+formatting and elements it starts inside, so an item is heard whichever reading
+command produced the text.
 
 Voices that only change rate, pitch or volume use NVDA's inline prosody
 commands, so speech keeps flowing. Any other difference (voice, variant,
@@ -172,8 +179,19 @@ def apply_schemes(sequence, *, allow_prosody=None):
 					atoms.append(("sound", sound_item))
 			elif isinstance(entry, FormatMarker):
 				state.format_items = tuple(entry.items)
+				# A restatement repeats formatting the listener already heard
+				# start, so only a real change plays the item's sound.
+				if not getattr(entry, "restate", False):
+					sound_item = _first_sound_item(items_cfg, entry.items, played)
+					if sound_item:
+						played.add(sound_item)
+						atoms.append(("sound", sound_item))
 			elif isinstance(entry, ElementStartMarker):
 				state.elements.append((entry.key, tuple(entry.items)))
+				sound_item = _first_sound_item(items_cfg, entry.items, played)
+				if sound_item:
+					played.add(sound_item)
+					atoms.append(("sound", sound_item))
 			elif isinstance(entry, ElementEndMarker):
 				for index in range(len(state.elements) - 1, -1, -1):
 					if state.elements[index][0] == entry.key:

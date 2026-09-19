@@ -222,6 +222,46 @@ def _voice_record(**overrides):
 	return {"baseline": baseline, "overrides": dict(overrides)}
 
 
+#: NVDA's Document Formatting defaults (source/config/configSpec.py). Schemes have
+#: to work for a user who leaves these alone, which is what the reading-unit tests
+#: below rely on.
+NVDA_DOCUMENT_FORMATTING_DEFAULTS = {
+	"detectFormatAfterCursor": False,
+	"fontAttributeReporting": 0,
+	"reportFontName": False,
+	"reportFontSize": False,
+	"reportEmphasis": False,
+	"reportHighlight": True,
+	"reportSuperscriptsAndSubscripts": False,
+	"reportColor": False,
+	"reportAlignment": False,
+	"reportLineSpacing": False,
+	"reportStyle": False,
+	"reportSpellingErrors": True,
+	"reportPage": True,
+	"reportLineNumber": False,
+	"reportLineIndentation": 0,
+	"ignoreBlankLinesForRLI": False,
+	"reportTables": True,
+	"reportTableHeaders": 1,
+	"reportTableCellCoords": True,
+	"reportLinks": True,
+	"reportGraphics": True,
+	"reportComments": True,
+	"reportBookmarks": True,
+	"reportRevisions": True,
+	"reportLists": True,
+	"reportHeadings": True,
+	"reportBlockQuotes": True,
+	"reportGroupings": True,
+	"reportLandmarks": True,
+	"reportArticles": False,
+	"reportFrames": True,
+	"reportFigures": True,
+	"reportClickable": True,
+}
+
+
 class SchemeHarnessBase(unittest.TestCase):
 	def setUp(self):
 		nvda_harness.ClassicSpeechNVDAConfigStartupTests().setUp()
@@ -242,6 +282,10 @@ class SchemeHarnessBase(unittest.TestCase):
 		say_all_state["running"] = False
 		self.sound_dir = tempfile.TemporaryDirectory()
 		self.addCleanup(self.sound_dir.cleanup)
+		# NVDA's own Document Formatting defaults: font attributes are not
+		# announced and formatting changes after the cursor are not looked for.
+		self.documentFormatting = config.conf.setdefault("documentFormatting", {})
+		self.documentFormatting.update(NVDA_DOCUMENT_FORMATTING_DEFAULTS)
 
 	def tearDown(self):
 		globalPluginHandler.runningPlugins.clear()
@@ -625,10 +669,19 @@ def _install_fake_speech_builders():
 	def getFormatFieldSpeech(attrs, attrsCache=None, formatConfig=None, reason=None, unit=None, extraDetail=False, initialFormat=False):
 		old = attrsCache if attrsCache is not None else {}
 		output = []
-		if attrs.get("font-name") and attrs.get("font-name") != old.get("font-name"):
+		# NVDA announces only what Document Formatting asked for. The fakes are
+		# given no configuration by the older tests, which means "announce it".
+		speak_font = formatConfig is None or bool(formatConfig.get("reportFontName"))
+		speak_attributes = formatConfig is None or bool(formatConfig.get("fontAttributeReporting"))
+		speech_module.announcement_configs.append(formatConfig)
+		if speak_font and attrs.get("font-name") and attrs.get("font-name") != old.get("font-name"):
 			output.append(attrs["font-name"])
-		if bool(attrs.get("bold")) != bool(old.get("bold")) and (attrs.get("bold") or "bold" in old):
+		if speak_attributes and bool(attrs.get("bold")) != bool(old.get("bold")) and (attrs.get("bold") or "bold" in old):
 			output.append("bold" if attrs.get("bold") else "no bold")
+		if speak_attributes and bool(attrs.get("underline")) != bool(old.get("underline")) and (
+			attrs.get("underline") or "underline" in old
+		):
+			output.append("underlined" if attrs.get("underline") else "not underlined")
 		if attrsCache is not None:
 			attrsCache.clear()
 			attrsCache.update(attrs)
@@ -657,6 +710,7 @@ def _install_fake_speech_builders():
 		return True
 
 	speech_module.spoken = []
+	speech_module.announcement_configs = []
 	for function in (
 		getPropertiesSpeech, getObjectPropertiesSpeech, getObjectSpeech, speakObject, speakObjectProperties,
 		getControlFieldSpeech, getFormatFieldSpeech, getIndentationSpeech, getTextInfoSpeech,
@@ -713,6 +767,7 @@ class SchemeTaggingTests(SchemeHarnessBase):
 			"role.HEADING.2": {"voice": {"enabled": True, "bySynth": {"fakeSynth": _voice_record(rate=60)}}},
 			"fmt.lineIndentation": {"sound": self.sound("indent.wav")},
 		})
+		self.documentFormatting["fontAttributeReporting"] = 3
 		heading = Field(role=Role.HEADING, level=2, states=set())
 		info = types.SimpleNamespace(
 			initialFields=[heading],
@@ -810,6 +865,273 @@ class SchemePluginIntegrationTests(SchemeHarnessBase):
 		))
 		self.assertFalse(any(isinstance(entry, self.markers.SchemeMarker) for entry in output))
 
+
+# ---------------------------------------------------------------------------
+# Reading units
+# ---------------------------------------------------------------------------
+
+#: NVDA's reading units, as ``speakTextInfo`` and Say All pass them.
+UNIT_CHARACTER = "character"
+UNIT_WORD = "word"
+UNIT_LINE = "line"
+UNIT_SENTENCE = "sentence"
+UNIT_PARAGRAPH = "paragraph"
+UNIT_READINGCHUNK = "readingChunk"
+
+
+class DocumentTextInfo:
+	"""A document range: attribute runs, plus the elements that contain them."""
+
+	def __init__(self, obj, runs, inStack=(), added=(), removed=()):
+		self.obj = obj
+		self.runs = list(runs)
+		self.inStack = list(inStack)
+		self.added = list(added)
+		self.removed = list(removed)
+
+
+def _install_document_text_speech(state):
+	"""Install a ``getTextInfoSpeech`` that follows NVDA's own branching.
+
+	Mirrors ``speech.speech.getTextInfoSpeech`` for the parts a scheme depends
+	on: extra detail for characters and words leaves out the elements that
+	already contain the caret; a document backend that is asked not to detect
+	formatting after the cursor describes the whole range with the formatting of
+	its first character; a single character is spelled in a second sequence, and
+	the sequence holding its fields is dropped when it has nothing to say.
+	"""
+	speech_module = sys.modules["speech.speech"]
+
+	def getTextInfoSpeech(info, useCache=True, formatConfig=None, unit=None, reason=None,
+	                      _prefixSpeechCommand=None, onlyInitialFields=False, suppressBlanks=False):
+		extraDetail = unit in (UNIT_CHARACTER, UNIT_WORD)
+		state["fetch_configs"].append(formatConfig)
+		runs = _fetched_runs(info.runs, formatConfig)
+		sequence = []
+		for field in info.removed:
+			sequence.extend(speech.getControlFieldSpeech(
+				field, [], "end_removedFromControlFieldStack", formatConfig, extraDetail, reason))
+		if not extraDetail:
+			# NVDA repeats the containing elements only without extra detail.
+			for field in info.inStack:
+				sequence.extend(speech.getControlFieldSpeech(
+					field, [], "start_inControlFieldStack", formatConfig, extraDetail, reason))
+		for field in info.added:
+			sequence.extend(speech.getControlFieldSpeech(
+				field, [], "start_addedToControlFieldStack", formatConfig, extraDetail, reason))
+		sequence.extend(speech.getFormatFieldSpeech(
+			attrs=runs[0][0], attrsCache=state["cache"], formatConfig=formatConfig,
+			reason=reason, unit=unit, extraDetail=extraDetail, initialFormat=True))
+		firstText = runs[0][1]
+		if extraDetail and len(runs) == 1 and len(firstText.strip()) == 1:
+			if any(isinstance(entry, str) for entry in sequence):
+				yield sequence
+			yield [firstText]
+			return False
+		for index, (attrs, text) in enumerate(runs):
+			if index:
+				sequence.extend(speech.getFormatFieldSpeech(
+					attrs=attrs, attrsCache=state["cache"], formatConfig=formatConfig,
+					reason=reason, unit=unit, extraDetail=extraDetail))
+			sequence.append(text)
+		yield sequence
+		return True
+
+	def _fetched_runs(runs, formatConfig):
+		fetched = [(_fetched_attrs(attrs, formatConfig), text) for attrs, text in runs]
+		if formatConfig is not None and not formatConfig.get("detectFormatAfterCursor"):
+			# What an offsets-based document (LibreOffice, Notepad, a console)
+			# reports when NVDA does not ask it to look past the caret.
+			first = fetched[0][0]
+			return [(first, "".join(text for _attrs, text in fetched))]
+		return fetched
+
+	def _fetched_attrs(attrs, formatConfig):
+		if formatConfig is None or formatConfig.get("fontAttributeReporting"):
+			return attrs
+		return {key: value for key, value in attrs.items() if key not in ("bold", "italic", "underline")}
+
+	speech_module.getTextInfoSpeech = getTextInfoSpeech
+	speech.getTextInfoSpeech = getTextInfoSpeech
+	return speech_module
+
+
+class SchemeReadingUnitTests(SchemeHarnessBase):
+	"""A configured item has to be heard in every way NVDA reads text.
+
+	Reading by character, word, line, sentence, paragraph and Say All all end up
+	in ``getTextInfoSpeech``, but NVDA fetches and splits the text differently
+	for each of them. These tests run the whole path, from NVDA building the
+	speech to the sequence ClassicSpeech hands back to NVDA.
+	"""
+
+	def setUp(self):
+		super().setUp()
+		self.speech_module = _install_fake_speech_builders()
+		self.pipeline = {"cache": {}, "fetch_configs": []}
+		_install_document_text_speech(self.pipeline)
+		self.plugin = self.module.GlobalPlugin()
+		globalPluginHandler.runningPlugins.append(self.plugin)
+		self.addCleanup(self.plugin.terminate)
+		# A real NVDA object, like the one a TextInfo carries: the element stack
+		# is remembered against a weak reference to it.
+		self.document = FakeObject("", Role.STATICTEXT)
+		focus = types.SimpleNamespace(
+			role=Role.STATICTEXT, name="", parent=None, treeInterceptor=None, value="", states=set())
+		import api
+
+		api.getFocusObject = lambda: focus
+		self.addCleanup(lambda: setattr(api, "getFocusObject", lambda: None))
+
+	def read(self, unit, runs, inStack=(), added=(), removed=(), fresh=True):
+		"""Read one range the way NVDA does and return the final sequences."""
+		if fresh:
+			self.pipeline["cache"] = {}
+			self.runtime.reset_carried_state()
+		info = DocumentTextInfo(self.document, runs, inStack, added, removed)
+		return [
+			self.plugin._filterSpeechSequence(list(sequence))
+			for sequence in speech.getTextInfoSpeech(info, unit=unit, reason=None)
+		]
+
+	@staticmethod
+	def spoken_with_pitch(sequences):
+		"""``(text, pitch offset)`` for every spoken string, in order."""
+		spoken = []
+		for sequence in sequences:
+			offset = 0
+			for entry in sequence:
+				if isinstance(entry, commands.PitchCommand):
+					offset = entry.offset
+				elif isinstance(entry, str):
+					spoken.append((entry, offset))
+		return spoken
+
+	def configure_underline_voice(self):
+		self.configure({"fmt.underline": {"voice": {"enabled": True, "engine": "", "bySynth": {
+			"fakeSynth": {"baseline": {"voice": "alice", "rate": 50, "pitch": 50, "volume": 80},
+			              "overrides": {"pitch": 70}}}}}})
+
+	# -- the reported bug ---------------------------------------------------
+	def test_the_item_voice_applies_in_every_reading_unit(self):
+		self.configure_underline_voice()
+		plain, under = {}, {"underline": True}
+		mixed = [(plain, "Here is "), (under, "underlined"), (plain, " text")]
+		for unit in (UNIT_LINE, UNIT_SENTENCE, UNIT_PARAGRAPH, UNIT_READINGCHUNK):
+			with self.subTest(unit=unit):
+				spoken = self.spoken_with_pitch(self.read(unit, mixed))
+				self.assertEqual(spoken, [("Here is ", 0), ("underlined", 20), (" text", 0)])
+		with self.subTest(unit=UNIT_WORD):
+			self.assertEqual(self.spoken_with_pitch(self.read(UNIT_WORD, [(under, "underlined")])),
+			                 [("underlined", 20)])
+		with self.subTest(unit=UNIT_CHARACTER):
+			# NVDA spells a single character in a sequence of its own.
+			self.assertEqual(self.spoken_with_pitch(self.read(UNIT_CHARACTER, [(under, "u")])),
+			                 [("u", 20)])
+
+	def test_reading_by_line_keeps_nvda_word_order(self):
+		self.configure_underline_voice()
+		sequences = self.read(UNIT_LINE, [({}, "Here is "), ({"underline": True}, "underlined"), ({}, " text")])
+		self.assertEqual([entry for entry in sequences[0] if isinstance(entry, str)],
+		                 ["Here is ", "underlined", " text"])
+
+	def test_an_element_voice_continues_while_reading_by_word(self):
+		self.configure({"role.HEADING.2": {"voice": {"enabled": True, "engine": "", "bySynth": {
+			"fakeSynth": {"baseline": {"voice": "alice", "pitch": 50}, "overrides": {"pitch": 80}}}}}})
+		heading = Field(role=Role.HEADING, level=2, states=set())
+		line = self.read(UNIT_LINE, [({}, "Chapter one")], added=[heading])
+		self.assertEqual(self.spoken_with_pitch(line)[-1], ("Chapter one", 30))
+		# Reading on by word: NVDA no longer repeats the heading it is inside.
+		word = self.read(UNIT_WORD, [({}, "one")], fresh=False)
+		self.assertEqual(self.spoken_with_pitch(word), [("one", 30)])
+		# Leaving the heading ends its voice.
+		after = self.read(UNIT_WORD, [({}, "next")], removed=[heading], fresh=False)
+		self.assertEqual(self.spoken_with_pitch(after), [("next", 0)])
+
+	# -- what NVDA fetches --------------------------------------------------
+	def test_nvda_fetches_the_formatting_a_scheme_needs(self):
+		self.configure_underline_voice()
+		self.read(UNIT_LINE, [({}, "Here is "), ({"underline": True}, "underlined"), ({}, " text")])
+		fetch_config = self.pipeline["fetch_configs"][-1]
+		self.assertTrue(fetch_config["detectFormatAfterCursor"])
+		self.assertTrue(fetch_config["fontAttributeReporting"])
+		# The user's own settings are untouched, and NVDA is given them back
+		# when it decides what to say, so it announces nothing extra.
+		self.assertFalse(self.documentFormatting["detectFormatAfterCursor"])
+		self.assertFalse(self.documentFormatting["fontAttributeReporting"])
+		for config_seen in self.speech_module.announcement_configs:
+			self.assertFalse(config_seen["fontAttributeReporting"])
+
+	def test_nothing_is_fetched_or_marked_for_an_empty_scheme(self):
+		self.configure({})
+		sequences = self.read(UNIT_LINE, [({}, "Here is "), ({"underline": True}, "underlined"), ({}, " text")])
+		self.assertIsNone(self.pipeline["fetch_configs"][-1])
+		self.assertFalse(any(self.markers.is_marker(entry) for entry in sequences[0]))
+
+	def test_an_nvda_configuration_section_is_copied_the_way_nvda_copies_it(self):
+		# config.conf["documentFormatting"] is an AggregatedSection: iterating it
+		# yields keys and dict() on it raises, so only its own copy() works.
+		class AggregatedSectionLike:
+			def __init__(self, values):
+				self._values = dict(values)
+
+			def __getitem__(self, key):
+				return self._values[key]
+
+			def __contains__(self, key):
+				return key in self._values
+
+			def __iter__(self):
+				return iter(self._values)
+
+			def items(self):
+				return self._values.items()
+
+			def copy(self):
+				return dict(self.items())
+
+		from globalPlugins._speech_core.schemes import format_needs
+
+		section = AggregatedSectionLike(NVDA_DOCUMENT_FORMATTING_DEFAULTS)
+		with self.assertRaises(Exception):
+			dict(section)
+		self.assertEqual(format_needs.as_dict(section), dict(NVDA_DOCUMENT_FORMATTING_DEFAULTS))
+		keys, detect = format_needs.requirements({"fmt.underline": {}})
+		enriched = format_needs.enrich(section, keys, detect)
+		self.assertTrue(enriched["fontAttributeReporting"])
+		self.assertTrue(enriched["detectFormatAfterCursor"])
+		# The section itself is never written to.
+		self.assertFalse(section["fontAttributeReporting"])
+		self.assertFalse(section["detectFormatAfterCursor"])
+
+	def test_a_scheme_for_objects_only_leaves_text_fetching_alone(self):
+		self.configure({"role.BUTTON": {"sound": self.sound()}})
+		self.read(UNIT_LINE, [({"underline": True}, "underlined")])
+		# Nothing to add, so NVDA keeps resolving Document Formatting itself.
+		self.assertIsNone(self.pipeline["fetch_configs"][-1])
+
+	# -- sounds -------------------------------------------------------------
+	def test_a_formatting_sound_plays_once_where_the_formatting_starts(self):
+		self.configure({"fmt.underline": {"sound": self.sound("underline.wav")}})
+		sequences = self.read(UNIT_LINE, [({}, "Here is "), ({"underline": True}, "underlined"), ({}, " text")])
+		flat = sequences[0]
+		sounds = [index for index, entry in enumerate(flat) if isinstance(entry, self.runtime.SchemeSoundCommand)]
+		self.assertEqual(len(sounds), 1)
+		self.assertEqual(flat.index("underlined"), sounds[0] + 1)
+
+	def test_a_spelled_character_does_not_replay_the_formatting_sound(self):
+		self.configure({"fmt.underline": {"sound": self.sound("underline.wav")}})
+		sequences = self.read(UNIT_CHARACTER, [({"underline": True}, "u")])
+		sounds = [entry for sequence in sequences for entry in sequence
+		          if isinstance(entry, self.runtime.SchemeSoundCommand)]
+		self.assertEqual(len(sounds), 1)
+
+	# -- nothing leaks ------------------------------------------------------
+	def test_markers_never_reach_the_synthesizer(self):
+		self.configure_underline_voice()
+		for unit in (UNIT_CHARACTER, UNIT_WORD, UNIT_LINE, UNIT_PARAGRAPH, UNIT_READINGCHUNK):
+			for sequence in self.read(unit, [({}, "a "), ({"underline": True}, "bc")]):
+				self.assertFalse(any(self.markers.is_marker(entry) for entry in sequence), unit)
 
 # ---------------------------------------------------------------------------
 # Scheme folders and packages
