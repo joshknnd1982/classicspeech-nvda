@@ -661,6 +661,7 @@ class PackagingAndGuideTests(unittest.TestCase):
 			"nvda-settings-backup.json",
 			"Reset All ClassicSpeech Settings",
 			"[classicSpeech]",
+			"Check for Updates",
 		):
 			self.assertIn(text, guide)
 

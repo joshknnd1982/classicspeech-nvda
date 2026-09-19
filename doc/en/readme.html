@@ -56,6 +56,7 @@ li { margin: .25em 0; }
 <li><a href="#speech-history">Speech history</a></li>
 <li><a href="#object-commands">Current object, default button and page summary commands</a></li>
 <li><a href="#commands">Commands and gestures</a></li>
+<li><a href="#updates">Updating ClassicSpeech</a></li>
 <li><a href="#settings-storage">Where ClassicSpeech keeps its settings</a>
 <ol>
 <li><a href="#nvda-settings-changed">NVDA settings ClassicSpeech changes</a></li>
@@ -80,12 +81,13 @@ li { margin: .25em 0; }
 
 <h2 id="getting-started">Getting started</h2>
 <p>ClassicSpeech starts working when NVDA restarts after installation. It supports NVDA 2025.1 through 2026.2.</p>
-<p>Its settings are in the NVDA menu: press <kbd>NVDA+N</kbd>, then choose Preferences, then ClassicSpeech. The ClassicSpeech submenu has five items:</p>
+<p>Its settings are in the NVDA menu: press <kbd>NVDA+N</kbd>, then choose Preferences, then ClassicSpeech. The ClassicSpeech submenu has six items:</p>
 <ul>
 <li><strong>General Settings...</strong>: how much ClassicSpeech says about objects, token order and timing, text and number processing, menus, key names, shortcut keys, and other speech options. See <a href="#general-settings">General Settings</a>.</li>
 <li><strong>Web / Browse Mode Settings...</strong>: browse mode, web element reporting, Page Summary and Microsoft Edge notifications. See <a href="#web-browse-mode-settings">Web / Browse Mode Settings</a>.</li>
 <li><strong>Voice Profiles...</strong>: different voice settings for different kinds of speech. See <a href="#voice-profiles">Voice Profiles</a>.</li>
 <li><strong>Speech and Sound Schemes...</strong>: sounds and voices for object types, states, formatting and web elements. See <a href="#speech-and-sound-schemes">Speech and Sound Schemes</a>.</li>
+<li><strong>Check for Updates...</strong>: look for a newer ClassicSpeech and install it. See <a href="#updates">Updating ClassicSpeech</a>.</li>
 <li><strong>Reset All ClassicSpeech Settings...</strong>: delete every ClassicSpeech setting and put back the NVDA settings ClassicSpeech changed. See <a href="#resetting">Resetting ClassicSpeech</a>.</li>
 </ul>
 <p>These commands work as soon as ClassicSpeech is installed:</p>
@@ -285,6 +287,7 @@ li { margin: .25em 0; }
 <li><strong>Enable ClassicSpeech speech processing hook</strong>: the main switch for ClassicSpeech's speech changes. When cleared, NVDA speech passes through without ClassicSpeech processing, but ClassicSpeech commands still work. Default: checked.</li>
 <li><strong>Speak a message when the speech hook loads</strong>, with <strong>Speech hook loaded message</strong>: say a message when ClassicSpeech starts processing speech, for example after NVDA starts. Default: off, "ClassicSpeech hook loaded".</li>
 <li><strong>Enable ClassicSpeech diagnostic logging</strong>: write detailed ClassicSpeech entries to the NVDA log. It slows speech, so turn it on only to record a problem, then turn it off. Default: off.</li>
+<li><strong>Check for ClassicSpeech updates automatically</strong>: once a day, shortly after NVDA starts, ask GitHub whether a newer ClassicSpeech has been released, and tell you only if there is one. See <a href="#updates">Updating ClassicSpeech</a>. Default: checked.</li>
 </ul>
 
 <h2 id="web-browse-mode-settings">Web / Browse Mode Settings</h2>
@@ -507,6 +510,7 @@ li { margin: .25em 0; }
 <tr><td>Opens ClassicSpeech Voice Profiles</td><td>None</td></tr>
 <tr><td>Opens ClassicSpeech Speech and Sound Schemes</td><td>None</td></tr>
 <tr><td>Opens the ClassicSpeech user guide</td><td>None</td></tr>
+<tr><td>Checks for ClassicSpeech updates</td><td>None</td></tr>
 <tr><td>Resets all ClassicSpeech settings and restores the NVDA settings it changed</td><td>None</td></tr>
 <tr><td>Turns ClassicSpeech speech and sound schemes on or off</td><td>None</td></tr>
 <tr><td>Switches to the next ClassicSpeech speech and sound scheme</td><td>None</td></tr>
@@ -531,6 +535,19 @@ li { margin: .25em 0; }
 <li>Press <strong>OK</strong>.</li>
 </ol>
 <p>To change a default gesture, select the gesture under its command, press <strong>Remove</strong>, then add a new one.</p>
+
+<h2 id="updates">Updating ClassicSpeech</h2>
+<p>New versions of ClassicSpeech are published on its GitHub releases page: <a href="https://github.com/joshknnd1982/classicspeech-nvda/releases">https://github.com/joshknnd1982/classicspeech-nvda/releases</a>. ClassicSpeech can check that page for you.</p>
+<ul>
+<li>To check now, press <kbd>NVDA+N</kbd>, then choose Preferences, then ClassicSpeech, then <strong>Check for Updates...</strong>. You can also assign a gesture to the <strong>Checks for ClassicSpeech updates</strong> command. You hear "Checking for ClassicSpeech updates", then a message says whether ClassicSpeech is up to date.</li>
+<li>With <strong>Check for ClassicSpeech updates automatically</strong> checked on the <a href="#advanced">Advanced</a> page, ClassicSpeech checks once a day, about 30 seconds after NVDA starts. It says nothing unless there is an update.</li>
+</ul>
+<p>When a newer version is available, a dialog says which version you have, which version is available, and what's new. Choose one of its buttons:</p>
+<ul>
+<li><strong>Download and install</strong>: ClassicSpeech downloads the new add-on file and checks it against the checksum file published with it. If they don't match, the file is deleted and nothing is installed. Then NVDA asks you to confirm the installation, as it does for any add-on file, and offers to restart NVDA.</li>
+<li><strong>Not now</strong>: nothing is downloaded. An automatic check asks again the next day.</li>
+</ul>
+<p>Updating keeps all your ClassicSpeech settings, voice profiles and schemes. To check for updates, ClassicSpeech contacts GitHub (api.github.com and github.com). It sends only what any web request sends, plus the ClassicSpeech version, and nothing about you or your settings.</p>
 
 <h2 id="settings-storage">Where ClassicSpeech keeps its settings</h2>
 <p>Everything ClassicSpeech remembers is in one folder called ClassicSpeech, in NVDA's user configuration folder. For an installed copy of NVDA, that is <strong>%APPDATA%\nvda\ClassicSpeech</strong>. For a portable copy of NVDA, it is the ClassicSpeech folder inside the portable copy's userConfig folder. To open NVDA's user configuration folder, open the Start menu, then NVDA, then <strong>Explore NVDA user configuration directory</strong>, or type %APPDATA%\nvda in the Run dialog (<kbd>Windows+R</kbd>).</p>
@@ -577,7 +594,7 @@ li { margin: .25em 0; }
 <p>Remove ClassicSpeech in NVDA's Add-on Store: press <kbd>NVDA+N</kbd>, then choose Tools, then Add-on Store. On the Installed add-ons tab, select ClassicSpeech, press the <kbd>Applications</kbd> key, choose <strong>Remove</strong>, and restart NVDA when asked.</p>
 <p>When NVDA restarts, ClassicSpeech 1.07 and later clean up before any add-on runs. They put back the NVDA settings ClassicSpeech changed and delete every ClassicSpeech setting, exactly as <a href="#resetting">Resetting ClassicSpeech</a> does, then NVDA saves its configuration. You don't need to reset before you remove ClassicSpeech, but a reset lets you check the result while ClassicSpeech is still installed.</p>
 <ul>
-<li>Updating ClassicSpeech, by opening a new add-on file, keeps your settings.</li>
+<li>Updating ClassicSpeech, with <a href="#updates">Check for Updates</a> or by opening a new add-on file, keeps your settings.</li>
 <li>Disabling ClassicSpeech in the Add-on Store keeps its settings, and the NVDA settings it changed stay as they are until you enable it again, reset it or remove it.</li>
 <li>If you copied your settings to NVDA's system configuration, for sign-in and secure screens, copy them again after removing ClassicSpeech: in NVDA's General settings, press <strong>Use currently saved settings during sign-in and on secure screens</strong>.</li>
 </ul>
@@ -603,6 +620,7 @@ li { margin: .25em 0; }
 <li><strong>A scheme you copied into the Schemes folder yourself isn't used.</strong> Open Speech and Sound Schemes and choose it in Active scheme. A scheme folder needs its scheme.json file. To add a scheme someone sent you as a file, Import scheme is easier.</li>
 <li><strong>An item doesn't use the other synthesizer you chose.</strong> ClassicSpeech tells you when it can't load a synthesizer, and uses your active synthesizer instead. The active synthesizer is also the fastest choice.</li>
 <li><strong>You want NVDA exactly as it was before ClassicSpeech.</strong> Choose Reset All ClassicSpeech Settings, or remove ClassicSpeech. See <a href="#resetting">Resetting ClassicSpeech</a>.</li>
+<li><strong>Check for Updates says GitHub could not be reached.</strong> Check your internet connection; a firewall or proxy may block api.github.com. You can always download new versions from the <a href="#updates">releases page</a>.</li>
 </ul>
 
 <h3 id="reporting-a-problem">Reporting a problem</h3>

@@ -20,6 +20,7 @@
 - ClassicSpeech's own settings are saved in `ClassicSpeech/settings.ini`, never in nvda.ini (`_speech_core/settings_file.py`). Tests that touch that folder must set `nvda_settings_backup._CONFIG_FOLDER_OVERRIDE` to a temporary folder.
 - Change NVDA's own settings only through `nvda_settings_backup.set_nvda_setting` or `recording_nvda_change`, so Reset All ClassicSpeech Settings and removal (`installTasks.py`) can put them back. A synthesizer loaded only to speak or edit a scheme voice must go through `keep_settings_out_of_nvda_config`, so its settings never become the user's NVDA voice settings.
 - `installTasks.py` removes ClassicSpeech's settings only when the add-on is removed, never when a new version replaces it. It loads `nvda_settings_backup.py` on its own, so that module must not import other ClassicSpeech modules.
+- Update checks (`_speech_core/update_check.py`) use the GitHub repository in the manifest `url`. Tests must never reach the network.
 - Speech-path code must not walk `obj.parent` chains for the focus; use `_speech_core/focus_ancestry.py`, which reads NVDA's cached focus ancestors (`tests/classic_speech_latency_harness.py`).
 - The token editor owns speech-token ordering and placement. Text Processing owns reporting/filtering transformations; do not move token-placement policy into it.
 - `sequence_merger.py` was removed after an audit confirmed it had no active dependents. Do not reintroduce sequence-merging behavior without a defined, tested requirement.
