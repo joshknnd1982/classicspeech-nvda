@@ -612,7 +612,35 @@ class ResetCommandTests(unittest.TestCase):
 			plugin.reset_all_settings = lambda: self.fail("reset without confirmation")
 			plugin._confirmResetAllSettings()
 			self.assertEqual(len(answers), 1)
+			self.assertTrue(answers[0].startswith("Do you really want to reset all ClassicSpeech settings?"))
 			self.assertIn("You can't undo a reset", answers[0])
+		finally:
+			plugin.terminate()
+
+	def test_the_question_is_a_yes_no_box_that_defaults_to_no(self):
+		plugin = self.module.GlobalPlugin()
+		try:
+			styles = []
+
+			def show(message, title, style):
+				styles.append(style)
+				return self.module.wx.NO
+
+			plugin._show_message = show
+			plugin._confirmResetAllSettings()
+			wx = self.module.wx
+			self.assertEqual(styles[0] & (wx.YES_NO | wx.NO_DEFAULT), wx.YES_NO | wx.NO_DEFAULT)
+		finally:
+			plugin.terminate()
+
+	def test_yes_resets(self):
+		plugin = self.module.GlobalPlugin()
+		try:
+			calls = []
+			plugin._show_message = lambda message, title, style: self.module.wx.YES
+			plugin.reset_all_settings = lambda: calls.append("reset") or {"restored": [], "kept": [], "notDeleted": None}
+			plugin._confirmResetAllSettings()
+			self.assertEqual(calls, ["reset"])
 		finally:
 			plugin.terminate()
 
@@ -640,6 +668,72 @@ class ResetCommandTests(unittest.TestCase):
 				self.assertEqual(json.load(stream)["settings"], [])
 		finally:
 			plugin.terminate()
+
+
+class DialogsOutsideTheCoreQueueTests(unittest.TestCase):
+	"""A modal dialog opened inside NVDA's core queue freezes NVDA: it can't even speak the dialog.
+
+	Scripts and queueHandler functions run inside NVDA's core pump. The reset's
+	Yes/No question once opened there, and NVDA froze until it was restarted.
+	"""
+
+	def setUp(self):
+		nvda_harness.ClassicSpeechNVDAConfigStartupTests().setUp()
+		self.module = nvda_harness._import_classic_speech_like_nvda()
+		self.after, self.queued = [], []
+		self._saved = (self.module.wx.CallAfter, self.module.queueHandler.queueFunction)
+		self.module.wx.CallAfter = lambda function, *args, **kwargs: self.after.append(getattr(function, "__name__", function))
+		self.module.queueHandler.queueFunction = lambda queue, function, *args, **kwargs: self.queued.append(
+			getattr(function, "__name__", function)
+		)
+
+	def tearDown(self):
+		self.module.wx.CallAfter, self.module.queueHandler.queueFunction = self._saved
+		globalPluginHandler.runningPlugins.clear()
+		speech.extensions.filter_speechSequence.callbacks.clear()
+		nvda_harness._reset_global_plugin_imports()
+
+	def test_reset_and_update_commands_ask_from_wx_not_from_nvdas_core_queue(self):
+		plugin = object.__new__(self.module.GlobalPlugin)
+		plugin.onClassicSpeechResetMenu(None)
+		plugin.script_resetAllClassicSpeechSettings(None)
+		plugin.onClassicSpeechUpdateMenu(None)
+		plugin.script_checkForClassicSpeechUpdates(None)
+		self.assertEqual(
+			self.after,
+			["_confirmResetAllSettings", "_confirmResetAllSettings", "_checkForUpdates", "_checkForUpdates"],
+		)
+		self.assertEqual(self.queued, [])
+
+	def test_only_dialogs_that_do_not_wait_are_opened_from_nvdas_core_queue(self):
+		import ast
+
+		tree = ast.parse((ROOT / "classicSpeech.py").read_text(encoding="utf-8"))
+		queued = set()
+		for node in ast.walk(tree):
+			if (
+				isinstance(node, ast.Call)
+				and isinstance(node.func, ast.Attribute)
+				and node.func.attr == "queueFunction"
+				and len(node.args) >= 2
+				and isinstance(node.args[1], ast.Attribute)
+			):
+				queued.add(node.args[1].attr)
+		# Each of these opens a dialog with Show(), which returns at once.
+		self.assertLessEqual(queued, {"_openSettings", "_openWebBrowseSettings", "_openVoiceProfiles", "_openSpeechSchemes"})
+
+	def test_an_update_check_without_a_github_page_does_not_block_its_caller(self):
+		updates = importlib.import_module("globalPlugins._speech_core.update_check")
+		checker = updates.UpdateChecker()
+		checker._message = lambda *args, **kwargs: self.fail("message box opened in the caller")
+		saved = sys.modules.get("addonHandler")
+		sys.modules.pop("addonHandler", None)
+		try:
+			checker.check(manual=True)
+		finally:
+			if saved is not None:
+				sys.modules["addonHandler"] = saved
+		self.assertEqual(self.after, ["<lambda>"])
 
 
 class PackagingAndGuideTests(unittest.TestCase):
