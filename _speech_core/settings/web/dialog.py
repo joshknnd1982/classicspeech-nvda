@@ -88,6 +88,11 @@ def _checked_items(control):
 class WebBrowseSettingsDialog(SettingsDialogTransactionMixin, wx.Dialog):
 	"""ClassicSpeech dialog for native NVDA web and browse-mode settings."""
 
+	# Like NVDA's own settings dialogs: while this dialog is open, NVDA and
+	# ClassicSpeech keep their configuration profiles as they were, so changed
+	# settings are saved in the profile the user was using (gui.shouldConfigProfileTriggersBeSuspended).
+	shouldSuspendConfigProfileTriggers = True
+
 	CATEGORY_NAMES = [
 		_("Browse Mode"),
 		_("Web Element Reporting"),
@@ -526,30 +531,49 @@ class WebBrowseSettingsDialog(SettingsDialogTransactionMixin, wx.Dialog):
 		self._originalEdgeNotifications = capture_edge_notification_state()
 
 	def _restoreTransactionBaseline(self):
-		try:
-			restore_web_browse_state(self._originalWebBrowse)
-			mode_indication = self.__dict__.get("_originalModeIndication")
-			if hasattr(mode_indication, "get") and "hasModeIndicationData" in mode_indication:
-				restore_mode_indication_state(mode_indication)
-			heading_continuity = self.__dict__.get("_originalHeadingContinuity")
-			if hasattr(heading_continuity, "get") and "hasHeadingContinuityData" in heading_continuity:
-				restore_heading_continuity_state(heading_continuity)
-			elif "_originalHeadingContinuityEnabled" in self.__dict__:
-				set_heading_continuity_enabled(self.__dict__["_originalHeadingContinuityEnabled"])
-			page_summary = getattr(self, "_originalPageSummary", None)
-			if hasattr(page_summary, "get") and "hasPageSummaryData" in page_summary:
-				restore_page_summary_state(page_summary)
-			else:
-				# Compatibility for lightweight older dialog fakes / partial baselines.
-				set_included_element_types(self._originalPageSummaryTypes)
-				set_include_document_title(self._originalPageSummaryTitle)
-				set_page_load_summary_mode(self._originalPageLoadSummaryMode)
-				set_notify_when_page_ready(self._originalNotifyWhenPageReady)
-				set_page_ready_message(self._originalPageReadyMessage)
-			if hasattr(self, "_originalEdgeNotifications"):
-				restore_edge_notification_state(self._originalEdgeNotifications)
-		except Exception:
-			log.exception("ClassicSpeech: failed to restore original web/browse dialog state")
+		# Each part is restored on its own, so one failure can't leave the others changed.
+		for restore in (
+			self._restoreNativeWebBrowseBaseline,
+			self._restoreModeIndicationBaseline,
+			self._restoreHeadingContinuityBaseline,
+			self._restorePageSummaryBaseline,
+			self._restoreEdgeNotificationBaseline,
+		):
+			try:
+				restore()
+			except Exception:
+				log.exception("ClassicSpeech: failed to restore original web/browse dialog state")
+
+	def _restoreNativeWebBrowseBaseline(self):
+		restore_web_browse_state(self._originalWebBrowse)
+
+	def _restoreModeIndicationBaseline(self):
+		mode_indication = self.__dict__.get("_originalModeIndication")
+		if hasattr(mode_indication, "get") and "hasModeIndicationData" in mode_indication:
+			restore_mode_indication_state(mode_indication)
+
+	def _restoreHeadingContinuityBaseline(self):
+		heading_continuity = self.__dict__.get("_originalHeadingContinuity")
+		if hasattr(heading_continuity, "get") and "hasHeadingContinuityData" in heading_continuity:
+			restore_heading_continuity_state(heading_continuity)
+		elif "_originalHeadingContinuityEnabled" in self.__dict__:
+			set_heading_continuity_enabled(self.__dict__["_originalHeadingContinuityEnabled"])
+
+	def _restorePageSummaryBaseline(self):
+		page_summary = getattr(self, "_originalPageSummary", None)
+		if hasattr(page_summary, "get") and "hasPageSummaryData" in page_summary:
+			restore_page_summary_state(page_summary)
+		else:
+			# Compatibility for lightweight older dialog fakes / partial baselines.
+			set_included_element_types(self._originalPageSummaryTypes)
+			set_include_document_title(self._originalPageSummaryTitle)
+			set_page_load_summary_mode(self._originalPageLoadSummaryMode)
+			set_notify_when_page_ready(self._originalNotifyWhenPageReady)
+			set_page_ready_message(self._originalPageReadyMessage)
+
+	def _restoreEdgeNotificationBaseline(self):
+		if hasattr(self, "_originalEdgeNotifications"):
+			restore_edge_notification_state(self._originalEdgeNotifications)
 
 	def _saveTransaction(self):
 		set_virtual_buffer_setting("maxLineLength", self.maxLengthEdit.GetValue())

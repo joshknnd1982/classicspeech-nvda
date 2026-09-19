@@ -218,10 +218,15 @@ class NVDASettingsBackupTests(unittest.TestCase):
 		result = self.backup.restore_nvda_settings(conf=self.conf)
 		self.assertEqual(len(result["kept"]), 1)
 
-	def test_a_write_into_a_temporary_voice_profile_overlay_is_not_recorded(self):
-		self.conf.profiles.append(FakeProfile({}))  # unnamed, in memory only
+	def test_a_change_while_a_voice_overlay_speaks_reaches_the_saved_configuration(self):
+		overlay = FakeProfile({"speech": {"espeak": {"rate": "30"}}})  # unnamed, in memory only
+		self.conf.profiles.append(overlay)
 		self.backup.set_nvda_setting(("presentation",), "reportTooltips", True, conf=self.conf)
-		self.assertFalse(os.path.exists(self.backup.backup_path()))
+		self.assertEqual(self.base["presentation"]["reportTooltips"], True)
+		self.assertNotIn("presentation", overlay)
+		self.assertIs(self.conf.profiles[-1], overlay, "the overlay goes back on top")
+		self.assertEqual(self._entries()[0]["before"], {"set": False})
+		self.assertIsNone(self._entries()[0]["profile"])
 
 	def test_legacy_changes_are_recorded_once_and_only_when_they_match(self):
 		self.base["presentation"].update({"reportObjectPositionInformation": "False", "reportTooltips": "True"})
@@ -613,7 +618,8 @@ class ResetCommandTests(unittest.TestCase):
 
 	def test_settings_from_an_earlier_version_are_recorded_at_startup(self):
 		config.conf.profiles[0]["classicSpeech"] = {"defaultProfile": "Advanced", "positionMode": "off", "hotkeyMode": "both"}
-		config.conf.profiles[0]["presentation"] = {"reportObjectPositionInformation": "False"}
+		# The test configuration keeps NVDA's own settings in config.conf itself.
+		config.conf["presentation"] = {"reportObjectPositionInformation": "False"}
 		plugin = self.module.GlobalPlugin()
 		try:
 			with open(self.backup.backup_path(), encoding="utf-8") as stream:

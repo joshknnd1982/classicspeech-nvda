@@ -12,7 +12,7 @@ import copy
 import config
 import logHandler
 
-from ...nvda_settings_backup import set_nvda_setting
+from ...nvda_settings_backup import nvda_setting_state, restore_nvda_setting, set_nvda_setting
 
 log = logHandler.log
 
@@ -169,41 +169,46 @@ def set_annotation_setting(key: str, value) -> None:
 	set_nvda_setting(("annotations",), key, bool(value))
 
 
-def _capture_section(section_name: str) -> dict:
-	try:
-		present = section_name in config.conf
-		data = config.conf.get(section_name) if present else None
-	except Exception:
-		present, data = False, None
-	return {"present": present, "data": copy.deepcopy(data)}
+# The NVDA settings the Web / Browse Mode dialog changes, by section.
+_DIALOG_KEYS = (
+	("virtualBuffers", VIRTUAL_BUFFER_KEYS),
+	("documentFormatting", WEB_DOCUMENT_FORMATTING_KEYS),
+	("annotations", ANNOTATION_KEYS),
+	("braille", BRAILLE_WEB_KEYS),
+)
 
 
 def capture_web_browse_state() -> dict:
-	"""Capture each complete native section without creating defaults.
+	"""Capture how each NVDA setting this dialog changes is stored, for Cancel.
 
-	Whole raw sections are retained because this dialog only owns selected keys;
-	Cancel must put malformed legacy values and forward-compatible siblings back
-	exactly as it found them.
+	Each setting keeps its exact stored state in the configuration NVDA changes:
+	whether it is set there, and its raw value, even a malformed legacy one.
+	Settings the dialog doesn't change are never touched.
 	"""
-	return {
-		section_name: _capture_section(section_name)
-		for section_name in ("virtualBuffers", "documentFormatting", "annotations", "braille")
-	}
+	state = {}
+	for section_name, keys in _DIALOG_KEYS:
+		state[section_name] = {}
+		for key in keys:
+			try:
+				state[section_name][key] = nvda_setting_state((section_name,), key)
+			except Exception:
+				log.debug("ClassicSpeech: could not read %s/%s", section_name, key, exc_info=True)
+	return state
 
 
 def restore_web_browse_state(state: dict) -> None:
-	"""Restore exact section presence and raw data from a transaction snapshot."""
+	"""Put every captured NVDA setting back exactly as it was stored."""
 	if not hasattr(state, "get"):
 		return
-	for section_name in ("virtualBuffers", "documentFormatting", "annotations", "braille"):
-		snapshot = state.get(section_name)
-		if not hasattr(snapshot, "get") or "present" not in snapshot:
+	for section_name, keys in _DIALOG_KEYS:
+		saved = state.get(section_name)
+		if not hasattr(saved, "get"):
 			continue
-		if snapshot.get("present"):
-			config.conf[section_name] = copy.deepcopy(snapshot.get("data"))
-		else:
+		for key in keys:
+			stored = saved.get(key)
+			if not hasattr(stored, "get") or "set" not in stored:
+				continue
 			try:
-				if section_name in config.conf:
-					del config.conf[section_name]
+				restore_nvda_setting((section_name,), key, stored)
 			except Exception:
-				pass
+				log.debug("ClassicSpeech: could not restore %s/%s", section_name, key, exc_info=True)
