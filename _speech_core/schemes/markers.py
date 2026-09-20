@@ -43,10 +43,16 @@ class ObjectMarker(SchemeMarker):
 
 
 class FormatMarker(SchemeMarker):
-	"""Formatting items whose voice applies to the following document text."""
+	"""Formatting items whose voice applies to the following document text.
 
-	def __init__(self, items):
+	``restate`` marks a repeat of the formatting already in force, used when one
+	reading command produces more than one speech sequence. A restatement keeps
+	the voice going without playing the item's sound a second time.
+	"""
+
+	def __init__(self, items, restate=False):
 		self.items = tuple(items)
+		self.restate = bool(restate)
 
 
 class ElementStartMarker(SchemeMarker):
@@ -77,6 +83,25 @@ class TextStartMarker(SchemeMarker):
 
 def is_marker(item) -> bool:
 	return isinstance(item, SchemeMarker)
+
+
+def has_range_marks(sequence) -> bool:
+	"""True when a scheme item speaks a run of text inside this sequence.
+
+	Formatting and element marks only mean anything where NVDA put them: the
+	voice or sound belongs to the words between one mark and the next. A
+	sequence whose only marks name an announcement (``LabelMarker``) does not
+	depend on NVDA's word order in the same way.
+	"""
+	try:
+		for item in sequence:
+			if isinstance(item, (FormatMarker, ElementStartMarker, ElementEndMarker)):
+				return True
+			if isinstance(item, TextStartMarker) and item.elements:
+				return True
+	except TypeError:
+		return False
+	return False
 
 
 def has_markers(sequence) -> bool:

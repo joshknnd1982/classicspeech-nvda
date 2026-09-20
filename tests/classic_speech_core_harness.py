@@ -305,7 +305,9 @@ def _install_nvda_stubs() -> None:
 
     class _WxObject:
         def __init__(self, *args, **kwargs):
-            pass
+            # Remembered so a test can check how a control was created.
+            self.ctorArgs = args
+            self.ctorKwargs = kwargs
 
         def __getattr__(self, name):
             def _method(*args, **kwargs):
@@ -338,6 +340,10 @@ def _install_nvda_stubs() -> None:
         "ALIGN_CENTER_VERTICAL": 0,
         "ID_OK": 5100,
         "ID_CANCEL": 5101,
+        "ID_YES": 5103,
+        "TE_MULTILINE": 32,
+        "TE_READONLY": 16,
+        "WXK_ESCAPE": 27,
         "YES": 1,
         "YES_NO": 0,
         "NO_DEFAULT": 0,
@@ -357,6 +363,7 @@ def _install_nvda_stubs() -> None:
         "EVT_BUTTON": object(),
         "EVT_CLOSE": object(),
         "EVT_LIST_ITEM_FOCUSED": object(),
+        "EVT_CHAR_HOOK": object(),
     }.items():
         setattr(wx_mod, name, value)
     for cls_name in (
@@ -386,20 +393,24 @@ def _install_nvda_stubs() -> None:
     )
 
     class _BoxSizerHelper:
-        def __init__(self, parent, sizer=None):
+        # Same call shape as gui.guiHelper.BoxSizerHelper in NVDA.
+        def __init__(self, parent, orientation=None, sizer=None):
             self.parent = parent
-            self.sizer = sizer or wx_mod.BoxSizer()
+            self.sizer = sizer if sizer is not None else wx_mod.BoxSizer(orientation)
 
         def addItem(self, item, *args, **kwargs):
             return item
 
         def addLabeledControl(self, label, controlClass, *args, **kwargs):
             control = controlClass(self.parent, *args, **kwargs)
+            # NVDA pairs the control with a StaticText, which is what a screen
+            # reader announces as its label; the text is kept for tests.
+            control.labelText = str(label).replace("&", "").rstrip(":")
             if hasattr(control, "SetName"):
-                control.SetName(str(label).replace("&", "").rstrip(":"))
+                control.SetName(control.labelText)
             return control
 
-    gui_helper_mod = types.SimpleNamespace(BoxSizerHelper=_BoxSizerHelper)
+    gui_helper_mod = types.SimpleNamespace(BoxSizerHelper=_BoxSizerHelper, BORDER_FOR_DIALOGS=10)
     gui_mod.nvdaControls = nvda_controls_mod
     gui_mod.guiHelper = gui_helper_mod
     sys.modules.setdefault("gui", gui_mod)

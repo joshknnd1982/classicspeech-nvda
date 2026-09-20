@@ -88,7 +88,7 @@ from ._speech_core.settings.web.summary_config import (
     get_include_document_title,
 )
 from ._speech_core.schemes import runtime as scheme_runtime
-from ._speech_core.schemes.markers import LabelMarker, has_markers, strip_markers
+from ._speech_core.schemes.markers import LabelMarker, has_markers, has_range_marks, strip_markers
 from ._speech_core.schemes.tagging import SchemeTagger
 
 log = logHandler.log
@@ -1202,6 +1202,24 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 self._record_history(rawHistorySequence, speechSequence)
                 self._debug_log("bypass: speech history list focus")
                 return speechSequence
+
+            # A Speech and Sound Scheme item speaks a run of this document text:
+            # NVDA marked where the formatting or the element begins and ends
+            # while it built the sequence inside getTextInfoSpeech (caret,
+            # review cursor, browse mode, quick navigation, Say All). Merging or
+            # reordering the fragments would move the item's voice and sound
+            # onto the wrong words, so keep NVDA's own text exactly as it is.
+            # Sequences no scheme item speaks still take the paths below.
+            if has_range_marks(speechSequence):
+                self._clear_hotkey_carryover()
+                output = (
+                    wrap_review_literal_sequence(speechSequence)
+                    if isReviewCursorLiteral
+                    else speechSequence
+                )
+                self._record_history(rawHistorySequence, output)
+                self._debug_log("bypass: NVDA text speech carrying scheme marks")
+                return output
 
             # Sequence merging is for focus-mode/app control chatter only.
             # Run this before the single-fragment literal-review guard: native

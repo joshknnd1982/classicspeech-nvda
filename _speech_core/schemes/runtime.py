@@ -5,7 +5,14 @@ sequence. It always removes markers. When schemes are enabled it also:
 
 * plays an item's WAV file where its announcement or object starts, optionally
   instead of speaking the announcement;
+* plays that WAV file again where a run of formatting or an element begins in
+  document text, so the change is heard even when NVDA announces nothing;
 * speaks announcements and formatted/element text in the item's voice.
+
+Reading by character, word, line, sentence or paragraph and Say All all arrive
+here the same way: the tagging wrappers give every speech sequence the
+formatting and elements it starts inside, so an item is heard whichever reading
+command produced the text.
 
 Voices that only change rate, pitch or volume use NVDA's inline prosody
 commands, so speech keeps flowing. Any other difference (voice, variant,
@@ -172,8 +179,19 @@ def apply_schemes(sequence, *, allow_prosody=None):
 					atoms.append(("sound", sound_item))
 			elif isinstance(entry, FormatMarker):
 				state.format_items = tuple(entry.items)
+				# A restatement repeats formatting the listener already heard
+				# start, so only a real change plays the item's sound.
+				if not getattr(entry, "restate", False):
+					sound_item = _first_sound_item(items_cfg, entry.items, played)
+					if sound_item:
+						played.add(sound_item)
+						atoms.append(("sound", sound_item))
 			elif isinstance(entry, ElementStartMarker):
 				state.elements.append((entry.key, tuple(entry.items)))
+				sound_item = _first_sound_item(items_cfg, entry.items, played)
+				if sound_item:
+					played.add(sound_item)
+					atoms.append(("sound", sound_item))
 			elif isinstance(entry, ElementEndMarker):
 				for index in range(len(state.elements) - 1, -1, -1):
 					if state.elements[index][0] == entry.key:
@@ -324,6 +342,39 @@ def _numeric(value):
 	return int(value)
 
 
+def _prosody_command_types():
+	try:
+		from speech.commands import PitchCommand, RateCommand, VolumeCommand
+	except Exception:
+		return {}
+	return {"rate": RateCommand, "pitch": PitchCommand, "volume": VolumeCommand}
+
+
+def _prosody_reaches_synth(driver, setting_ids) -> bool:
+	"""True when the synthesizer acts on NVDA's inline commands for these settings.
+
+	A synthesizer lists the commands it understands in ``supportedCommands`` and
+	silently ignores every other one. An item whose voice only changes a setting
+	the synthesizer ignores would never be heard, so it uses the same
+	configuration-profile overlay as a ClassicSpeech Voice Profile instead,
+	which sets the values the user chose on the synthesizer itself.
+	"""
+	types = _prosody_command_types()
+	if not types:
+		return False
+	try:
+		supported = set(getattr(driver, "supportedCommands", ()) or ())
+	except Exception:
+		return False
+	if not supported:
+		return False
+	for setting_id in setting_ids:
+		command_type = types.get(setting_id)
+		if command_type is None or command_type not in supported:
+			return False
+	return True
+
+
 def resolve_voice_snapshot(record):
 	"""Voice/Variant selectors plus explicit overrides (same rule as Voice Profiles)."""
 	from ..prosody_routing import _resolve_profile_snapshot
@@ -370,12 +421,15 @@ def _voice_plan(item_id, items_cfg, allow_prosody):
 			differences[setting_id] = snapshot[setting_id]
 	if not differences:
 		return None
-	if allow_prosody and set(differences) <= set(_PROSODY_IDS):
+	if allow_prosody and set(differences) <= set(_PROSODY_IDS) and _prosody_reaches_synth(driver, differences):
 		offsets = {}
 		for setting_id, target in differences.items():
 			target_value = _numeric(target)
 			base_value = _numeric(configured.get(setting_id) if hasattr(configured, "get") else None)
-			if target_value is None or base_value is None:
+			# NVDA turns an offset into a multiplier by dividing by the saved
+			# setting, so a saved zero has no offset that can express the value
+			# the user chose. That item takes the overlay instead.
+			if target_value is None or not base_value:
 				offsets = None
 				break
 			offsets[setting_id] = target_value - base_value
