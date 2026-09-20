@@ -19,13 +19,35 @@ APP_MODULE_DIRECTORIES = ("appModules",)
 DOC_DIRECTORIES = ("doc",)
 LOCALE_DIRECTORIES = ("locale",)
 RELEASE_NOTES = "RELEASE-1.12.md"
+# NVDA 2026.1 and later show the manifest's changelog, rendered from Markdown, when you choose
+# "What's new" for an add-on in the Add-on Store. Every release's changelog is this section of
+# its release notes; --sync-changelog copies it into manifest.ini.
+WHATS_NEW_HEADING = "## What's new"
 _NUMERIC_VERSION = re.compile(r"^\d+\.\d+(?:\.\d+)?$")
+# The version build_version generates for a CI build. Any other version is a release.
+_CI_BUILD_VERSION = re.compile(r"^\d{8}\.\d+$")
+_RELEASE_NOTES_NAME = re.compile(r"^RELEASE-(\d+\.\d+(?:\.\d+)?)\.md$")
 _SAFE_LABEL = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+# The changelog is a triple-quoted value, the only way a manifest value can span lines.
+_CHANGELOG_BLOCK = re.compile(r'(?ms)^[ \t]*changelog[ \t]*=[ \t]*"""(.*?)"""[ \t]*\r?(?:\n|\Z)')
+_CHANGELOG_KEY = re.compile(r"(?m)^[ \t]*changelog[ \t]*=")
+_MARKDOWN_HEADING = re.compile(r"^(#{1,6})[ \t]")
 
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--version", required=True, help="Numeric package version, e.g. 20260724.16.")
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument(
+        "--version",
+        help="Numeric package version, e.g. 20260724.16. A release version, such as 1.13, must be the"
+        " version of RELEASE_NOTES.",
+    )
+    mode.add_argument(
+        "--sync-changelog",
+        action="store_true",
+        help=f"Copy the {WHATS_NEW_HEADING!r} section of docs/{RELEASE_NOTES} into the changelog of"
+        " manifest.ini, then exit without packaging.",
+    )
     parser.add_argument(
         "--label",
         default="",
@@ -60,18 +82,116 @@ def manifest_with_version(manifest: Path, version: str) -> str:
     if not _NUMERIC_VERSION.fullmatch(version):
         raise ValueError(f"Version must use numeric components: {version!r}")
     source = manifest.read_text(encoding="utf-8")
-    packaged, replacements = re.subn(r"(?m)^(\s*version\s*=\s*).*$", rf"\g<1>{version}", source)
-    if replacements != 1:
+    # A changelog line is text, not a key, even when it happens to start with "version =".
+    changelog = _CHANGELOG_BLOCK.search(source)
+    start, end = changelog.span() if changelog else (len(source), len(source))
+    pattern, replacement = r"(?m)^(\s*version\s*=\s*).*$", rf"\g<1>{version}"
+    head, head_replacements = re.subn(pattern, replacement, source[:start])
+    tail, tail_replacements = re.subn(pattern, replacement, source[end:])
+    if head_replacements + tail_replacements != 1:
         raise ValueError("manifest.ini must contain exactly one version entry")
-    return packaged
+    return head + source[start:end] + tail
 
 
 def manifest_doc_file_name(manifest_text: str) -> str | None:
     """Return the manifest's docFileName, the guide NVDA's Add-on Store Help opens."""
-    match = re.search(r'(?m)^\s*docFileName\s*=\s*"?([^"\r\n]*?)"?\s*$', manifest_text)
+    keys = _CHANGELOG_BLOCK.sub("", manifest_text)
+    match = re.search(r'(?m)^\s*docFileName\s*=\s*"?([^"\r\n]*?)"?\s*$', keys)
     if match is None or not match.group(1).strip():
         return None
     return match.group(1).strip()
+
+
+def manifest_changelog(manifest_text: str) -> str | None:
+    """Return the manifest's changelog as NVDA's manifest reader (ConfigObj) sees it."""
+    match = _CHANGELOG_BLOCK.search(manifest_text.replace("\r\n", "\n"))
+    return match.group(1) if match else None
+
+
+def check_changelog(changelog: str) -> None:
+    """Refuse a changelog that a triple-quoted manifest value can't hold unchanged."""
+    if not changelog.strip():
+        raise ValueError("The changelog is empty")
+    if '"""' in changelog:
+        raise ValueError('The changelog must not contain """, which would end it early')
+    if "%(" in changelog:
+        # ConfigObj reads %(name)s as a reference to another value and fails when there is none.
+        raise ValueError("The changelog must not contain %(, which NVDA's manifest reader treats as a reference")
+
+
+def manifest_with_changelog(manifest_text: str, changelog: str) -> str:
+    """Return the manifest with its changelog replaced, or added at the end if it has none."""
+    check_changelog(changelog)
+    block = f'changelog = """{changelog}"""\n'
+    match = _CHANGELOG_BLOCK.search(manifest_text)
+    if match is not None:
+        return manifest_text[: match.start()] + block + manifest_text[match.end():]
+    if _CHANGELOG_KEY.search(manifest_text):
+        raise ValueError('manifest.ini has a changelog that is not a triple-quoted ("""...""") value')
+    return manifest_text.rstrip("\n") + "\n" + block
+
+
+def release_whats_new(notes_text: str) -> str | None:
+    """Return the What's new section of release notes, the manifest changelog for that release.
+
+    It runs from WHATS_NEW_HEADING to the next heading of level one or two, so it may have
+    headings of its own from level three down.
+    """
+    lines = notes_text.replace("\r\n", "\n").split("\n")
+    start = next((index + 1 for index, line in enumerate(lines) if line.strip() == WHATS_NEW_HEADING), None)
+    if start is None:
+        return None
+    end = len(lines)
+    for index in range(start, len(lines)):
+        heading = _MARKDOWN_HEADING.match(lines[index])
+        if heading is not None and len(heading.group(1)) <= 2:
+            end = index
+            break
+    return "\n".join(lines[start:end]).strip() or None
+
+
+def release_notes_version(name: str) -> str | None:
+    """Return the version a release notes file is for, from its RELEASE-<version>.md name."""
+    match = _RELEASE_NOTES_NAME.fullmatch(name)
+    return match.group(1) if match else None
+
+
+def sync_changelog(manifest: Path, release_notes: Path) -> bool:
+    """Make the manifest's changelog the release notes' What's new; return whether it changed."""
+    whats_new = release_whats_new(release_notes.read_text(encoding="utf-8"))
+    if whats_new is None:
+        raise ValueError(f"{release_notes.name} has no {WHATS_NEW_HEADING!r} section")
+    raw = manifest.read_bytes().decode("utf-8")
+    newline = "\r\n" if "\r\n" in raw else "\n"
+    text = raw.replace("\r\n", "\n")
+    updated = manifest_with_changelog(text, whats_new)
+    if updated == text:
+        return False
+    manifest.write_text(updated, encoding="utf-8", newline=newline)
+    return True
+
+
+def check_release_changelog(manifest_text: str, release_notes: Path, version: str) -> None:
+    """Refuse to package without this release's What's new in the manifest changelog."""
+    if not release_notes.is_file():
+        raise ValueError(f"Missing release notes: {release_notes}")
+    if not _CI_BUILD_VERSION.fullmatch(version) and release_notes_version(release_notes.name) != version:
+        raise ValueError(
+            f"Release {version} needs its own release notes, but RELEASE_NOTES is {release_notes.name}."
+            f" Add docs/RELEASE-{version}.md with a {WHATS_NEW_HEADING!r} section, point RELEASE_NOTES"
+            " at it and run: python scripts/package_addon.py --sync-changelog"
+        )
+    whats_new = release_whats_new(release_notes.read_text(encoding="utf-8"))
+    if whats_new is None:
+        raise ValueError(
+            f"{release_notes.name} has no {WHATS_NEW_HEADING!r} section to use as the manifest changelog"
+        )
+    check_changelog(whats_new)
+    if manifest_changelog(manifest_text) != whats_new:
+        raise ValueError(
+            f"The changelog in manifest.ini is not the What's new section of {release_notes.name}."
+            " Run: python scripts/package_addon.py --sync-changelog"
+        )
 
 
 def _add_tree(archive: zipfile.ZipFile, source: Path, prefix: Path) -> None:
@@ -98,8 +218,20 @@ def main() -> None:
     manifest = ROOT / "manifest.ini"
     if not manifest.is_file():
         raise SystemExit(f"Missing manifest: {manifest}")
+    release_notes = ROOT / "docs" / RELEASE_NOTES
+    if args.sync_changelog:
+        try:
+            changed = sync_changelog(manifest, release_notes)
+        except (OSError, ValueError) as error:
+            raise SystemExit(str(error)) from error
+        print(f"CHANGELOG={'updated' if changed else 'unchanged'} from docs/{RELEASE_NOTES}")
+        return
     version = args.version
     package_name = package_filename(version, args.label)
+    try:
+        check_release_changelog(manifest.read_text(encoding="utf-8"), release_notes, version)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
     package_path = DIST / package_name
     checksum_path = package_path.with_suffix(package_path.suffix + ".sha256")
 
@@ -139,9 +271,7 @@ def main() -> None:
             if source.is_dir():
                 _add_locale_tree(archive, source)
 
-        release_notes = ROOT / "docs" / RELEASE_NOTES
-        if release_notes.is_file():
-            archive.write(release_notes, f"globalPlugins/docs/{RELEASE_NOTES}")
+        archive.write(release_notes, f"globalPlugins/docs/{RELEASE_NOTES}")
 
     with zipfile.ZipFile(package_path) as archive:
         invalid_member = archive.testzip()

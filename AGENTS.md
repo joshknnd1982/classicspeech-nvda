@@ -42,6 +42,7 @@
 - Static tests do not prove speech behavior: clearly distinguish them from a live NVDA validation. Never restart NVDA automatically.
 - ClassicSpeech runs on NVDA's bundled Python, which lacks some standard library modules; 1.05 failed to load because it imported `filecmp`. Runtime code may import only modules NVDA ships, which `tests/classic_speech_runtime_imports_harness.py` checks.
 - Before a release candidate, run the project packaging and archive-member checks; report the exact output path and checksum.
+- Every release carries its What's new in the `changelog` of `manifest.ini`, the field NVDA 2026.1 added and shows from the Add-on Store's **What's new** action. The changelog is the `## What's new` section of the release notes `RELEASE_NOTES` names in `scripts/package_addon.py`. Write that section for each release, point `RELEASE_NOTES` at the new notes, and run `python scripts/package_addon.py --sync-changelog`. Packaging refuses a missing or stale changelog, and a release version whose notes `RELEASE_NOTES` isn't (`tests/classic_speech_packaging_harness.py`). Keep the section user-facing, and use only what NVDA's Python-Markdown converts without extensions: headings, lists, emphasis, code and links, but no tables, fenced code blocks, `"""` or `%(`.
 
 ## Scratchpad and live validation
 
