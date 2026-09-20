@@ -201,6 +201,20 @@ FORMAT_ATTRS["fmt.comment.draft"] = {"comment": CommentType.DRAFT}
 FORMAT_ATTRS["fmt.comment.resolved"] = {"comment": CommentType.RESOLVED}
 
 
+class _TreeObject:
+	"""A tree view row, as NVDA exposes one to the speech hook."""
+
+	def __init__(self, role_name, name, parent=None):
+		self.role = getattr(controlTypes.Role, role_name, None) or types.SimpleNamespace(name=role_name)
+		self.name = name
+		self.parent = parent
+		self.states = set()
+		self.value = ""
+		self.windowHandle = 4242
+		self.IAccessibleChildID = 0
+		self.treeInterceptor = None
+
+
 class SchemeItemHarnessBase(unittest.TestCase):
 	def setUp(self):
 		nvda_harness.ClassicSpeechNVDAConfigStartupTests().setUp()
@@ -545,6 +559,79 @@ class SchemeItemEffectTests(SchemeItemHarnessBase):
 				if not any(isinstance(entry, self.runtime.SchemeSoundCommand) for entry in output):
 					failures.append((item_id, kind, "no sound"))
 		self.assertEqual(failures, [], f"{len(failures)} failures: {failures[:20]}")
+
+
+class SchemeTreeIsReadableTests(SchemeItemHarnessBase):
+	"""Every row of the manager's tree has to be readable by the person using it.
+
+	The tree is built from NVDA's own vocabulary, so its rows are named "menu",
+	"selected", "tree view", "list"... ClassicSpeech used to classify such a row
+	label as the role or state it looks like and then drop it, leaving the user
+	arrowing over silence. The row name is the focused object's own name and
+	must always be spoken.
+	"""
+
+	#: How NVDA announces a tree view row: name first, then what it knows about it.
+	ROW_SHAPES = (
+		("{label}", "1 of 20", "level 2"),
+		("{label}", "level 2", "1 of 20"),
+		("{label}",),
+		("{label}", "collapsed", "1 of 13", "level 1"),
+		("{label} (sound, voice)", "1 of 20", "level 2"),
+	)
+
+	def _tree_row(self, label):
+		import api
+
+		from globalPlugins._speech_core import focus_ancestry
+
+		dialog = _TreeObject("DIALOG", "Speech and Sound Schemes")
+		tree = _TreeObject("TREEVIEW", "Scheme items", dialog)
+		row = _TreeObject("TREEVIEWITEM", label, tree)
+		api.getFocusObject = lambda: row
+		api.getFocusAncestors = lambda: [dialog, tree]
+		focus_ancestry.reset_cache()
+		return row
+
+	def _plugin(self):
+		plugin = self.module.GlobalPlugin()
+		globalPluginHandler.runningPlugins.append(plugin)
+		self.addCleanup(plugin.terminate)
+		plugin.processor._safe_selected_text = lambda _focus: ""
+		return plugin
+
+	def _tree_labels(self):
+		labels = []
+		for category in self.categories:
+			labels.append(category.label)
+			labels.extend(item.label for item in category.items)
+		return labels
+
+	def test_every_row_of_the_tree_is_spoken_when_arrowed_over(self):
+		plugin = self._plugin()
+		silent = []
+		for label in self._tree_labels():
+			self._tree_row(label)
+			for shape in self.ROW_SHAPES:
+				sequence = [part.format(label=label) for part in shape]
+				plugin._menuHints.reset()
+				output = plugin._filterSpeechSequence(list(sequence))
+				spoken = " ".join(
+					entry for entry in output if isinstance(entry, str) and entry.strip()
+				).lower()
+				if label.lower() not in spoken:
+					silent.append((label, sequence, output))
+		self.assertEqual(silent, [], f"{len(silent)} rows are not read: {silent[:10]}")
+
+	def test_a_row_named_after_its_own_container_is_not_held_back(self):
+		"""A row called "tree view" is a row, not the tree that holds it."""
+		plugin = self._plugin()
+		for label in ("tree view", "list", "combo box", "table", "tool bar", "tab control"):
+			self._tree_row(label)
+			plugin._menuHints.reset()
+			output = plugin._filterSpeechSequence([label])
+			self.assertIn(label, output, label)
+			self.assertIsNone(plugin._pendingContainerSequence, label)
 
 
 if __name__ == "__main__":
