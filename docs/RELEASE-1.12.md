@@ -4,6 +4,12 @@ ClassicSpeech 1.12 is about being able to hear what you are moving through: the 
 
 Supported NVDA versions: 2025.1 through 2026.2.
 
+## What's new
+
+* The keyboard layout menu NVDA opens while you add an input gesture reads the item it opens on. That item used to be silent until you arrowed to the next one.
+* Every row of the Speech and Sound Schemes tree is read. Rows named after NVDA's own words, such as "menu" and "selected", were silent.
+* The two Hotkeys settings that are several choices, **Speak hotkeys in** and **Which shortcuts to speak**, are lists of checkboxes, the way NVDA's Document Formatting page offers Spelling or grammar errors. Your settings are kept.
+
 ## Fixes
 
 ### The keyboard layout menu is read when you add an input gesture
