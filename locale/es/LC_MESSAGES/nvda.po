@@ -26,6 +26,10 @@ msgstr ""
 msgid "&Clickable"
 msgstr "&Cliqueable"
 
+#: _speech_core/update_check.py:445 _speech_core/update_dialog.py:55
+msgid "&Close"
+msgstr ""
+
 #: _speech_core/settings/document_reading_proofing_panel.py:115
 msgid "&Colors"
 msgstr "&Colores"
@@ -34,7 +38,7 @@ msgstr "&Colores"
 msgid "&Copy"
 msgstr "&Copiar"
 
-#: _speech_core/update_check.py:468
+#: _speech_core/update_check.py:425
 msgid "&Download and install"
 msgstr ""
 
@@ -82,7 +86,7 @@ msgstr "&Listas"
 msgid "&Maximum number of characters on one line"
 msgstr "&Número máximo de caracteres en una línea"
 
-#: _speech_core/update_check.py:468
+#: _speech_core/update_check.py:445
 msgid "&Not now"
 msgstr ""
 
@@ -117,6 +121,10 @@ msgstr "&Tablas"
 #: _speech_core/settings/web/dialog.py:252
 msgid "&Trap all non-command gestures from reaching the document"
 msgstr "&Capturar todo lo que no sean órdenes de gestos para que no alcance el documento"
+
+#: _speech_core/update_dialog.py:41
+msgid "&What's new:"
+msgstr ""
 
 #: _speech_core/settings/web/dialog.py:393
 msgid "1 second"
@@ -462,7 +470,7 @@ msgstr ""
 msgid "Check for Updates..."
 msgstr ""
 
-#: _speech_core/update_check.py:347
+#: _speech_core/update_check.py:357
 msgid "Checking for ClassicSpeech updates"
 msgstr ""
 
@@ -510,11 +518,11 @@ msgstr "Perfiles de Voz de ClassicSpeech"
 msgid "ClassicSpeech Web / Browse Mode Settings"
 msgstr "Configuraciones de ClassicSpeech para Web / Modo Exploración"
 
-#: _speech_core/update_check.py:374
+#: _speech_core/update_check.py:384
 msgid "ClassicSpeech could not check for updates. {reason}"
 msgstr ""
 
-#: _speech_core/update_check.py:432
+#: _speech_core/update_check.py:467
 msgid "ClassicSpeech could not download the update. {reason}"
 msgstr ""
 
@@ -526,7 +534,7 @@ msgstr ""
 msgid "ClassicSpeech could not load the {engine} synthesizer. The item keeps using the active synthesizer."
 msgstr ""
 
-#: _speech_core/update_check.py:383
+#: _speech_core/update_check.py:393
 msgid "ClassicSpeech is up to date. You have version {version}, the latest release."
 msgstr ""
 
@@ -538,7 +546,7 @@ msgstr ""
 msgid "ClassicSpeech settings were reset, and the NVDA settings it changed were put back. ClassicSpeech now uses its default settings. To remove ClassicSpeech, uninstall it from the Add-on Store."
 msgstr ""
 
-#: _speech_core/update_check.py:408 _speech_core/update_check.py:456
+#: _speech_core/update_check.py:440 _speech_core/update_check.py:491
 msgid "ClassicSpeech update"
 msgstr ""
 
@@ -546,7 +554,7 @@ msgstr ""
 msgid "ClassicSpeech voice profiles"
 msgstr ""
 
-#: _speech_core/update_check.py:391
+#: _speech_core/update_check.py:401
 msgid "ClassicSpeech {new} is available. You have version {installed}."
 msgstr ""
 
@@ -722,11 +730,11 @@ msgstr "Dólares y centavos"
 msgid "Double strikethrough"
 msgstr ""
 
-#: _speech_core/update_check.py:404
+#: _speech_core/update_check.py:421
 msgid "Download and install it now? NVDA asks you to confirm the installation, then offers to restart. Your ClassicSpeech settings are kept."
 msgstr ""
 
-#: _speech_core/update_check.py:418
+#: _speech_core/update_check.py:453
 msgid "Downloading ClassicSpeech {version}"
 msgstr ""
 
@@ -902,15 +910,15 @@ msgstr "Números completos"
 msgid "General Settings..."
 msgstr "Configuración General..."
 
-#: _speech_core/update_check.py:201 _speech_core/update_check.py:241
+#: _speech_core/update_check.py:211 _speech_core/update_check.py:251
 msgid "GitHub answered with error {code}."
 msgstr ""
 
-#: _speech_core/update_check.py:197
+#: _speech_core/update_check.py:207
 msgid "GitHub could not be reached. Check your internet connection."
 msgstr ""
 
-#: _speech_core/update_check.py:205
+#: _speech_core/update_check.py:215
 msgid "GitHub's answer could not be read."
 msgstr ""
 
@@ -1250,7 +1258,7 @@ msgstr ""
 msgid "NVDA announces the new font size. Specific sizes are listed separately."
 msgstr ""
 
-#: _speech_core/update_check.py:440
+#: _speech_core/update_check.py:475
 msgid "NVDA could not install the update. Details are in the NVDA log."
 msgstr ""
 
@@ -1266,7 +1274,7 @@ msgstr "Nativo de NVDA es el valor seguro predeterminado y deja los números sin
 msgid "NVDA native, no summary"
 msgstr "Nativo de NVDA, sin resumen"
 
-#: _speech_core/update_check.py:176
+#: _speech_core/update_check.py:186
 msgid "NVDA's internet support is not available."
 msgstr ""
 
@@ -2078,23 +2086,23 @@ msgstr "El sintetizador activo no expone configuraciones editables."
 msgid "The active synthesizer switches voices fastest. Another synthesizer is loaded each time this item is spoken and unloaded afterwards, which adds a noticeable delay."
 msgstr ""
 
-#: _speech_core/update_check.py:258
+#: _speech_core/update_check.py:268
 msgid "The add-on file could not be downloaded."
 msgstr ""
 
-#: _speech_core/update_check.py:222 _speech_core/update_check.py:248
+#: _speech_core/update_check.py:232 _speech_core/update_check.py:258
 msgid "The add-on file is larger than expected."
 msgstr ""
 
-#: _speech_core/update_check.py:233
+#: _speech_core/update_check.py:243
 msgid "The checksum file could not be downloaded."
 msgstr ""
 
-#: _speech_core/update_check.py:235
+#: _speech_core/update_check.py:245
 msgid "The checksum file could not be read."
 msgstr ""
 
-#: _speech_core/update_check.py:262
+#: _speech_core/update_check.py:272
 msgid "The downloaded file does not match its checksum, so it was deleted."
 msgstr ""
 
@@ -2102,15 +2110,15 @@ msgstr ""
 msgid "The file has no voice profiles for your current synthesizer. They are used when you switch to one of those synthesizers."
 msgstr ""
 
-#: _speech_core/update_check.py:207
+#: _speech_core/update_check.py:217
 msgid "The latest release on GitHub has no version number ClassicSpeech understands."
 msgstr ""
 
-#: _speech_core/update_check.py:218
+#: _speech_core/update_check.py:228
 msgid "The release has no add-on file."
 msgstr ""
 
-#: _speech_core/update_check.py:220
+#: _speech_core/update_check.py:230
 msgid "The release has no checksum file, so its add-on file can't be checked."
 msgstr ""
 
@@ -2146,7 +2154,7 @@ msgstr ""
 msgid "The voice profiles could not be imported. See the NVDA log for details."
 msgstr ""
 
-#: _speech_core/update_check.py:199
+#: _speech_core/update_check.py:209
 msgid "There are no ClassicSpeech releases on GitHub yet."
 msgstr ""
 
@@ -2158,7 +2166,7 @@ msgstr ""
 msgid "These sounds were not found and were left out:"
 msgstr ""
 
-#: _speech_core/update_check.py:336
+#: _speech_core/update_check.py:346
 msgid "This copy of ClassicSpeech doesn't know where its updates are published, so it can't check for them."
 msgstr ""
 
@@ -2170,8 +2178,12 @@ msgstr ""
 msgid "This file is not a ClassicSpeech voice profiles file, or it has no voice profiles."
 msgstr ""
 
-#: _speech_core/update_check.py:399
+#: _speech_core/update_check.py:413
 msgid "This release has no add-on file to install. Download it from {url}"
+msgstr ""
+
+#: _speech_core/update_check.py:408
+msgid "This release has no notes."
 msgstr ""
 
 #: _speech_core/settings/schemes_panel.py:525
@@ -2273,10 +2285,6 @@ msgstr "Configuraciones de Web / Modo Exploración..."
 #: _speech_core/settings/web/dialog.py:297 _speech_core/settings/web/dialog.py:98
 msgid "Web Element Reporting"
 msgstr "Reporte de Elementos Web"
-
-#: _speech_core/update_check.py:397
-msgid "What's new:"
-msgstr ""
 
 #: _speech_core/settings/schemes_panel.py:219
 msgid "When playin&g the sound:"
