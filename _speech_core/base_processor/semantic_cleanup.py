@@ -50,13 +50,28 @@ class SemanticCleanup:
 
 		return filtered
 
-	def _ensure_menu_context_not_silent(self, built_sequence, semantic_tokens, context):
+	def _ensure_menu_context_not_silent(self, built_sequence, semantic_tokens, context, native_tokens=None):
+		"""Keep an open menu audible whatever the rest of the pipeline decided.
+
+		A menu the user cannot hear is a dead end: there is nothing to review and
+		no way to tell which item is selected. So when ClassicSpeech's own
+		processing leaves a menu announcement with no words at all, NVDA's own
+		text is spoken instead. The root popup menu keeps its short "menu"
+		marker, because its role token is deliberately dropped as a structural
+		navigation marker rather than lost.
+		"""
 		if context != "menu":
 			return built_sequence
 		if any(isinstance(item, str) and item.strip() for item in built_sequence):
 			return built_sequence
 		if self._get_focus_role_key() in ROOT_MENU_NAV_MARKER_ROLES:
 			return ["menu"]
+		native_text = [
+			item for item in (native_tokens or []) if isinstance(item, str) and item.strip()
+		]
+		if native_text:
+			log.debug(f"ClassicSpeech: menu speech was emptied; speaking NVDA's own text {native_text}")
+			return native_text
 		return built_sequence
 
 	# -------------------------

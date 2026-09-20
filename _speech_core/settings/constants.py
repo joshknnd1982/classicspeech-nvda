@@ -17,6 +17,12 @@ HOTKEY_MODE_CHOICES = [
 	(_("Menus"), HOTKEY_MODE_MENUS),
 	(_("Both"), HOTKEY_MODE_BOTH),
 ]
+#: The rows of the "Speak hotkeys" check list, in order. Checking neither row
+#: is Off and checking both is Both, so every stored value is still reachable.
+HOTKEY_MODE_FLAGS = [
+	(_("Menus"), HOTKEY_MODE_MENUS),
+	(_("Dialogs"), HOTKEY_MODE_DIALOGS),
+]
 
 HOTKEY_FORMAT_NATIVE = "native"
 HOTKEY_FORMAT_EXPANDED_NO_PLUS = "expandedNoPlus"
@@ -30,10 +36,18 @@ HOTKEY_FORMAT_CHOICES = [
 HOTKEY_TYPES_ACCESS = "access"
 HOTKEY_TYPES_COMMAND = "command"
 HOTKEY_TYPES_BOTH = "both"
+#: No kind of shortcut is spoken; the "Which shortcuts to speak" check list has
+#: nothing checked.
+HOTKEY_TYPES_NONE = "none"
 HOTKEY_TYPES_CHOICES = [
 	(_("Access keys only"), HOTKEY_TYPES_ACCESS),
 	(_("Command shortcuts only"), HOTKEY_TYPES_COMMAND),
 	(_("Access keys and command shortcuts"), HOTKEY_TYPES_BOTH),
+]
+#: The rows of the "Which shortcuts to speak" check list, in order.
+HOTKEY_TYPES_FLAGS = [
+	(_("Access keys"), HOTKEY_TYPES_ACCESS),
+	(_("Command shortcuts"), HOTKEY_TYPES_COMMAND),
 ]
 
 POSITION_MODE_OFF = "off"
