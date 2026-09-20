@@ -147,6 +147,24 @@ def add_state_labels(table: LabelTable, role, real_states, reason, states=None, 
 		table.add(label, state_item_id(state_name, negative=negative_state))
 
 
+def object_state_items(states):
+	"""Scheme items for the states an object is in, whether NVDA says them or not.
+
+	NVDA never speaks some of the states it knows about: it drops Focusable,
+	Checkable and Selectable always, and Visited outside a link, among others.
+	A user who gives one of those a sound or a voice still means "an object in
+	this state", so the object marker carries the states the object is actually
+	in. A negated state such as "not checked" stays with NVDA's announcement,
+	which is the only place its absence means anything.
+	"""
+	items = []
+	for state in sorted(states or (), key=lambda member: str(getattr(member, "name", member))):
+		name = str(getattr(state, "name", "") or "")
+		if name:
+			items.append(state_item_id(name))
+	return items
+
+
 def add_table_cell_labels(table: LabelTable, values):
 	"""Tag row/column numbers and header text that NVDA speaks for table cells."""
 	row = values.get("rowNumber")
@@ -519,6 +537,7 @@ def format_range_items(attrs):
 	style = get("style")
 	if style:
 		items.append(style_name_item_id(style))
+		items.append("fmt.style")
 	for key in ("font-name", "font-family"):
 		value = get(key)
 		if value:
@@ -527,4 +546,9 @@ def format_range_items(attrs):
 	size = get("font-size")
 	if size:
 		items.append(font_size_item_id(size))
+	# Colors come last: any more specific formatting on the same text wins.
+	if get("color"):
+		items.append("fmt.color")
+	if get("background-color"):
+		items.append("fmt.backgroundColor")
 	return items

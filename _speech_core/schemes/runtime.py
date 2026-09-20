@@ -342,6 +342,39 @@ def _numeric(value):
 	return int(value)
 
 
+def _prosody_command_types():
+	try:
+		from speech.commands import PitchCommand, RateCommand, VolumeCommand
+	except Exception:
+		return {}
+	return {"rate": RateCommand, "pitch": PitchCommand, "volume": VolumeCommand}
+
+
+def _prosody_reaches_synth(driver, setting_ids) -> bool:
+	"""True when the synthesizer acts on NVDA's inline commands for these settings.
+
+	A synthesizer lists the commands it understands in ``supportedCommands`` and
+	silently ignores every other one. An item whose voice only changes a setting
+	the synthesizer ignores would never be heard, so it uses the same
+	configuration-profile overlay as a ClassicSpeech Voice Profile instead,
+	which sets the values the user chose on the synthesizer itself.
+	"""
+	types = _prosody_command_types()
+	if not types:
+		return False
+	try:
+		supported = set(getattr(driver, "supportedCommands", ()) or ())
+	except Exception:
+		return False
+	if not supported:
+		return False
+	for setting_id in setting_ids:
+		command_type = types.get(setting_id)
+		if command_type is None or command_type not in supported:
+			return False
+	return True
+
+
 def resolve_voice_snapshot(record):
 	"""Voice/Variant selectors plus explicit overrides (same rule as Voice Profiles)."""
 	from ..prosody_routing import _resolve_profile_snapshot
@@ -388,12 +421,15 @@ def _voice_plan(item_id, items_cfg, allow_prosody):
 			differences[setting_id] = snapshot[setting_id]
 	if not differences:
 		return None
-	if allow_prosody and set(differences) <= set(_PROSODY_IDS):
+	if allow_prosody and set(differences) <= set(_PROSODY_IDS) and _prosody_reaches_synth(driver, differences):
 		offsets = {}
 		for setting_id, target in differences.items():
 			target_value = _numeric(target)
 			base_value = _numeric(configured.get(setting_id) if hasattr(configured, "get") else None)
-			if target_value is None or base_value is None:
+			# NVDA turns an offset into a multiplier by dividing by the saved
+			# setting, so a saved zero has no offset that can express the value
+			# the user chose. That item takes the overlay instead.
+			if target_value is None or not base_value:
 				offsets = None
 				break
 			offsets[setting_id] = target_value - base_value

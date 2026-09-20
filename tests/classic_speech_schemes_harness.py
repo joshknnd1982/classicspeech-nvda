@@ -197,8 +197,16 @@ class Setting:
 
 
 class FakeSynth:
+	"""A synthesizer that acts on NVDA's inline prosody commands.
+
+	A driver only obeys the commands in ``supportedCommands`` and silently
+	ignores the rest, so the set matters: see ``LimitedCommandSynth`` for a
+	driver like BestSpeech, which acts on pitch alone.
+	"""
+
 	name = "fakeSynth"
 	supportedSettings = (Setting("voice"), Setting("variant"), Setting("rate"), Setting("pitch"), Setting("volume"))
+	supportedCommands = frozenset({PitchCommand, RateCommand, VolumeCommand})
 
 	def __init__(self):
 		self.voice = "alice"
@@ -206,6 +214,17 @@ class FakeSynth:
 		self.rate = 50
 		self.pitch = 50
 		self.volume = 80
+
+
+class LimitedCommandSynth(FakeSynth):
+	"""A synthesizer that acts on pitch commands only, as BestSpeech does.
+
+	A driver ignores every inline command outside ``supportedCommands`` without
+	saying so, so an item whose voice only changes rate or volume would be
+	silent on this synthesizer.
+	"""
+
+	supportedCommands = frozenset({PitchCommand})
 
 
 SYNTH = FakeSynth()
@@ -531,6 +550,66 @@ class SchemeRuntimeTests(SchemeHarnessBase):
 		self.assertEqual(output[1].offset, 20)
 		self.assertEqual(output[3].offset, 0)
 
+	def test_a_voice_the_synthesizer_cannot_hear_uses_a_profile_trigger(self):
+		"""A rate or volume change on a pitch-only synthesizer must still be heard.
+
+		BestSpeech lists only PitchCommand in supportedCommands, so NVDA's inline
+		rate and volume commands reach it and are dropped without a word. The
+		item takes the overlay that sets the values on the synthesizer instead.
+		"""
+		import synthDriverHandler
+
+		limited = LimitedCommandSynth()
+		synthDriverHandler.getSynth = lambda: limited
+		self.addCleanup(lambda: setattr(synthDriverHandler, "getSynth", lambda: SYNTH))
+		created = []
+		from globalPlugins._speech_core import voice_profile_runtime
+
+		original = voice_profile_runtime.make_voice_profile_overlay_trigger
+		voice_profile_runtime.make_voice_profile_overlay_trigger = (
+			lambda profile_id, manager, driver, snapshot, profile_factory=None:
+			created.append((profile_id, snapshot)) or types.SimpleNamespace(spec=profile_id)
+		)
+		self.addCleanup(lambda: setattr(
+			voice_profile_runtime, "make_voice_profile_overlay_trigger", original))
+
+		self.configure({"fmt.bold": {"voice": {"enabled": True, "bySynth": {"fakeSynth": _voice_record(rate=20)}}}})
+		output = self.runtime.apply_schemes(["plain ", self.markers.FormatMarker(["fmt.bold"]), "strong words"])
+		self.assertFalse([entry for entry in output if isinstance(entry, commands.RateCommand)])
+		self.assertEqual([entry for entry in created], [("scheme:fmt.bold", created[0][1])])
+		self.assertEqual(created[0][1]["rate"], 20)
+		self.assertEqual(
+			[type(entry).__name__ if not isinstance(entry, str) else entry for entry in output],
+			["plain ", "ConfigProfileTriggerCommand", "strong words", "ConfigProfileTriggerCommand"],
+		)
+
+		# Pitch is a command this synthesizer does act on, so it keeps flowing.
+		created.clear()
+		self.configure({"fmt.bold": {"voice": {"enabled": True, "bySynth": {"fakeSynth": _voice_record(pitch=70)}}}})
+		output = self.runtime.apply_schemes(["plain ", self.markers.FormatMarker(["fmt.bold"]), "strong words"])
+		self.assertEqual(created, [])
+		self.assertTrue([entry for entry in output if isinstance(entry, commands.PitchCommand)])
+
+	def test_a_voice_offset_from_a_saved_zero_uses_a_profile_trigger(self):
+		"""NVDA divides by the saved setting to build an offset; zero has none."""
+		import synthDriverHandler
+
+		config.conf["speech"]["fakeSynth"]["pitch"] = 0
+		created = []
+		from globalPlugins._speech_core import voice_profile_runtime
+
+		original = voice_profile_runtime.make_voice_profile_overlay_trigger
+		voice_profile_runtime.make_voice_profile_overlay_trigger = (
+			lambda profile_id, manager, driver, snapshot, profile_factory=None:
+			created.append(profile_id) or types.SimpleNamespace(spec=profile_id)
+		)
+		self.addCleanup(lambda: setattr(
+			voice_profile_runtime, "make_voice_profile_overlay_trigger", original))
+		self.configure({"fmt.bold": {"voice": {"enabled": True, "bySynth": {"fakeSynth": _voice_record(pitch=40)}}}})
+		output = self.runtime.apply_schemes(["plain ", self.markers.FormatMarker(["fmt.bold"]), "strong words"])
+		self.assertEqual(created, ["scheme:fmt.bold"])
+		self.assertFalse([entry for entry in output if isinstance(entry, commands.PitchCommand)])
+
 	def test_voice_or_variant_change_uses_a_profile_trigger(self):
 		self.configure({"role.HEADING": {"voice": {"enabled": True, "bySynth": {"fakeSynth": _voice_record(variant="deep")}}}})
 		created = []
@@ -760,6 +839,30 @@ class SchemeTaggingTests(SchemeHarnessBase):
 		self.assertEqual(labels, [(("role.CHECKBOX",), "check box"), (("state.CHECKED.off",), "not checked")])
 		# The spelled/copied NVDA+Tab result builds speech without speaking it.
 		self.assertEqual(speech.getObjectSpeech(obj), ["Remember me", "check box", "not checked"])
+
+	def test_object_states_are_marked_even_when_nvda_never_says_them(self):
+		"""A state a user configured has to do something on an object in it.
+
+		NVDA drops several states before it speaks (Focusable, Checkable,
+		Selectable, and Visited outside a link), so an item for one of those
+		would otherwise be a dead entry in the tree view.
+		"""
+		self.configure({
+			"role.BUTTON": {"sound": self.sound("button.wav")},
+			"state.DEFAULT": {"sound": self.sound("default.wav")},
+		})
+		obj = FakeObject("Save", Role.BUTTON, states={State.DEFAULT})
+		speech.speakObject(obj)
+		marker = self.speech_module.spoken[-1][0]
+		self.assertIsInstance(marker, self.markers.ObjectMarker)
+		# The object's type stays ahead of its state.
+		self.assertEqual(marker.items, ("role.BUTTON", "state.DEFAULT"))
+
+	def test_object_states_are_not_looked_up_when_none_are_configured(self):
+		self.configure({"role.BUTTON": {"sound": self.sound("button.wav")}})
+		obj = FakeObject("Save", Role.BUTTON, states={State.DEFAULT})
+		speech.speakObject(obj)
+		self.assertEqual(self.speech_module.spoken[-1][0].items, ("role.BUTTON",))
 
 	def test_text_speech_marks_formatting_elements_and_indentation(self):
 		self.configure({

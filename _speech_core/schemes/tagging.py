@@ -322,6 +322,18 @@ class SchemeTagger:
 			for item_id in schemeLabels.role_items(role, name=name):
 				if item_id in items_cfg and item_id not in items:
 					items.append(item_id)
+		# An object's states come after its type: a scheme for "check box" still
+		# wins over one for "checked". NVDA never speaks some states it knows
+		# about, so these are read from the object rather than from its speech.
+		if any(item_id.startswith("state.") for item_id in items_cfg):
+			try:
+				states = getattr(obj, "states", None) or ()
+			except Exception:
+				states = ()
+			if states:
+				for item_id in schemeLabels.object_state_items(states):
+					if item_id in items_cfg and item_id not in items:
+						items.append(item_id)
 		if not items:
 			return result
 		result = list(result)
