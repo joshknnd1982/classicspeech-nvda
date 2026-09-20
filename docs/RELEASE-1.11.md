@@ -1,6 +1,6 @@
 # ClassicSpeech 1.11
 
-ClassicSpeech 1.11 makes every item in Speech and Sound Schemes do what you configured, wherever it appears.
+ClassicSpeech 1.11 makes every item in Speech and Sound Schemes do what you configured, wherever it appears, and puts a release's notes in a box you can read.
 
 Supported NVDA versions: 2025.1 through 2026.2.
 
@@ -37,6 +37,12 @@ Every one of the items in the tree view was checked against NVDA's own control t
 * **Object states.** NVDA never speaks some of the states it knows about: it drops Focusable, Checkable and Selectable always, and Visited outside a link, among others. A sound or voice for one of those did nothing at all. An object's states are now marked on the object itself, so the item applies to any object in that state whether or not NVDA has a word for it. An object's type still comes first, so a scheme for "check box" keeps winning over one for "checked". A negated state such as "not checked" is unchanged: it stays with NVDA's announcement, which is the only place the absence of a state means anything.
 * **Style changes (any style)**, **Text color changes** and **Background color changes** are listed as applying to the text that has them, but only the announcement was ever marked. They now apply to the text as well.
 
+### What's new is now a box you can read
+
+When ClassicSpeech offers an update, the release's notes were part of the message box that asked whether to install it. NVDA speaks a message box once and there is nothing left to move through, so the notes went by in one breath and long ones were cut short.
+
+The offer is now a dialog with the notes in a read-only **What's new** edit box. Focus starts in it, so you can read it straight away with the arrow keys, by line, by word or by character, page through it, select and copy it, and use NVDA's review commands in it. Nothing you type changes it. **Tab** reaches the buttons, **Escape** closes the dialog without installing anything, and the whole release is shown rather than the first 1200 characters. A release with no add-on file to install shows its notes the same way, with a **Close** button.
+
 ## Notes
 
 * Nothing changes for an item you have not configured, and nothing changes when Speech and Sound Schemes are turned off.
@@ -52,6 +58,7 @@ Use **Check for Updates...** in the ClassicSpeech menu (NVDA menu → Preference
 
 * Full local harness gate: every harness passes.
 * `tests/classic_speech_scheme_items_harness.py` is new. It loads NVDA's own `controlTypes`, so it builds the tree view the user really sees — 333 entries in 13 branches, 310 of them distinct — and checks every item twice: that ClassicSpeech can mark it while NVDA builds speech, and that the mark is turned into both the voice and the sound the user configured. Items whose voice covers text or a whole object must be marked as a range or an object, not only on an announcement that NVDA may never make.
+* `tests/classic_speech_update_check_harness.py` gained tests for the offer dialog: that the notes are in a read-only multiline box labelled What's new, that the whole release is shown rather than a shortened version, and that Markdown is removed so the box reads as plain text.
 * `tests/classic_speech_schemes_harness.py` gained tests for the reading modes, for a synthesizer that acts on pitch alone, for a saved setting of zero, and for object states.
 * The causes were traced in NVDA 2026.2's own `speech.speech.getTextInfoSpeech`, `textInfos.offsets.OffsetsTextInfo.getTextWithFields`, `controlTypes.processAndLabelStates` and `appModules.soffice`, and reproduced before anything was changed.
-* Live NVDA testing has not been done yet for this build. In LibreOffice, please underline part of a line and make another part bold, give each a voice that is clearly different from yours, then read that line with the Down arrow, the same words with Control and the arrow keys, character by character with the arrow keys, and with say all. Each item's voice should be heard on its own words every time, and on those words only.
+* Live NVDA testing has not been done yet for this build. Please also open **Check for Updates...**: when an update is offered, focus should land in a read-only What's new box you can arrow through. In LibreOffice, please underline part of a line and make another part bold, give each a voice that is clearly different from yours, then read that line with the Down arrow, the same words with Control and the arrow keys, character by character with the arrow keys, and with say all. Each item's voice should be heard on its own words every time, and on those words only.

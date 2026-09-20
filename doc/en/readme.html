@@ -551,11 +551,20 @@ li { margin: .25em 0; }
 <li>To check now, press <kbd>NVDA+N</kbd>, then choose Preferences, then ClassicSpeech, then <strong>Check for Updates...</strong>. You can also assign a gesture to the <strong>Checks for ClassicSpeech updates</strong> command. You hear "Checking for ClassicSpeech updates", then a message says whether ClassicSpeech is up to date.</li>
 <li>With <strong>Check for ClassicSpeech updates automatically</strong> checked on the <a href="#advanced">Advanced</a> page, ClassicSpeech checks once a day, about 30 seconds after NVDA starts. It says nothing unless there is an update.</li>
 </ul>
-<p>When a newer version is available, a dialog says which version you have, which version is available, and what's new. Choose one of its buttons:</p>
+<p>When a newer version is available, a dialog opens. It says which version you have and which version is available, and then holds the new release's notes in a box called <strong>What's new</strong>.</p>
+<p>That box is a read-only edit box, so the notes are text you can read rather than a message that is spoken once. Focus starts in it, so you can read straight away:</p>
+<ul>
+<li>Read it with the arrow keys, by line, by word or by character, and with <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>Page Up</kbd> and <kbd>Page Down</kbd>. NVDA's review commands work in it as they do in any text field.</li>
+<li>Select with <kbd>Shift</kbd> and the arrow keys, or <kbd>Control+A</kbd> for everything, and copy with <kbd>Control+C</kbd>.</li>
+<li>Nothing you type changes it, and nothing you do in it changes what will be installed.</li>
+<li>Press <kbd>Tab</kbd> to reach the buttons, and <kbd>Escape</kbd> to close the dialog without installing anything.</li>
+</ul>
+<p>Then choose one of its buttons:</p>
 <ul>
 <li><strong>Download and install</strong>: ClassicSpeech downloads the new add-on file and checks it against the checksum file published with it. If they don't match, the file is deleted and nothing is installed. Then NVDA asks you to confirm the installation, as it does for any add-on file, and offers to restart NVDA.</li>
 <li><strong>Not now</strong>: nothing is downloaded. An automatic check asks again the next day.</li>
 </ul>
+<p>If a release has no add-on file to install, the same dialog shows its notes and tells you where to download it, with only a <strong>Close</strong> button.</p>
 <p>Updating keeps all your ClassicSpeech settings, voice profiles and schemes. To check for updates, ClassicSpeech contacts GitHub (api.github.com and github.com). It sends only what any web request sends, plus the ClassicSpeech version, and nothing about you or your settings.</p>
 
 <h2 id="settings-storage">Where ClassicSpeech keeps its settings</h2>
