@@ -6,7 +6,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:161
+#: _speech_core/settings/document_reading_proofing_panel.py:162
 msgid "&Alignment"
 msgstr "&Alineación"
 
@@ -14,7 +14,7 @@ msgstr "&Alineación"
 msgid "&Apply"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:127
+#: _speech_core/settings/document_reading_proofing_panel.py:128
 msgid "&Bookmarks"
 msgstr "&Marcadores"
 
@@ -26,7 +26,11 @@ msgstr ""
 msgid "&Clickable"
 msgstr "&Cliqueable"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:115
+#: _speech_core/update_check.py:444 _speech_core/update_dialog.py:55
+msgid "&Close"
+msgstr ""
+
+#: _speech_core/settings/document_reading_proofing_panel.py:116
 msgid "&Colors"
 msgstr "&Colores"
 
@@ -34,11 +38,11 @@ msgstr "&Colores"
 msgid "&Copy"
 msgstr "&Copiar"
 
-#: _speech_core/update_check.py:467
+#: _speech_core/update_check.py:424
 msgid "&Download and install"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:128
+#: _speech_core/settings/document_reading_proofing_panel.py:129
 msgid "&Editor revisions"
 msgstr "&Revisiones del editor"
 
@@ -50,7 +54,7 @@ msgstr "&Activar modo exploración al cargar la página"
 msgid "&Enable speech and sound schemes"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:96
+#: _speech_core/settings/document_reading_proofing_panel.py:97
 msgid "&Font name"
 msgstr "&Nombre de la fuente"
 
@@ -66,7 +70,7 @@ msgstr "&Agrupaciones"
 msgid "&Headings"
 msgstr "&Encabezados"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:160
+#: _speech_core/settings/document_reading_proofing_panel.py:161
 msgid "&Line spacing"
 msgstr "&Espaciado de línea"
 
@@ -82,7 +86,7 @@ msgstr "&Listas"
 msgid "&Maximum number of characters on one line"
 msgstr "&Número máximo de caracteres en una línea"
 
-#: _speech_core/update_check.py:467
+#: _speech_core/update_check.py:444
 msgid "&Not now"
 msgstr ""
 
@@ -90,11 +94,11 @@ msgstr ""
 msgid "&Number of lines per page"
 msgstr "&Número de líneas por página"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:137
+#: _speech_core/settings/document_reading_proofing_panel.py:138
 msgid "&Pages"
 msgstr "&Páginas"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:158
+#: _speech_core/settings/document_reading_proofing_panel.py:159
 msgid "&Paragraph indentation"
 msgstr "&Sangría de párrafo"
 
@@ -110,13 +114,17 @@ msgstr ""
 msgid "&Search items:"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:165
+#: _speech_core/settings/document_reading_proofing_panel.py:166
 msgid "&Tables"
 msgstr "&Tablas"
 
 #: _speech_core/settings/web/dialog.py:252
 msgid "&Trap all non-command gestures from reaching the document"
 msgstr "&Capturar todo lo que no sean órdenes de gestos para que no alcance el documento"
+
+#: _speech_core/update_dialog.py:41
+msgid "&What's new:"
+msgstr ""
 
 #: _speech_core/settings/web/dialog.py:393
 msgid "1 second"
@@ -166,23 +174,27 @@ msgstr ""
 msgid "A voice applies to the announcement."
 msgstr ""
 
-#: _speech_core/settings/constants.py:27
+#: _speech_core/settings/constants.py:33
 msgid "Abbreviated without plus"
 msgstr "Abreviado sin más"
 
-#: _speech_core/settings/constants.py:36
+#: _speech_core/settings/constants.py:49
+msgid "Access keys"
+msgstr ""
+
+#: _speech_core/settings/constants.py:45
 msgid "Access keys and command shortcuts"
 msgstr "Teclas de acceso y atajos de órdenes"
 
-#: _speech_core/settings/constants.py:34
+#: _speech_core/settings/constants.py:43
 msgid "Access keys only"
 msgstr "Solo teclas de acceso"
 
-#: _speech_core/settings/verbosity_panel.py:81
+#: _speech_core/settings/verbosity_panel.py:78
 msgid "Active profile"
 msgstr "Perfil activo"
 
-#: _speech_core/settings/verbosity_panel.py:76
+#: _speech_core/settings/verbosity_panel.py:73
 msgid "Active profile:"
 msgstr "Perfil activo:"
 
@@ -230,11 +242,11 @@ msgstr ""
 msgid "Add window class"
 msgstr ""
 
-#: _speech_core/settings/advanced_panel.py:30 _speech_core/settings/constants.py:7 _speech_core/settings/dialog.py:81 _speech_core/settings/document_reading_proofing_panel.py:171
+#: _speech_core/settings/advanced_panel.py:30 _speech_core/settings/constants.py:7 _speech_core/settings/dialog.py:81 _speech_core/settings/document_reading_proofing_panel.py:172
 msgid "Advanced"
 msgstr "Avanzado"
 
-#: _speech_core/settings/constants.py:68
+#: _speech_core/settings/constants.py:82
 msgid "After each token"
 msgstr "Después de cada elemento (token)"
 
@@ -282,7 +294,7 @@ msgstr "Anunciar"
 msgid "Announce default button in dialogs"
 msgstr "Anunciar el botón predeterminado en los cuadros de diálogo"
 
-#: _speech_core/settings/constants.py:44
+#: _speech_core/settings/constants.py:58
 msgid "Announce each item"
 msgstr "Anunciar cada elemento"
 
@@ -306,15 +318,15 @@ msgstr "Anunciar apertura de menú"
 msgid "Announce new lines during Say All"
 msgstr "Anunciar líneas nuevas durante verbalizar todo"
 
-#: _speech_core/settings/verbosity_panel.py:106
+#: _speech_core/settings/verbosity_panel.py:102
 msgid "Announce on every move"
 msgstr "Anunciar en cada movimiento"
 
-#: _speech_core/settings/constants.py:45 _speech_core/settings/verbosity_panel.py:105
+#: _speech_core/settings/constants.py:59 _speech_core/settings/verbosity_panel.py:101
 msgid "Announce only first item"
 msgstr "Anunciar solo el primer elemento"
 
-#: classicSpeech.py:1694
+#: classicSpeech.py:1778
 msgid "Announces the default button in the current dialog"
 msgstr "Anuncia el botón por defecto en el diálogo actual"
 
@@ -370,7 +382,7 @@ msgstr ""
 msgid "Banner landmark"
 msgstr ""
 
-#: _speech_core/settings/constants.py:67
+#: _speech_core/settings/constants.py:81
 msgid "Before each token"
 msgstr "Antes de cada elemento (token)"
 
@@ -438,7 +450,7 @@ msgstr ""
 msgid "Categories"
 msgstr "Categorías"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:168
+#: _speech_core/settings/document_reading_proofing_panel.py:169
 msgid "Cell &borders:"
 msgstr "&Bordes de celda:"
 
@@ -446,7 +458,7 @@ msgstr "&Bordes de celda:"
 msgid "Cell borders"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:167
+#: _speech_core/settings/document_reading_proofing_panel.py:168
 msgid "Cell c&oordinates"
 msgstr "C&oordenadas de celda"
 
@@ -458,15 +470,15 @@ msgstr "Casillas de verificación"
 msgid "Check for ClassicSpeech updates automatically"
 msgstr ""
 
-#: classicSpeech.py:1317
+#: classicSpeech.py:1401
 msgid "Check for Updates..."
 msgstr ""
 
-#: _speech_core/update_check.py:346
+#: _speech_core/update_check.py:356
 msgid "Checking for ClassicSpeech updates"
 msgstr ""
 
-#: classicSpeech.py:1466
+#: classicSpeech.py:1550
 msgid "Checks for ClassicSpeech updates"
 msgstr ""
 
@@ -486,11 +498,11 @@ msgstr ""
 msgid "Choose the Browse Mode element types included when you press NVDA+Shift+U. Checked items are included."
 msgstr "Elige los tipos de elementos del Modo Exploración incluidos al pulsar NVDA+Shift+U. Se incluyen los elementos marcados."
 
-#: _speech_core/settings/verbosity_panel.py:60
+#: _speech_core/settings/verbosity_panel.py:57
 msgid "Choose the active verbosity profile and which object details ClassicSpeech speaks for that profile."
 msgstr "Elige el perfil de verbosidad activo y qué detalles del objeto verbaliza ClassicSpeech para ese perfil."
 
-#: classicSpeech.py:1319 classicSpeech.py:1422 classicSpeech.py:1429 classicSpeech.py:1436 classicSpeech.py:1443 classicSpeech.py:1450 classicSpeech.py:1460 classicSpeech.py:1467 classicSpeech.py:1485 classicSpeech.py:1497 classicSpeech.py:1555 classicSpeech.py:1572 classicSpeech.py:1610 classicSpeech.py:1617 classicSpeech.py:1624 classicSpeech.py:1631 classicSpeech.py:1638 classicSpeech.py:1645 classicSpeech.py:1695
+#: classicSpeech.py:1403 classicSpeech.py:1506 classicSpeech.py:1513 classicSpeech.py:1520 classicSpeech.py:1527 classicSpeech.py:1534 classicSpeech.py:1544 classicSpeech.py:1551 classicSpeech.py:1569 classicSpeech.py:1581 classicSpeech.py:1639 classicSpeech.py:1656 classicSpeech.py:1694 classicSpeech.py:1701 classicSpeech.py:1708 classicSpeech.py:1715 classicSpeech.py:1722 classicSpeech.py:1729 classicSpeech.py:1779
 msgid "ClassicSpeech"
 msgstr "ClassicSpeech"
 
@@ -510,15 +522,15 @@ msgstr "Perfiles de Voz de ClassicSpeech"
 msgid "ClassicSpeech Web / Browse Mode Settings"
 msgstr "Configuraciones de ClassicSpeech para Web / Modo Exploración"
 
-#: _speech_core/update_check.py:373
+#: _speech_core/update_check.py:383
 msgid "ClassicSpeech could not check for updates. {reason}"
 msgstr ""
 
-#: _speech_core/update_check.py:431
+#: _speech_core/update_check.py:466
 msgid "ClassicSpeech could not download the update. {reason}"
 msgstr ""
 
-#: classicSpeech.py:1871
+#: classicSpeech.py:1955
 msgid "ClassicSpeech could not finish the reset. Details are in the NVDA log."
 msgstr ""
 
@@ -526,7 +538,7 @@ msgstr ""
 msgid "ClassicSpeech could not load the {engine} synthesizer. The item keeps using the active synthesizer."
 msgstr ""
 
-#: _speech_core/update_check.py:382
+#: _speech_core/update_check.py:392
 msgid "ClassicSpeech is up to date. You have version {version}, the latest release."
 msgstr ""
 
@@ -534,11 +546,11 @@ msgstr ""
 msgid "ClassicSpeech scheme package"
 msgstr ""
 
-#: classicSpeech.py:1876
+#: classicSpeech.py:1960
 msgid "ClassicSpeech settings were reset, and the NVDA settings it changed were put back. ClassicSpeech now uses its default settings. To remove ClassicSpeech, uninstall it from the Add-on Store."
 msgstr ""
 
-#: _speech_core/update_check.py:407 _speech_core/update_check.py:455
+#: _speech_core/update_check.py:439 _speech_core/update_check.py:490
 msgid "ClassicSpeech update"
 msgstr ""
 
@@ -546,11 +558,11 @@ msgstr ""
 msgid "ClassicSpeech voice profiles"
 msgstr ""
 
-#: _speech_core/update_check.py:390
+#: _speech_core/update_check.py:400
 msgid "ClassicSpeech {new} is available. You have version {installed}."
 msgstr ""
 
-#: _speech_core/settings/rename_list_panel.py:27
+#: _speech_core/settings/rename_list_panel.py:24
 msgid "Clear Rename\tDelete"
 msgstr "Borrar Renombrar\tSuprimir"
 
@@ -562,7 +574,7 @@ msgstr ""
 msgid "Close"
 msgstr "Cerrar"
 
-#: classicSpeech.py:1847
+#: classicSpeech.py:1931
 msgid "Close the ClassicSpeech settings dialogs first, then choose Reset All ClassicSpeech Settings again."
 msgstr ""
 
@@ -574,11 +586,15 @@ msgstr ""
 msgid "Combo boxes"
 msgstr "Cuadros combinados"
 
-#: _speech_core/settings/constants.py:35
+#: _speech_core/settings/constants.py:50
+msgid "Command shortcuts"
+msgstr ""
+
+#: _speech_core/settings/constants.py:44
 msgid "Command shortcuts only"
 msgstr "Solo atajos de órdenes"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:126
+#: _speech_core/settings/document_reading_proofing_panel.py:127
 msgid "Commen&ts"
 msgstr "Comen&tarios"
 
@@ -610,7 +626,7 @@ msgstr "Configura el comportamiento nativo del Modo Exploración de NVDA. Estos 
 msgid "Configure opt-in ClassicSpeech handling for standalone numbers. Currency, dates, times, and phone-like strings are preserved by default."
 msgstr "Configura el procesamiento opcional de ClassicSpeech para números independientes. Por defecto se conservan las divisas, fechas, horas y cadenas similares a teléfonos."
 
-#: _speech_core/settings/document_reading_proofing_panel.py:58
+#: _speech_core/settings/document_reading_proofing_panel.py:59
 msgid "Configure selected native NVDA document formatting and proofing announcements. This panel wraps NVDA settings and does not add a ClassicSpeech document processor."
 msgstr "Configura los anuncios de formato de documento y revisión nativos seleccionados de NVDA. Este panel envuelve la configuración de NVDA y no añade un procesador de documentos de ClassicSpeech."
 
@@ -622,7 +638,7 @@ msgstr "Configura los anuncios nativos de documentFormatting (formateado de docu
 msgid "Content information landmark"
 msgstr ""
 
-#: classicSpeech.py:1637
+#: classicSpeech.py:1721
 msgid "Copies the current ClassicSpeech history item to the clipboard"
 msgstr "Copia el elemento actual del historial de ClassicSpeech al portapapeles"
 
@@ -634,7 +650,7 @@ msgstr "Error al copiar"
 msgid "Copy scheme"
 msgstr ""
 
-#: classicSpeech.py:1652
+#: classicSpeech.py:1736
 msgid "Could not open speech history"
 msgstr "No se pudo abrir el historial de voz"
 
@@ -658,7 +674,7 @@ msgstr "Mensaje de notificación personalizado: {display}"
 msgid "Day month year"
 msgstr "Día mes año"
 
-#: classicSpeech.py:1708 classicSpeech.py:1717
+#: classicSpeech.py:1792 classicSpeech.py:1801
 msgid "Default button {name}"
 msgstr "Botón predeterminado {name}"
 
@@ -682,11 +698,11 @@ msgstr ""
 msgid "Deleted text (editor revision)"
 msgstr ""
 
-#: _speech_core/settings/constants.py:88 _speech_core/settings/verbosity_panel.py:49
+#: _speech_core/settings/constants.py:102 _speech_core/settings/verbosity_panel.py:46
 msgid "Description"
 msgstr "Descripción"
 
-#: _speech_core/settings/constants.py:16
+#: _speech_core/settings/constants.py:16 _speech_core/settings/constants.py:24
 msgid "Dialogs"
 msgstr "Diálogos"
 
@@ -694,11 +710,11 @@ msgstr "Diálogos"
 msgid "Do not speak the announcement (sound only)"
 msgstr ""
 
-#: classicSpeech.py:1853
+#: classicSpeech.py:1937
 msgid "Do you really want to reset all ClassicSpeech settings?\n\nThis deletes every ClassicSpeech setting, voice profile and speech and sound scheme, including the sounds copied into your schemes, and puts back the NVDA settings ClassicSpeech changed. To keep your schemes or voice profiles, export them first. You can't undo a reset.\n\nNVDA saves its configuration after the reset."
 msgstr ""
 
-#: _speech_core/settings/dialog.py:76 _speech_core/settings/document_reading_proofing_panel.py:57
+#: _speech_core/settings/dialog.py:76 _speech_core/settings/document_reading_proofing_panel.py:58
 msgid "Document Reading / Proofing"
 msgstr "Lectura / Revisión de Documentos"
 
@@ -710,7 +726,7 @@ msgstr ""
 msgid "Document and web formatting &items:"
 msgstr ""
 
-#: _speech_core/schemes/catalog.py:434 _speech_core/settings/document_reading_proofing_panel.py:125
+#: _speech_core/schemes/catalog.py:434 _speech_core/settings/document_reading_proofing_panel.py:126
 msgid "Document information"
 msgstr "Información del documento"
 
@@ -722,11 +738,11 @@ msgstr "Dólares y centavos"
 msgid "Double strikethrough"
 msgstr ""
 
-#: _speech_core/update_check.py:403
+#: _speech_core/update_check.py:420
 msgid "Download and install it now? NVDA asks you to confirm the installation, then offers to restart. Your ClassicSpeech settings are kept."
 msgstr ""
 
-#: _speech_core/update_check.py:417
+#: _speech_core/update_check.py:452
 msgid "Downloading ClassicSpeech {version}"
 msgstr ""
 
@@ -734,7 +750,7 @@ msgstr ""
 msgid "Draft comments"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:112
+#: _speech_core/settings/document_reading_proofing_panel.py:113
 msgid "E&mphasis"
 msgstr "Énfa&sis"
 
@@ -782,7 +798,7 @@ msgstr "Introduce un mensaje de notificación personalizado para '{display}'. D�
 msgid "Errors"
 msgstr "Errores"
 
-#: _speech_core/settings/constants.py:26
+#: _speech_core/settings/constants.py:32
 msgid "Expanded without plus"
 msgstr "Expandido sin más"
 
@@ -822,15 +838,15 @@ msgstr "Cinco o más dígitos"
 msgid "Focus mode message:"
 msgstr "Mensaje del modo foco:"
 
-#: _speech_core/settings/constants.py:53
+#: _speech_core/settings/constants.py:67
 msgid "Focused object"
 msgstr "Objeto enfocado"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:95
+#: _speech_core/settings/document_reading_proofing_panel.py:96
 msgid "Font"
 msgstr "Fuente"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:97
+#: _speech_core/settings/document_reading_proofing_panel.py:98
 msgid "Font &size"
 msgstr "Tamaño de f&uente"
 
@@ -838,7 +854,7 @@ msgstr "Tamaño de f&uente"
 msgid "Font and text formatting"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:102
+#: _speech_core/settings/document_reading_proofing_panel.py:103
 msgid "Font attrib&utes"
 msgstr "Atrib&utos de fuente"
 
@@ -866,7 +882,7 @@ msgstr ""
 msgid "Font: {name}"
 msgstr ""
 
-#: _speech_core/settings/hotkeys_panel.py:81
+#: _speech_core/settings/hotkeys_panel.py:87
 msgid "For simple dialog Alt shortcuts, speak only the access key letter"
 msgstr "Para atajos simples con Alt en diálogos, decir solo la letra de la tecla de acceso"
 
@@ -898,19 +914,19 @@ msgstr "Completo"
 msgid "Full numbers"
 msgstr "Números completos"
 
-#: classicSpeech.py:1312
+#: classicSpeech.py:1396
 msgid "General Settings..."
 msgstr "Configuración General..."
 
-#: _speech_core/update_check.py:200 _speech_core/update_check.py:240
+#: _speech_core/update_check.py:210 _speech_core/update_check.py:250
 msgid "GitHub answered with error {code}."
 msgstr ""
 
-#: _speech_core/update_check.py:196
+#: _speech_core/update_check.py:206
 msgid "GitHub could not be reached. Check your internet connection."
 msgstr ""
 
-#: _speech_core/update_check.py:204
+#: _speech_core/update_check.py:214
 msgid "GitHub's answer could not be read."
 msgstr ""
 
@@ -950,7 +966,7 @@ msgstr ""
 msgid "Guess object position information when unavailable"
 msgstr "Deducir información de posición del objeto cuando no esté disponible"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:166
+#: _speech_core/settings/document_reading_proofing_panel.py:167
 msgid "H&eaders"
 msgstr "&Encabezados"
 
@@ -970,7 +986,7 @@ msgstr ""
 msgid "Hidden text"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:113
+#: _speech_core/settings/document_reading_proofing_panel.py:114
 msgid "Highlighted (mar&ked) text"
 msgstr "Texto resaltado (mar&cado)"
 
@@ -982,15 +998,15 @@ msgstr ""
 msgid "Highlighted in a color"
 msgstr ""
 
-#: _speech_core/settings/constants.py:89
+#: _speech_core/settings/constants.py:103
 msgid "Hotkey"
 msgstr "Atajo de teclado"
 
-#: _speech_core/settings/hotkeys_panel.py:37
+#: _speech_core/settings/hotkeys_panel.py:43
 msgid "Hotkey speech is separate from verbosity profiles. Choose where ClassicSpeech should announce keyboard shortcuts and how extracted shortcuts should be spoken. Object query always includes the shortcut when NVDA exposes one."
 msgstr "La verbalización de los atajos de teclado es independiente de los perfiles de verbosidad. Elige dónde debe anunciar ClassicSpeech los atajos de teclado y cómo deben verbalizarse los atajos extraídos. La consulta de objetos siempre incluye el atajo cuando NVDA expone uno."
 
-#: _speech_core/settings/dialog.py:79 _speech_core/settings/hotkeys_panel.py:41
+#: _speech_core/settings/dialog.py:79 _speech_core/settings/hotkeys_panel.py:47
 msgid "Hotkeys"
 msgstr "Atajos de teclado"
 
@@ -998,7 +1014,7 @@ msgstr "Atajos de teclado"
 msgid "I&mport voice profiles..."
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:151
+#: _speech_core/settings/document_reading_proofing_panel.py:152
 msgid "Ignore &blank lines for line indentation reporting"
 msgstr "Ignorar líneas en &blanco al reportar la sangría de línea"
 
@@ -1106,11 +1122,11 @@ msgstr ""
 msgid "Lin&ks"
 msgstr "En&laces"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:143
+#: _speech_core/settings/document_reading_proofing_panel.py:144
 msgid "Line &indentation reporting:"
 msgstr "Reporte de &sangría de línea:"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:138
+#: _speech_core/settings/document_reading_proofing_panel.py:139
 msgid "Line &numbers"
 msgstr "&Números de línea"
 
@@ -1202,7 +1218,7 @@ msgstr "Mensaje de apertura de menú"
 msgid "Menu open message:"
 msgstr "Mensaje de apertura de menú:"
 
-#: _speech_core/settings/constants.py:17 _speech_core/settings/dialog.py:77 _speech_core/settings/menus_panel.py:25
+#: _speech_core/settings/constants.py:17 _speech_core/settings/constants.py:23 _speech_core/settings/dialog.py:77 _speech_core/settings/menus_panel.py:25
 msgid "Menus"
 msgstr "Menús"
 
@@ -1226,19 +1242,19 @@ msgstr "Los modos 3, 4, 5, 6 y Todos no reportan espacios repetidos. Contar cara
 msgid "Month day year"
 msgstr "Mes día año"
 
-#: classicSpeech.py:1630
+#: classicSpeech.py:1714
 msgid "Moves to the newest ClassicSpeech history item"
 msgstr "Mueve al elemento más reciente del historial de ClassicSpeech"
 
-#: classicSpeech.py:1623
+#: classicSpeech.py:1707
 msgid "Moves to the oldest ClassicSpeech history item"
 msgstr "Mueve al elemento más antiguo del historial de ClassicSpeech"
 
-#: _speech_core/settings/rename_list_panel.py:29
+#: _speech_core/settings/rename_list_panel.py:26
 msgid "Mute"
 msgstr "Silenciar"
 
-#: _speech_core/settings/rename_list_panel.py:80
+#: _speech_core/settings/rename_list_panel.py:76
 msgid "Muted"
 msgstr "Silenciado"
 
@@ -1250,11 +1266,11 @@ msgstr ""
 msgid "NVDA announces the new font size. Specific sizes are listed separately."
 msgstr ""
 
-#: _speech_core/update_check.py:439
+#: _speech_core/update_check.py:474
 msgid "NVDA could not install the update. Details are in the NVDA log."
 msgstr ""
 
-#: _speech_core/settings/constants.py:52 _speech_core/settings/number_processing_panel.py:32 _speech_core/settings/text/panel.py:35 _speech_core/settings/text/panel.py:45
+#: _speech_core/settings/constants.py:66 _speech_core/settings/number_processing_panel.py:32 _speech_core/settings/text/panel.py:35 _speech_core/settings/text/panel.py:45
 msgid "NVDA native"
 msgstr "Nativo de NVDA"
 
@@ -1266,15 +1282,15 @@ msgstr "Nativo de NVDA es el valor seguro predeterminado y deja los números sin
 msgid "NVDA native, no summary"
 msgstr "Nativo de NVDA, sin resumen"
 
-#: _speech_core/update_check.py:175
+#: _speech_core/update_check.py:185
 msgid "NVDA's internet support is not available."
 msgstr ""
 
-#: _speech_core/settings/constants.py:83 _speech_core/settings/verbosity_panel.py:46
+#: _speech_core/settings/constants.py:97 _speech_core/settings/verbosity_panel.py:43
 msgid "Name"
 msgstr "Nombre"
 
-#: _speech_core/settings/constants.py:25
+#: _speech_core/settings/constants.py:31
 msgid "Native shortcut as is"
 msgstr "Atajo nativo tal cual"
 
@@ -1282,7 +1298,7 @@ msgstr "Atajo nativo tal cual"
 msgid "Navigation landmark"
 msgstr ""
 
-#: _speech_core/settings/constants.py:54
+#: _speech_core/settings/constants.py:68
 msgid "Navigator object"
 msgstr "Objeto del navegador"
 
@@ -1306,11 +1322,11 @@ msgstr ""
 msgid "No additional delay"
 msgstr "Sin retraso adicional"
 
-#: classicSpeech.py:1715 classicSpeech.py:1720
+#: classicSpeech.py:1799 classicSpeech.py:1804
 msgid "No default button"
 msgstr "Sin botón predeterminado"
 
-#: classicSpeech.py:1607
+#: classicSpeech.py:1691
 msgid "No focus"
 msgstr "Sin foco"
 
@@ -1366,7 +1382,7 @@ msgstr ""
 msgid "No longer underlined"
 msgstr ""
 
-#: classicSpeech.py:1590 classicSpeech.py:1600
+#: classicSpeech.py:1674 classicSpeech.py:1684
 msgid "No object"
 msgstr "Sin objeto"
 
@@ -1426,7 +1442,7 @@ msgstr ""
 msgid "Object types (control types and roles)"
 msgstr ""
 
-#: _speech_core/settings/constants.py:15 _speech_core/settings/constants.py:43 _speech_core/settings/constants.py:71 _speech_core/settings/text/panel.py:27 _speech_core/settings/verbosity_panel.py:104
+#: _speech_core/settings/constants.py:15 _speech_core/settings/constants.py:57 _speech_core/settings/constants.py:85 _speech_core/settings/text/panel.py:27 _speech_core/settings/verbosity_panel.py:100
 msgid "Off"
 msgstr "Desactivado"
 
@@ -1438,27 +1454,27 @@ msgstr ""
 msgid "Open schemes folder"
 msgstr ""
 
-#: classicSpeech.py:1442
+#: classicSpeech.py:1526
 msgid "Opens ClassicSpeech Speech and Sound Schemes"
 msgstr ""
 
-#: classicSpeech.py:1435
+#: classicSpeech.py:1519
 msgid "Opens ClassicSpeech Voice Profiles"
 msgstr "Abre los Perfiles de Voz de ClassicSpeech"
 
-#: classicSpeech.py:1428
+#: classicSpeech.py:1512
 msgid "Opens ClassicSpeech Web / Browse Mode Settings"
 msgstr "Abre las Configuraciones de ClassicSpeech para Web / Modo Exploración"
 
-#: classicSpeech.py:1421
+#: classicSpeech.py:1505
 msgid "Opens ClassicSpeech settings"
 msgstr "Abre las configuraciones de ClassicSpeech"
 
-#: classicSpeech.py:1644
+#: classicSpeech.py:1728
 msgid "Opens the ClassicSpeech history dialog"
 msgstr "Abre el diálogo del historial de ClassicSpeech"
 
-#: classicSpeech.py:1449
+#: classicSpeech.py:1533
 msgid "Opens the ClassicSpeech user guide"
 msgstr ""
 
@@ -1494,7 +1510,7 @@ msgstr ""
 msgid "Page ready message:"
 msgstr "Mensaje de página lista:"
 
-#: classicSpeech.py:1562 classicSpeech.py:1567
+#: classicSpeech.py:1646 classicSpeech.py:1651
 msgid "Page summary is not available here."
 msgstr "El resumen de página no está disponible aquí."
 
@@ -1502,7 +1518,7 @@ msgstr "El resumen de página no está disponible aquí."
 msgid "Page-load summary:"
 msgstr "Resumen al cargar página:"
 
-#: _speech_core/schemes/catalog.py:435 _speech_core/settings/document_reading_proofing_panel.py:136
+#: _speech_core/schemes/catalog.py:435 _speech_core/settings/document_reading_proofing_panel.py:137
 msgid "Pages and spacing"
 msgstr "Páginas y espaciado"
 
@@ -1534,15 +1550,15 @@ msgstr "Procesamiento de números de teléfono"
 msgid "Phone number processing:"
 msgstr "Procesamiento de números de teléfono:"
 
-#: _speech_core/settings/constants.py:87
+#: _speech_core/settings/constants.py:101
 msgid "Position"
 msgstr "Posición"
 
-#: _speech_core/settings/verbosity_panel.py:109
+#: _speech_core/settings/verbosity_panel.py:105
 msgid "Position announcements"
 msgstr "Anuncios de posición"
 
-#: _speech_core/settings/verbosity_panel.py:100
+#: _speech_core/settings/verbosity_panel.py:96
 msgid "Position announcements:"
 msgstr "Anuncios de posición:"
 
@@ -1574,11 +1590,11 @@ msgstr "Previsualizando el perfil seleccionado..."
 msgid "Radio buttons"
 msgstr "Botones de opción"
 
-#: _speech_core/settings/verbosity_panel.py:118
+#: _speech_core/settings/verbosity_panel.py:114
 msgid "Read edit field &contents when focused"
 msgstr ""
 
-#: _speech_core/settings/verbosity_panel.py:120
+#: _speech_core/settings/verbosity_panel.py:116
 msgid "Read edit field contents when focused"
 msgstr ""
 
@@ -1610,7 +1626,7 @@ msgstr ""
 msgid "Rena&me scheme..."
 msgstr ""
 
-#: _speech_core/settings/rename_list_panel.py:26
+#: _speech_core/settings/rename_list_panel.py:23
 msgid "Rename\tF2"
 msgstr "Renombrar\tF2"
 
@@ -1638,23 +1654,23 @@ msgstr "Reportar 'tiene detalles' para anotaciones estructuradas"
 msgid "Report aria-description always"
 msgstr "Reportar siempre aria-description"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:177
+#: _speech_core/settings/document_reading_proofing_panel.py:178
 msgid "Report formatting chan&ges after the cursor (can cause a lag)"
 msgstr "Reportar cam&bios de formato después del cursor (puede causar retraso)"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:121
+#: _speech_core/settings/document_reading_proofing_panel.py:122
 msgid "Report transparent color values"
 msgstr "Reportar valores de colores transparentes"
 
-#: classicSpeech.py:1554
+#: classicSpeech.py:1638
 msgid "Reports selected Browse Mode element counts for the current page"
 msgstr "Reporta los recuentos de elementos seleccionados del Modo Exploración para la página actual"
 
-#: classicSpeech.py:1318
+#: classicSpeech.py:1402
 msgid "Reset All ClassicSpeech Settings..."
 msgstr ""
 
-#: classicSpeech.py:1844
+#: classicSpeech.py:1928
 msgid "Reset ClassicSpeech"
 msgstr ""
 
@@ -1666,7 +1682,7 @@ msgstr "Restablecer Etiquetas de Teclas a Valores Predeterminados"
 msgid "Reset Key Labels to Defaults Now"
 msgstr "Restablecer Etiquetas de Teclas a Valores Predeterminados Ahora"
 
-#: _speech_core/settings/verbosity_panel.py:247
+#: _speech_core/settings/verbosity_panel.py:243
 msgid "Reset Profile"
 msgstr "Restablecer Perfil"
 
@@ -1690,7 +1706,7 @@ msgstr "Restablecer todas las anulaciones de Perfiles de Voz"
 msgid "Reset key label settings to defaults now?\n\nThis will immediately clear all custom key renames and muted keys.\n\nCancel will not undo this reset.\n\nChoose Yes to reset now, or No to keep your current settings."
 msgstr "¿Restablecer la configuración de etiquetas de teclas a sus valores predeterminados ahora?\n\nEsto borrará inmediatamente todos los renombres personalizados y teclas silenciadas.\n\nCancelar no deshará este restablecimiento.\n\nElige Sí para restablecer ahora, o No para mantener tu configuración actual."
 
-#: _speech_core/settings/verbosity_panel.py:239
+#: _speech_core/settings/verbosity_panel.py:235
 msgid "Reset the {profile} profile to its default settings now?\n\nThis will immediately clear saved overrides for this profile.\n\nCancel will not undo this reset.\n\nChoose Yes to reset now, or No to keep your current settings."
 msgstr "¿Restablecer el perfil {profile} a sus valores predeterminados ahora?\n\nEsto borrará inmediatamente las anulaciones guardadas para este perfil.\n\nCancelar no deshará este restablecimiento.\n\nElige Sí para restablecer ahora, o No para mantener tu configuración actual."
 
@@ -1698,7 +1714,7 @@ msgstr "¿Restablecer el perfil {profile} a sus valores predeterminados ahora?\n
 msgid "Reset token editor settings to defaults now?\n\nThis will immediately clear all global token renames and muted labels, and restore the default token order.\n\nCancel will not undo this reset.\n\nChoose Yes to reset now, or No to keep your current settings."
 msgstr "¿Restablecer la configuración del editor de tokens a los valores predeterminados ahora?\n\nEsto borrará inmediatamente todos los renombres de tokens globales y etiquetas silenciadas, y restaurará el orden de tokens predeterminado.\n\nCancelar no deshará este restablecimiento.\n\nElige Sí para restablecer ahora, o No para mantener tu configuración actual."
 
-#: classicSpeech.py:1459
+#: classicSpeech.py:1543
 msgid "Resets all ClassicSpeech settings and restores the NVDA settings it changed"
 msgstr ""
 
@@ -1710,11 +1726,11 @@ msgstr ""
 msgid "Restore native message\tDelete"
 msgstr "Restaurar mensaje nativo\tSuprimir"
 
-#: classicSpeech.py:1616
+#: classicSpeech.py:1700
 msgid "Reviews the next ClassicSpeech history item"
 msgstr "Revisa el siguiente elemento del historial de ClassicSpeech"
 
-#: classicSpeech.py:1609
+#: classicSpeech.py:1693
 msgid "Reviews the previous ClassicSpeech history item"
 msgstr "Revisa el elemento anterior del historial de ClassicSpeech"
 
@@ -1722,7 +1738,7 @@ msgstr "Revisa el elemento anterior del historial de ClassicSpeech"
 msgid "Revised text"
 msgstr ""
 
-#: _speech_core/settings/constants.py:84 _speech_core/settings/verbosity_panel.py:47
+#: _speech_core/settings/constants.py:98 _speech_core/settings/verbosity_panel.py:44
 msgid "Role"
 msgstr "Rol"
 
@@ -1762,7 +1778,7 @@ msgstr ""
 msgid "Scheme name:"
 msgstr ""
 
-#: classicSpeech.py:1502
+#: classicSpeech.py:1586
 msgid "Scheme {name}"
 msgstr ""
 
@@ -1802,11 +1818,11 @@ msgstr "Establecer mensaje personalizado\tF2"
 msgid "Seven or more digits"
 msgstr "Siete o más dígitos"
 
-#: _speech_core/settings/hotkeys_panel.py:67
+#: _speech_core/settings/hotkeys_panel.py:73
 msgid "Shortcut formatting"
 msgstr "Formato de atajos"
 
-#: _speech_core/settings/hotkeys_panel.py:62
+#: _speech_core/settings/hotkeys_panel.py:68
 msgid "Shortcut formatting:"
 msgstr "Formato de atajos:"
 
@@ -1822,7 +1838,7 @@ msgstr "Seis o más dígitos"
 msgid "Some"
 msgstr "Algunos"
 
-#: classicSpeech.py:1887
+#: classicSpeech.py:1971
 msgid "Some files could not be deleted. Delete this folder yourself: {folder}"
 msgstr ""
 
@@ -1846,13 +1862,13 @@ msgstr ""
 msgid "Speak a message when the speech hook loads"
 msgstr "Decir un mensaje cuando cargue el gancho de voz"
 
-#: _speech_core/settings/hotkeys_panel.py:59
-msgid "Speak hotkeys"
-msgstr "Verbalizar atajos de teclado"
+#: _speech_core/settings/hotkeys_panel.py:60
+msgid "Speak hotkeys &in:"
+msgstr ""
 
-#: _speech_core/settings/hotkeys_panel.py:54
-msgid "Speak hotkeys:"
-msgstr "Verbalizar atajos de teclado:"
+#: _speech_core/settings/hotkeys_panel.py:63
+msgid "Speak hotkeys in"
+msgstr ""
 
 #: _speech_core/settings/number_processing_panel.py:125
 msgid "Speak single digits if number contains"
@@ -1862,7 +1878,7 @@ msgstr "Decir dígitos simples si el número contiene"
 msgid "Speak single digits if number contains:"
 msgstr "Decir dígitos simples si el número contiene:"
 
-#: classicSpeech.py:1571
+#: classicSpeech.py:1655
 msgid "Speaks the current object. Press twice quickly to spell and copy it"
 msgstr "Verbaliza el objeto actual. Pulsa dos veces rápido para deletrear y copiarlo"
 
@@ -1890,15 +1906,15 @@ msgstr "Sincronización de Voz"
 msgid "Speech and Sound Schemes"
 msgstr ""
 
-#: classicSpeech.py:1315
+#: classicSpeech.py:1399
 msgid "Speech and Sound Schemes..."
 msgstr ""
 
-#: classicSpeech.py:1491
+#: classicSpeech.py:1575
 msgid "Speech and sound schemes off"
 msgstr ""
 
-#: classicSpeech.py:1491
+#: classicSpeech.py:1575
 msgid "Speech and sound schemes on"
 msgstr ""
 
@@ -1942,7 +1958,7 @@ msgstr "Deletrear letras y números mezclados fonéticamente"
 msgid "Spelling errors"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:130
+#: _speech_core/settings/document_reading_proofing_panel.py:131
 msgid "Spelling or grammar e&rrors"
 msgstr "E&rrores de ortografía o gramática"
 
@@ -1950,15 +1966,15 @@ msgstr "E&rrores de ortografía o gramática"
 msgid "Split mixed-case words, such as SayAll into Say All"
 msgstr "Dividir palabras con mayúsculas y minúsculas mezcladas, como SayAll en Say All"
 
-#: _speech_core/settings/rename_list_panel.py:80
+#: _speech_core/settings/rename_list_panel.py:76
 msgid "Spoken"
 msgstr "Hablado"
 
-#: _speech_core/settings/verbosity_panel.py:95
+#: _speech_core/settings/verbosity_panel.py:91
 msgid "Spoken object details"
 msgstr "Detalles de objeto hablados"
 
-#: _speech_core/settings/verbosity_panel.py:87
+#: _speech_core/settings/verbosity_panel.py:84
 msgid "Spoken object details:"
 msgstr "Detalles de objeto hablados:"
 
@@ -1966,11 +1982,11 @@ msgstr "Detalles de objeto hablados:"
 msgid "Spoken token sequence"
 msgstr "Secuencia de elementos (tokens) hablados"
 
-#: _speech_core/settings/document_reading_proofing_panel.py:114
+#: _speech_core/settings/document_reading_proofing_panel.py:115
 msgid "St&yle"
 msgstr "Est&ilo"
 
-#: _speech_core/settings/constants.py:86 _speech_core/settings/verbosity_panel.py:48
+#: _speech_core/settings/constants.py:100 _speech_core/settings/verbosity_panel.py:45
 msgid "State"
 msgstr "Estado"
 
@@ -1998,7 +2014,7 @@ msgstr ""
 msgid "Style: {name}"
 msgstr ""
 
-#: _speech_core/settings/document_reading_proofing_panel.py:110
+#: _speech_core/settings/document_reading_proofing_panel.py:111
 msgid "Su&perscripts and subscripts"
 msgstr "Su&períndices y subíndices"
 
@@ -2022,7 +2038,7 @@ msgstr "Suprimir"
 msgid "Suppress dashes inside words, such as sister-in-law"
 msgstr "Suprimir guiones dentro de palabras, como cuñado (sister-in-law)"
 
-#: classicSpeech.py:1496
+#: classicSpeech.py:1580
 msgid "Switches to the next ClassicSpeech speech and sound scheme"
 msgstr ""
 
@@ -2038,7 +2054,7 @@ msgstr "Elementos de navegación t&áctil:"
 msgid "Table cell coordinates (row and column numbers)"
 msgstr ""
 
-#: _speech_core/schemes/catalog.py:436 _speech_core/settings/document_reading_proofing_panel.py:164
+#: _speech_core/schemes/catalog.py:436 _speech_core/settings/document_reading_proofing_panel.py:165
 msgid "Table information"
 msgstr "Información de tabla"
 
@@ -2078,23 +2094,23 @@ msgstr "El sintetizador activo no expone configuraciones editables."
 msgid "The active synthesizer switches voices fastest. Another synthesizer is loaded each time this item is spoken and unloaded afterwards, which adds a noticeable delay."
 msgstr ""
 
-#: _speech_core/update_check.py:257
+#: _speech_core/update_check.py:267
 msgid "The add-on file could not be downloaded."
 msgstr ""
 
-#: _speech_core/update_check.py:221 _speech_core/update_check.py:247
+#: _speech_core/update_check.py:231 _speech_core/update_check.py:257
 msgid "The add-on file is larger than expected."
 msgstr ""
 
-#: _speech_core/update_check.py:232
+#: _speech_core/update_check.py:242
 msgid "The checksum file could not be downloaded."
 msgstr ""
 
-#: _speech_core/update_check.py:234
+#: _speech_core/update_check.py:244
 msgid "The checksum file could not be read."
 msgstr ""
 
-#: _speech_core/update_check.py:261
+#: _speech_core/update_check.py:271
 msgid "The downloaded file does not match its checksum, so it was deleted."
 msgstr ""
 
@@ -2102,15 +2118,15 @@ msgstr ""
 msgid "The file has no voice profiles for your current synthesizer. They are used when you switch to one of those synthesizers."
 msgstr ""
 
-#: _speech_core/update_check.py:206
+#: _speech_core/update_check.py:216
 msgid "The latest release on GitHub has no version number ClassicSpeech understands."
 msgstr ""
 
-#: _speech_core/update_check.py:217
+#: _speech_core/update_check.py:227
 msgid "The release has no add-on file."
 msgstr ""
 
-#: _speech_core/update_check.py:219
+#: _speech_core/update_check.py:229
 msgid "The release has no checksum file, so its add-on file can't be checked."
 msgstr ""
 
@@ -2146,7 +2162,7 @@ msgstr ""
 msgid "The voice profiles could not be imported. See the NVDA log for details."
 msgstr ""
 
-#: _speech_core/update_check.py:198
+#: _speech_core/update_check.py:208
 msgid "There are no ClassicSpeech releases on GitHub yet."
 msgstr ""
 
@@ -2158,7 +2174,7 @@ msgstr ""
 msgid "These sounds were not found and were left out:"
 msgstr ""
 
-#: _speech_core/update_check.py:335
+#: _speech_core/update_check.py:345
 msgid "This copy of ClassicSpeech doesn't know where its updates are published, so it can't check for them."
 msgstr ""
 
@@ -2170,8 +2186,12 @@ msgstr ""
 msgid "This file is not a ClassicSpeech voice profiles file, or it has no voice profiles."
 msgstr ""
 
-#: _speech_core/update_check.py:398
+#: _speech_core/update_check.py:412
 msgid "This release has no add-on file to install. Download it from {url}"
+msgstr ""
+
+#: _speech_core/update_check.py:407
+msgid "This release has no notes."
 msgstr ""
 
 #: _speech_core/settings/schemes_panel.py:525
@@ -2186,7 +2206,7 @@ msgstr "Título"
 msgid "Token Editor"
 msgstr "Editor de Tokens"
 
-#: _speech_core/settings/verbosity_panel.py:50
+#: _speech_core/settings/verbosity_panel.py:47
 msgid "Tooltip"
 msgstr "Consejo"
 
@@ -2198,7 +2218,7 @@ msgstr "Principio del historial de voz"
 msgid "Turning the speech hook off leaves ClassicSpeech commands available, but lets NVDA speech pass through without ClassicSpeech processing."
 msgstr "Desactivar el hook de voz deja disponibles las órdenes de ClassicSpeech, pero permite que la voz de NVDA pase sin ser procesada por ClassicSpeech."
 
-#: classicSpeech.py:1484
+#: classicSpeech.py:1568
 msgid "Turns ClassicSpeech speech and sound schemes on or off"
 msgstr ""
 
@@ -2214,7 +2234,7 @@ msgstr ""
 msgid "Unknown objects"
 msgstr ""
 
-#: _speech_core/settings/rename_list_panel.py:28
+#: _speech_core/settings/rename_list_panel.py:25
 msgid "Unmute"
 msgstr "Reactivar sonido"
 
@@ -2234,15 +2254,15 @@ msgstr ""
 msgid "Use friendly toll-free prefixes"
 msgstr "Usar prefijos gratuitos amigables"
 
-#: _speech_core/settings/constants.py:80
+#: _speech_core/settings/constants.py:94
 msgid "Use global"
 msgstr "Usar global"
 
-#: _speech_core/settings/constants.py:85
+#: _speech_core/settings/constants.py:99
 msgid "Value"
 msgstr "Valor"
 
-#: _speech_core/settings/dialog.py:71 _speech_core/settings/verbosity_panel.py:62
+#: _speech_core/settings/dialog.py:71 _speech_core/settings/verbosity_panel.py:59
 msgid "Verbosity"
 msgstr "Verbosidad"
 
@@ -2254,7 +2274,7 @@ msgstr ""
 msgid "Visited links"
 msgstr ""
 
-#: classicSpeech.py:1314
+#: classicSpeech.py:1398
 msgid "Voice Profiles..."
 msgstr "Perfiles de Voz..."
 
@@ -2266,17 +2286,13 @@ msgstr "Perfiles de voz"
 msgid "Wave files (*.wav)|*.wav"
 msgstr ""
 
-#: classicSpeech.py:1313
+#: classicSpeech.py:1397
 msgid "Web / Browse Mode Settings..."
 msgstr "Configuraciones de Web / Modo Exploración..."
 
 #: _speech_core/settings/web/dialog.py:297 _speech_core/settings/web/dialog.py:98
 msgid "Web Element Reporting"
 msgstr "Reporte de Elementos Web"
-
-#: _speech_core/update_check.py:396
-msgid "What's new:"
-msgstr ""
 
 #: _speech_core/settings/schemes_panel.py:219
 msgid "When playin&g the sound:"
@@ -2286,13 +2302,13 @@ msgstr ""
 msgid "When playing the sound"
 msgstr ""
 
-#: _speech_core/settings/hotkeys_panel.py:75
+#: _speech_core/settings/hotkeys_panel.py:76
+msgid "Which shortcuts to &speak:"
+msgstr ""
+
+#: _speech_core/settings/hotkeys_panel.py:79
 msgid "Which shortcuts to speak"
 msgstr "Qué atajos decir"
-
-#: _speech_core/settings/hotkeys_panel.py:70
-msgid "Which shortcuts to speak:"
-msgstr "Qué atajos decir:"
 
 #: _speech_core/settings/schemes_panel.py:716
 msgid "Window class name to add:"
@@ -2386,7 +2402,7 @@ msgstr ""
 msgid "radio button"
 msgstr "botón de opción"
 
-#: _speech_core/settings/rename_list_panel.py:30
+#: _speech_core/settings/rename_list_panel.py:27
 msgid "renamed to {text}"
 msgstr "renombrado a {text}"
 
@@ -2406,7 +2422,7 @@ msgstr ""
 msgid "table"
 msgstr "tabla"
 
-#: classicSpeech.py:1707
+#: classicSpeech.py:1791
 msgid "unknown"
 msgstr "desconocido"
 
@@ -2418,11 +2434,11 @@ msgstr ""
 msgid "voice on {engine}"
 msgstr ""
 
-#: classicSpeech.py:1882
+#: classicSpeech.py:1966
 msgid "{count} NVDA settings were left as they are, because they were changed in NVDA's own settings after ClassicSpeech last changed them."
 msgstr ""
 
-#: _speech_core/settings/constants.py:71 _speech_core/settings/constants.py:72
+#: _speech_core/settings/constants.py:85 _speech_core/settings/constants.py:86
 msgid "{ms} ms"
 msgstr "{ms} ms"
 

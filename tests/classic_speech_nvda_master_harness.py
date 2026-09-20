@@ -929,10 +929,11 @@ class ClassicSpeechNVDAConfigStartupTests(unittest.TestCase):
 			def __init__(self, value): self.value = value
 			def GetValue(self): return self.value
 			def GetSelection(self): return self.value
+			def GetCheckedItems(self): return list(self.value)
 
 		panel = types.SimpleNamespace(
-			hotkeyModeChoice=Control(3), hotkeyFormatChoice=Control(1),
-			hotkeyTypesChoice=Control(0), dialogAccessKeyOnlyCheck=Control(True),
+			hotkeyModeList=Control([0, 1]), hotkeyFormatChoice=Control(1),
+			hotkeyTypesList=Control([0]), dialogAccessKeyOnlyCheck=Control(True),
 		)
 		panel._getModeFromChoice = lambda: HotkeysPanel._getModeFromChoice(panel)
 		panel._getFormatFromChoice = lambda: HotkeysPanel._getFormatFromChoice(panel)

@@ -254,7 +254,7 @@ li { margin: .25em 0; }
 <h3 id="hotkeys">Hotkeys</h3>
 <p>Choose where ClassicSpeech speaks keyboard shortcuts and how they sound. These settings apply to every verbosity profile. The current object command, <kbd>NVDA+Tab</kbd>, always includes a shortcut when NVDA provides one.</p>
 <ul>
-<li><strong>Speak hotkeys</strong>: Off, Dialogs, Menus, or Both. Default: Both.</li>
+<li><strong>Speak hotkeys in</strong>: a list of checkboxes, Menus and Dialogs. Check both, check one, or clear both to turn shortcut speech off. Arrow to a line and press <kbd>Space</kbd> to change it, the same way NVDA's Document Formatting page offers Spelling or grammar errors. Default: both checked.</li>
 <li><strong>Shortcut formatting</strong>:
 <ul>
 <li>Native shortcut as is, such as "Ctrl+S". This is the default.</li>
@@ -262,7 +262,7 @@ li { margin: .25em 0; }
 <li>Abbreviated without plus, such as "Ctrl S".</li>
 </ul>
 </li>
-<li><strong>Which shortcuts to speak</strong>: Access keys only (the underlined letters you use with <kbd>Alt</kbd>), Command shortcuts only (such as <kbd>Control+S</kbd>), or Access keys and command shortcuts. Default: Access keys and command shortcuts.</li>
+<li><strong>Which shortcuts to speak</strong>: a list of checkboxes, Access keys (the underlined letters you use with <kbd>Alt</kbd>) and Command shortcuts (such as <kbd>Control+S</kbd>). Clearing both speaks no shortcut at all. Default: both checked.</li>
 <li><strong>For simple dialog Alt shortcuts, speak only the access key letter</strong>: in dialogs, say "N" instead of "Alt+N". Default: off.</li>
 </ul>
 
@@ -586,7 +586,7 @@ li { margin: .25em 0; }
 <h3 id="nvda-settings-changed">NVDA settings ClassicSpeech changes</h3>
 <p>Some ClassicSpeech settings change NVDA's own settings, which NVDA keeps in nvda.ini and in your configuration profiles:</p>
 <ul>
-<li><strong>Object presentation</strong>: Report object descriptions, Report tooltips and Report object position information follow the active <a href="#verbosity">verbosity profile</a>. Report shortcut keys follows Speak hotkeys on the <a href="#hotkeys">Hotkeys</a> page. Guess object position information when unavailable is on the <a href="#misc">Misc</a> page.</li>
+<li><strong>Object presentation</strong>: Report object descriptions, Report tooltips and Report object position information follow the active <a href="#verbosity">verbosity profile</a>. Report shortcut keys follows Speak hotkeys in on the <a href="#hotkeys">Hotkeys</a> page. Guess object position information when unavailable is on the <a href="#misc">Misc</a> page.</li>
 <li><strong>Keyboard</strong>: Speech interrupt for typed characters and Speech interrupt for Enter key, on the Misc page.</li>
 <li><strong>Document formatting</strong>: every option on the <a href="#document-reading-proofing">Document Reading / Proofing</a> and <a href="#web-element-reporting">Web Element Reporting</a> pages.</li>
 <li><strong>Browse mode</strong>: NVDA's options on the <a href="#browse-mode">Browse Mode</a> page.</li>
