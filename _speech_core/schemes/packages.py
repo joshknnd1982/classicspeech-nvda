@@ -29,7 +29,7 @@ MAX_SOUND_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_SOUND_BYTES = 250 * 1024 * 1024
 MAX_NAME_LENGTH = 100
 MAX_CUSTOM_ENTRIES = 500
-_ITEM_PREFIXES = ("role.", "state.", "landmark.", "object.", "class.", "fmt.")
+_ITEM_PREFIXES = ("role.", "state.", "landmark.", "object.", "class.", "fmt.", "nvdaSound.")
 _SAFE_SOUND_NAME = re.compile(r"[^<>:\"/\\|?*\x00-\x1f]+\.wav", re.IGNORECASE)
 _MAX_VALUE_LENGTH = 200
 

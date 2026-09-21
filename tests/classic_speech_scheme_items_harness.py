@@ -241,7 +241,12 @@ class SchemeItemHarnessBase(unittest.TestCase):
 		self.sound_dir = tempfile.TemporaryDirectory()
 		self.addCleanup(self.sound_dir.cleanup)
 		self.categories = catalog.build_categories()
-		self.items = catalog.item_index(self.categories)
+		# NVDA's own sounds are not speech; classic_speech_nvda_sounds_harness covers them.
+		self.items = {
+			item_id: item
+			for item_id, item in catalog.item_index(self.categories).items()
+			if not catalog.is_nvda_sound_item(item_id)
+		}
 
 	def tearDown(self):
 		globalPluginHandler.runningPlugins.clear()
@@ -448,7 +453,8 @@ class SchemeItemCoverageTests(SchemeItemHarnessBase):
 	"""Every item in the tree view can be marked."""
 
 	def test_the_tree_view_is_built_from_nvdas_own_control_types(self):
-		role_items = {item.item_id for item in self.categories[-4].items}
+		roles = next(category for category in self.categories if category.category_id == "roles")
+		role_items = {item.item_id for item in roles.items}
 		self.assertGreater(len(list(Role)), 100, "NVDA master's roles were not loaded")
 		self.assertEqual(len(role_items), len(list(Role)))
 		self.assertGreaterEqual(len(self.items), 300)

@@ -90,7 +90,7 @@ li { margin: .25em 0; }
 <li><strong>General Settings...</strong>: how much ClassicSpeech says about objects, token order and timing, text and number processing, menus, key names, shortcut keys, and other speech options. See <a href="#general-settings">General Settings</a>.</li>
 <li><strong>Web / Browse Mode Settings...</strong>: browse mode, web element reporting, Page Summary and Microsoft Edge notifications. See <a href="#web-browse-mode-settings">Web / Browse Mode Settings</a>.</li>
 <li><strong>Voice Profiles...</strong>: different voice settings for different kinds of speech. See <a href="#voice-profiles">Voice Profiles</a>.</li>
-<li><strong>Speech and Sound Schemes...</strong>: sounds and voices for object types, states, formatting and web elements. See <a href="#speech-and-sound-schemes">Speech and Sound Schemes</a>.</li>
+<li><strong>Speech and Sound Schemes...</strong>: sounds and voices for object types, states, formatting and web elements, and sounds to play instead of NVDA's own. See <a href="#speech-and-sound-schemes">Speech and Sound Schemes</a>.</li>
 <li><strong>Check for Updates...</strong>: look for a newer ClassicSpeech and install it. See <a href="#updates">Updating ClassicSpeech</a>.</li>
 <li><strong>Reset All ClassicSpeech Settings...</strong>: delete every ClassicSpeech setting and put back the NVDA settings ClassicSpeech changed. See <a href="#resetting">Resetting ClassicSpeech</a>.</li>
 </ul>
@@ -407,7 +407,8 @@ li { margin: .25em 0; }
 <li>a WAV sound, played with the announcement or instead of it;</li>
 <li>its own voice, on your synthesizer or another installed synthesizer.</li>
 </ul>
-<p>Items you don't change keep NVDA's normal speech. Sounds and voices work with focus changes, object navigation, the review cursor, say all, browse mode and the mouse.</p>
+<p>You can also replace the sounds NVDA itself plays, such as the browse mode and focus mode sounds or the Remote Access sounds, with sounds of your own. See <a href="#nvda-sounds">Replacing NVDA's own sounds</a>.</p>
+<p>Items you don't change keep NVDA's normal speech and sounds. Sounds and voices work with focus changes, object navigation, the review cursor, say all, browse mode and the mouse.</p>
 <p>In a document, an item's sound and voice follow the text it describes, however you read it: character by character, word by word, line by line, by sentence, by paragraph and in say all. You hear the change on the words that carry the formatting, not on the whole line. Reading the same underlined phrase by word and then by line sounds the same.</p>
 <p>This does not depend on NVDA's Document Formatting settings. If you ask a scheme for underlined text but have NVDA's <strong>Font attributes</strong> announcement turned off, ClassicSpeech asks NVDA for the formatting it needs and NVDA still says nothing about it: you hear the scheme's voice or sound, not the word "underlined". Your Document Formatting settings are not changed, and NVDA announces exactly what you told it to announce.</p>
 <p>A sound set for a formatting option or an element is played where that formatting or element begins in the text, once for each run of it, and again on the next line. A sound set for an object type or a state is played where the object starts.</p>
@@ -456,6 +457,7 @@ li { margin: .25em 0; }
 <li><strong>Object states</strong>: every NVDA state, such as checked, selected or expanded, and opposite states such as "not checked".</li>
 <li><strong>Unknown and unlabeled objects</strong>: unknown objects, graphics without a label, and graphics.</li>
 <li><strong>Window classes</strong>: window classes you add.</li>
+<li><strong>NVDA sounds</strong>: the sounds NVDA itself plays, each named after the event it reports, such as Switching to browse mode or Remote Access: clipboard received. See <a href="#nvda-sounds">Replacing NVDA's own sounds</a>.</li>
 </ul>
 
 <h3 id="item-sound">Giving an item a sound</h3>
@@ -477,6 +479,25 @@ li { margin: .25em 0; }
 <p><strong>Reset this item</strong> removes the item's sound and voice.</p>
 <p>While a settings dialog of NVDA or ClassicSpeech, or the NVDA menu, is open, an item whose voice uses another voice or synthesizer speaks with your own NVDA voice, and <strong>Speak a voice preview</strong> still uses the item's voice. See <a href="#changing-a-voice-profile">Changing a category's voice</a>.</p>
 <p>The active synthesizer switches voices fastest. Another synthesizer has to be loaded each time the item is spoken and unloaded afterwards, which adds a noticeable delay. If ClassicSpeech can't load it, the item keeps using your active synthesizer.</p>
+
+<h3 id="nvda-sounds">Replacing NVDA's own sounds</h3>
+<p>NVDA plays sounds of its own for some events, from the waves folder in its program folder: when it switches between browse mode and focus mode, when it starts and exits, when auto-suggestions appear and close, for spelling errors, when it logs an error, when the screen curtain turns on or off, and for Remote Access. The <strong>NVDA sounds</strong> category lists each of them by the event it reports. Item details names the file NVDA plays and the NVDA option that turns that sound on.</p>
+<ol>
+<li>Select the event in the NVDA sounds category.</li>
+<li>Press <strong>Play sound</strong> to hear NVDA's own sound.</li>
+<li>Press <strong>Browse for sound...</strong> and choose a WAV file. Play sound now plays your file.</li>
+<li>Press <strong>OK</strong> or <strong>Apply</strong>.</li>
+</ol>
+<p>From then on, NVDA plays your sound instead of its own while <strong>Enable speech and sound schemes</strong> is checked and that scheme is active. Like every scheme sound, your file is copied into the scheme's folder, in <strong>%APPDATA%\nvda\ClassicSpeech\Schemes</strong> for an installed copy of NVDA, and only a sound in that folder replaces one of NVDA's. NVDA's own files are never changed.</p>
+<ul>
+<li><strong>Remove sound</strong> or <strong>Reset this item</strong>, then OK or Apply, brings back NVDA's own sound. So does turning schemes off, or choosing a scheme that doesn't replace that sound.</li>
+<li>When the active scheme replaces none of NVDA's sounds, NVDA plays its sounds exactly as it always has.</li>
+<li>Your sound plays only when NVDA would play its own. If an NVDA option such as Audio indication of focus and browse modes is off, NVDA plays no sound for that event, and neither does your scheme.</li>
+<li>If NVDA can't play your file, it plays its own sound instead.</li>
+<li>These sounds have no voice, and When playing the sound doesn't apply to them.</li>
+<li>When another computer controls this one through Remote Access, NVDA sends it the sounds it plays by their file names. A sound your scheme plays instead is a file only this computer has, so the controlling computer doesn't hear it.</li>
+</ul>
+<p>NVDA's start sound is different, because NVDA plays it before add-ons load. While the active scheme has a sound for <strong>NVDA starts</strong>, ClassicSpeech turns off <strong>Play sounds when starting or exiting NVDA</strong> in NVDA's General settings, so NVDA doesn't play its own start sound first. ClassicSpeech then plays the start sound itself as soon as it loads, a moment later than NVDA would, and the exit sound, yours or NVDA's, when NVDA exits. When the scheme no longer has a start sound, or when you disable, remove or reset ClassicSpeech, it turns that option back on. If that option was already off, NVDA plays no start or exit sound, and neither does ClassicSpeech.</p>
 
 <h3 id="adding-entries">Adding fonts, sizes, styles and window classes</h3>
 <ul>
@@ -611,6 +632,7 @@ li { margin: .25em 0; }
 <li><strong>Browse mode</strong>: NVDA's options on the <a href="#browse-mode">Browse Mode</a> page.</li>
 <li><strong>Annotations and braille</strong>: Report 'has details' for structured annotations, Report aria-description always, and Braille report live regions, on the Web Element Reporting page.</li>
 <li><strong>Speech</strong>: when you choose another synthesizer for a scheme item, NVDA adds that synthesizer's default settings to its configuration if you have never used it. ClassicSpeech never saves a scheme voice or a voice profile as your NVDA voice settings.</li>
+<li><strong>General</strong>: Play sounds when starting or exiting NVDA, which ClassicSpeech turns off while the active speech and sound scheme has a sound for NVDA starts. See <a href="#nvda-sounds">Replacing NVDA's own sounds</a>.</li>
 </ul>
 <p>Before ClassicSpeech changes one of these settings for the first time, it records in nvda-settings-backup.json whether the setting was set, and its value, in the configuration it changes: your normal configuration, or the configuration profile that was active. After each change, it records the value it gave the setting.</p>
 <p>ClassicSpeech 1.06 and earlier did not record these values. When ClassicSpeech 1.07 or later first starts, it records the Object presentation options that your saved ClassicSpeech settings show it set, as changed from NVDA's defaults. A reset then puts NVDA's defaults back for them: Report object descriptions, Report object position information and Report shortcut keys on, and Report tooltips off. Earlier versions left no record for the other NVDA settings, so check those in NVDA's own settings.</p>
@@ -632,7 +654,7 @@ li { margin: .25em 0; }
 <p>When NVDA restarts, ClassicSpeech 1.07 and later clean up before any add-on runs. They put back the NVDA settings ClassicSpeech changed and delete every ClassicSpeech setting, exactly as <a href="#resetting">Resetting ClassicSpeech</a> does, then NVDA saves its configuration. You don't need to reset before you remove ClassicSpeech, but a reset lets you check the result while ClassicSpeech is still installed.</p>
 <ul>
 <li>Updating ClassicSpeech, with <a href="#updates">Check for Updates</a> or by opening a new add-on file, keeps your settings.</li>
-<li>Disabling ClassicSpeech in the Add-on Store keeps its settings, and the NVDA settings it changed stay as they are until you enable it again, reset it or remove it.</li>
+<li>Disabling ClassicSpeech in the Add-on Store keeps its settings, and the NVDA settings it changed stay as they are until you enable it again, reset it or remove it. The exception is Play sounds when starting or exiting NVDA: if ClassicSpeech turned it off for your scheme's start sound, it turns it back on, so NVDA plays its own start and exit sounds while ClassicSpeech is disabled.</li>
 <li>If you copied your settings to NVDA's system configuration, for sign-in and secure screens, copy them again after removing ClassicSpeech: in NVDA's General settings, press <strong>Use currently saved settings during sign-in and on secure screens</strong>.</li>
 </ul>
 
@@ -654,6 +676,8 @@ li { margin: .25em 0; }
 <li><strong>NVDA says too much or too little.</strong> Choose another verbosity profile or change its Spoken object details on the Verbosity page, and mute words you don't need in the Token Editor.</li>
 <li><strong>A key such as F12 no longer works in a program.</strong> See the note at the end of <a href="#speech-history">Speech history</a>.</li>
 <li><strong>A scheme sound doesn't play.</strong> Check that Enable speech and sound schemes is checked and that the right scheme is active. Make sure the file is a WAV file and hasn't been moved; Play sound tells you if the file can't be found.</li>
+<li><strong>NVDA plays its own sound instead of yours.</strong> Check that Enable speech and sound schemes is checked and that the scheme with your sound is active. Item details names the NVDA option that turns the sound on. If NVDA can't play your WAV file, it plays its own sound.</li>
+<li><strong>Play sounds when starting or exiting NVDA is off in NVDA's General settings.</strong> Your active scheme has a sound for NVDA starts, so ClassicSpeech plays the start and exit sounds itself. See <a href="#nvda-sounds">Replacing NVDA's own sounds</a>.</li>
 <li><strong>NVDA's speech cuts off a ClassicSpeech message, such as the speech hook loaded message.</strong> Check Give ClassicSpeech messages priority over NVDA speech on the <a href="#misc">Misc</a> page.</li>
 <li><strong>A scheme you copied into the Schemes folder yourself isn't used.</strong> Open Speech and Sound Schemes and choose it in Active scheme. A scheme folder needs its scheme.json file. To add a scheme someone sent you as a file, Import scheme is easier.</li>
 <li><strong>An item doesn't use the other synthesizer you chose.</strong> ClassicSpeech tells you when it can't load a synthesizer, and uses your active synthesizer instead. The active synthesizer is also the fastest choice.</li>

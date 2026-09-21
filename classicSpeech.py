@@ -17,6 +17,7 @@ from speech import shortcutKeys as nvdaShortcutKeys
 import braille
 import wx
 import functools
+import os
 import inputCore
 
 from speech.commands import BreakCommand
@@ -90,6 +91,7 @@ from ._speech_core.settings.web.summary_config import (
     get_include_document_title,
 )
 from ._speech_core.schemes import runtime as scheme_runtime
+from ._speech_core.schemes import nvda_sounds
 from ._speech_core.schemes.markers import LabelMarker, has_markers, has_range_marks, strip_markers
 from ._speech_core.schemes.tagging import SchemeTagger
 
@@ -648,6 +650,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             is_active=lambda: bool(getattr(self, "_speechHookRegistered", False))
         )
         self._install_speech_schemes()
+        self._install_nvda_sounds()
         self._pendingContainerSequence = None
         self._pendingContainerFlush = None
         self._flushingPendingContainer = False
@@ -693,6 +696,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         self._headingContinuityRuntime = None
         self._unregister_speech_hook()
         self._uninstall_speech_schemes()
+        self._uninstall_nvda_sounds()
         self._restore_remote_speech_compatibility()
         self._restore_windows_toast_system_route()
         self._restore_system_notification_profile_routes()
@@ -1132,6 +1136,79 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 pass
             self._schemeSpeechCanceled = None
         scheme_runtime.reset_carried_state()
+
+    def _install_nvda_sounds(self):
+        """Play the active scheme's sounds instead of NVDA's own sounds."""
+        try:
+            nvda_sounds.install()
+        except Exception:
+            log.exception("ClassicSpeech: failed to install the scheme's NVDA sounds")
+        try:
+            nvda_sounds.handle_nvda_start()
+        except Exception:
+            log.exception("ClassicSpeech: failed to handle NVDA's start sound")
+        self._windowsSessionApp = None
+        try:
+            app = wx.GetApp()
+            app.Bind(wx.EVT_END_SESSION, self._onWindowsSessionEnd)
+            self._windowsSessionApp = app
+        except Exception:
+            log.debug("ClassicSpeech: Windows session end is unavailable", exc_info=True)
+
+    def _onWindowsSessionEnd(self, evt):
+        try:
+            nvda_sounds.handle_windows_session_end()
+        except Exception:
+            log.debug("ClassicSpeech: could not play the exit sound at sign-out", exc_info=True)
+        finally:
+            # NVDA's own handler saves its configuration.
+            evt.Skip()
+
+    def _nvda_is_exiting(self):
+        try:
+            import core
+
+            return bool(getattr(core, "_hasShutdownBeenTriggered", False))
+        except Exception:
+            return False
+
+    def _addon_is_leaving(self):
+        """True when NVDA exits to disable or remove ClassicSpeech, not to update it."""
+        try:
+            import addonHandler
+
+            addon = addonHandler.getCodeAddon()
+        except Exception:
+            return False
+        if getattr(addon, "isPendingDisable", False):
+            return True
+        if getattr(addon, "isPendingRemove", False):
+            # An update also removes the old copy; the new one keeps the sounds.
+            try:
+                pending = os.path.join(os.path.dirname(addon.path), addon.name + ".pendingInstall")
+                return not os.path.isdir(pending)
+            except Exception:
+                return True
+        return False
+
+    def _uninstall_nvda_sounds(self):
+        app = getattr(self, "_windowsSessionApp", None)
+        if app is not None:
+            try:
+                app.Unbind(wx.EVT_END_SESSION, handler=self._onWindowsSessionEnd)
+            except Exception:
+                pass
+        self._windowsSessionApp = None
+        exiting = self._nvda_is_exiting()
+        if exiting:
+            try:
+                nvda_sounds.handle_nvda_exit(addon_leaving=self._addon_is_leaving())
+            except Exception:
+                log.exception("ClassicSpeech: failed to handle NVDA's exit sound")
+        try:
+            nvda_sounds.uninstall(nvda_exiting=exiting)
+        except Exception:
+            log.debug("ClassicSpeech: failed to remove the scheme's NVDA sounds", exc_info=True)
 
     def _filterSpeechSequence(self, speechSequence):
         """ClassicSpeech speech filter, followed by Speech and Sound Schemes.
@@ -1917,6 +1994,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             scheme_store.prepare_scheme_folders()
         except Exception:
             log.debug("ClassicSpeech: failed to reload Speech and Sound Schemes", exc_info=True)
+        try:
+            nvda_sounds.sync_start_and_exit_sounds()
+        except Exception:
+            log.debug("ClassicSpeech: failed to update NVDA's start and exit sounds", exc_info=True)
         self.set_speech_hook_enabled(get_speech_hook_enabled())
 
     def _open_settings_dialogs(self):
