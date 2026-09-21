@@ -60,6 +60,8 @@ import logHandler
 log = logHandler.log
 
 SCHEME_DATA_KEY = "schemeData"
+#: Items that replace one of NVDA's own sounds (see catalog.NVDA_SOUND_PREFIX).
+NVDA_SOUND_PREFIX = "nvdaSound."
 DEFAULT_SCHEME_NAME = "Default"
 CUSTOM_KINDS = ("fonts", "fontSizes", "styles", "classes")
 SCHEME_VERSION = 1
@@ -500,8 +502,14 @@ class _RuntimeCache:
 	raw = None
 	generation = -1
 	data = None
+	#: Configured speech items (every item except NVDA sounds).
 	items = {}
+	#: Whether schemes are on and some speech item is configured.
 	enabled = False
+	#: Whether the Enable speech and sound schemes switch is on.
+	switched_on = False
+	#: NVDA sounds to replace: lower-case sound name -> sound file.
+	nvda_sounds = {}
 
 
 _runtime = _RuntimeCache()
@@ -537,12 +545,22 @@ def runtime_data():
 		except Exception:
 			log.debugWarning("ClassicSpeech: active scheme could not be read", exc_info=True)
 			scheme = {"items": {}}
-	_runtime.items = {
+	configured = {
 		item_id: settings
 		for item_id, settings in _as_dict(scheme.get("items")).items()
 		if item_is_configured(settings)
 	}
-	_runtime.enabled = bool(switches["enabled"]) and bool(_runtime.items)
+	# NVDA sounds are not speech; the speech runtime never sees them.
+	_runtime.items = {
+		item_id: settings for item_id, settings in configured.items() if not item_id.startswith(NVDA_SOUND_PREFIX)
+	}
+	_runtime.nvda_sounds = {
+		item_id[len(NVDA_SOUND_PREFIX):].lower(): settings["sound"]
+		for item_id, settings in configured.items()
+		if item_id.startswith(NVDA_SOUND_PREFIX) and settings.get("sound")
+	}
+	_runtime.switched_on = bool(switches["enabled"])
+	_runtime.enabled = _runtime.switched_on and bool(_runtime.items)
 	_runtime.data = switches
 	_runtime.raw = raw
 	_runtime.generation = _generation
@@ -557,6 +575,12 @@ def active_items():
 
 def schemes_active() -> bool:
 	return runtime_data().enabled
+
+
+def active_nvda_sounds():
+	"""Return ``{lower-case NVDA sound name: sound file}`` for the active scheme, or ``{}`` when schemes are off."""
+	runtime = runtime_data()
+	return runtime.nvda_sounds if runtime.switched_on else {}
 
 
 # -- editing --------------------------------------------------------------------
@@ -792,6 +816,7 @@ class SchemeStore:
 			self._apply_to_folders()
 		invalidate_runtime_cache()
 		self.cleanup()
+		_sync_nvda_start_and_exit_sounds()
 		try:
 			import config
 			save = getattr(config.conf, "save", None)
@@ -855,6 +880,16 @@ class SchemeStore:
 		return self.data != self._opening or bool(self._deleted_folders)
 
 
+def _sync_nvda_start_and_exit_sounds():
+	"""Hand NVDA's start and exit sounds to ClassicSpeech, or back, for the active scheme."""
+	try:
+		from . import nvda_sounds
+
+		nvda_sounds.sync_start_and_exit_sounds()
+	except Exception:
+		log.debug("ClassicSpeech: could not update NVDA's start and exit sounds", exc_info=True)
+
+
 def sound_file_exists(path) -> bool:
 	try:
 		return bool(path) and os.path.isfile(path)
@@ -876,6 +911,7 @@ def set_schemes_enabled(enabled: bool) -> bool:
 		switches = load_switches(raw)
 		section[SCHEME_DATA_KEY] = dump_switches(enabled, switches["activeScheme"])
 	invalidate_runtime_cache()
+	_sync_nvda_start_and_exit_sounds()
 	return bool(enabled)
 
 
@@ -900,4 +936,5 @@ def cycle_active_scheme():
 		active = names[(index + 1) % len(names)]
 		section[SCHEME_DATA_KEY] = dump_switches(switches["enabled"], active)
 	invalidate_runtime_cache()
+	_sync_nvda_start_and_exit_sounds()
 	return active

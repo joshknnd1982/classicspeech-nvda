@@ -15,6 +15,8 @@ _CLASSIC_SPEECH_SPEC = {
     "announceDefaultButton": "boolean(default=False)",
     "preventAutomaticSpeechInterrupt": "boolean(default=False)",
     "automaticSpeechInterruptFallbackMs": "integer(default=1000)",
+    # Speak ClassicSpeech's own messages first; only a key press interrupts them.
+    "prioritizeMessages": "boolean(default=False)",
     "queryObjectSource": "string(default='focus')",
     "objectNavigationProcessing": "boolean(default=False)",
     "speechHookEnabled": "boolean(default=True)",
@@ -108,6 +110,9 @@ _CLASSIC_SPEECH_SPEC = {
     # Speech and Sound Schemes: sounds, voices and custom catalog entries,
     # serialized as JSON for the same reason as voiceProfileData.
     "schemeData": "string(default='{}')",
+    # NVDA's start and exit sound option before ClassicSpeech took those sounds
+    # over for a scheme's NVDA start sound, as JSON; empty otherwise.
+    "nvdaStartExitSoundsState": "string(default='')",
     "keyLabelData": {
         "renames": {
             "__many__": "string(default='')",

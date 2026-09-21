@@ -8,6 +8,7 @@ from .misc_config import (
 	_get_guess_object_position_information_when_unavailable,
 	_get_object_navigation_processing_enabled,
 	_get_prevent_automatic_speech_interrupt_enabled,
+	_get_prioritize_messages_enabled,
 	_get_query_object_source,
 	_get_speech_interrupt_for_enter_enabled,
 	_get_speech_interrupt_for_typed_characters_enabled,
@@ -15,6 +16,7 @@ from .misc_config import (
 	_set_guess_object_position_information_when_unavailable,
 	_set_object_navigation_processing_enabled,
 	_set_prevent_automatic_speech_interrupt_enabled,
+	_set_prioritize_messages_enabled,
 	_set_query_object_source,
 	_set_speech_interrupt_for_enter_enabled,
 	_set_speech_interrupt_for_typed_characters_enabled,
@@ -80,6 +82,13 @@ class MiscPanel(wx.Panel):
 		self.preventAutomaticSpeechInterrupt.SetValue(_get_prevent_automatic_speech_interrupt_enabled())
 		mainSizer.Add(self.preventAutomaticSpeechInterrupt, 0, wx.ALL | wx.EXPAND, 8)
 
+		self.prioritizeMessages = wx.CheckBox(
+			self,
+			label=_("Give ClassicSpeech messages priority over NVDA speech"),
+		)
+		self.prioritizeMessages.SetValue(_get_prioritize_messages_enabled())
+		mainSizer.Add(self.prioritizeMessages, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, 8)
+
 		self.speechInterruptForCharacters = wx.CheckBox(
 			self,
 			label=_("Speech interrupt for typed characters"),
@@ -101,6 +110,7 @@ class MiscPanel(wx.Panel):
 		self.queryObjectSourceChoice.Bind(wx.EVT_CHOICE, self.onChanged)
 		self.objectNavigationProcessing.Bind(wx.EVT_CHECKBOX, self.onChanged)
 		self.preventAutomaticSpeechInterrupt.Bind(wx.EVT_CHECKBOX, self.onChanged)
+		self.prioritizeMessages.Bind(wx.EVT_CHECKBOX, self.onChanged)
 		self.speechInterruptForCharacters.Bind(wx.EVT_CHECKBOX, self.onChanged)
 		self.speechInterruptForEnter.Bind(wx.EVT_CHECKBOX, self.onChanged)
 
@@ -119,6 +129,7 @@ class MiscPanel(wx.Panel):
 		query_source = QUERY_OBJECT_SOURCE_CHOICES[self.queryObjectSourceChoice.GetSelection()][1]
 		object_nav_processing = self.objectNavigationProcessing.GetValue()
 		prevent_interrupt = self.preventAutomaticSpeechInterrupt.GetValue()
+		prioritize_messages = self.prioritizeMessages.GetValue()
 		interrupt_for_characters = self.speechInterruptForCharacters.GetValue()
 		interrupt_for_enter = self.speechInterruptForEnter.GetValue()
 
@@ -127,6 +138,7 @@ class MiscPanel(wx.Panel):
 		_set_query_object_source(query_source)
 		_set_object_navigation_processing_enabled(object_nav_processing)
 		_set_prevent_automatic_speech_interrupt_enabled(prevent_interrupt)
+		_set_prioritize_messages_enabled(prioritize_messages)
 		_set_speech_interrupt_for_typed_characters_enabled(interrupt_for_characters)
 		_set_speech_interrupt_for_enter_enabled(interrupt_for_enter)
 

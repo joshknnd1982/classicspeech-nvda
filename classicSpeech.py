@@ -12,12 +12,12 @@ import logHandler
 import queueHandler
 import scriptHandler
 import speech.extensions
-import ui
 import speech
 from speech import shortcutKeys as nvdaShortcutKeys
 import braille
 import wx
 import functools
+import os
 import inputCore
 
 from speech.commands import BreakCommand
@@ -65,6 +65,8 @@ from ._speech_core.cancelable import strip_cancelable
 from ._speech_core.history import SpeechHistoryBuffer, consume_history_native_passthrough
 from ._speech_core.history_viewer import show_history_dialog, is_history_list_focus
 from ._speech_core.interrupt_control import SpeechInterruptController
+from ._speech_core import message_priority
+from ._speech_core.message_priority import join_message_ends, speak_message, split_message_ends
 from ._speech_core.update_check import UpdateChecker
 from ._speech_core.user_guide import open_user_guide
 from ._speech_core.processors.web.summary import build_summary, format_summary_with_document_title
@@ -89,6 +91,7 @@ from ._speech_core.settings.web.summary_config import (
     get_include_document_title,
 )
 from ._speech_core.schemes import runtime as scheme_runtime
+from ._speech_core.schemes import nvda_sounds
 from ._speech_core.schemes.markers import LabelMarker, has_markers, has_range_marks, strip_markers
 from ._speech_core.schemes.tagging import SchemeTagger
 
@@ -633,6 +636,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         self._menuHints = MenuHintHelper()
         self._keyLabelRuntime = get_key_label_runtime()
         self._interruptController = SpeechInterruptController()
+        # Before the speech hook: the interrupt controller wraps speech
+        # cancellation around this one, as it did around NVDA's own.
+        message_priority.install()
         self._install_shortcut_speaker_bypass()
         self._install_keyboard_entry_profile_route()
         self._install_mouse_pointer_profile_route()
@@ -644,6 +650,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             is_active=lambda: bool(getattr(self, "_speechHookRegistered", False))
         )
         self._install_speech_schemes()
+        self._install_nvda_sounds()
         self._pendingContainerSequence = None
         self._pendingContainerFlush = None
         self._flushingPendingContainer = False
@@ -660,6 +667,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             self,
             get_browse_mode_message=get_custom_browse_mode_message,
             get_focus_mode_message=get_custom_focus_mode_message,
+            speak_message=speak_message,
         )
 
         self._installClassicSpeechMenu()
@@ -688,6 +696,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         self._headingContinuityRuntime = None
         self._unregister_speech_hook()
         self._uninstall_speech_schemes()
+        self._uninstall_nvda_sounds()
         self._restore_remote_speech_compatibility()
         self._restore_windows_toast_system_route()
         self._restore_system_notification_profile_routes()
@@ -705,6 +714,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             self._interruptController.uninstall()
         except Exception:
             log.debug("ClassicSpeech: failed to uninstall speech interrupt controller", exc_info=True)
+        try:
+            message_priority.uninstall()
+        except Exception:
+            log.debug("ClassicSpeech: failed to remove message priority", exc_info=True)
         try:
             pendingFlush = getattr(self, "_pendingContainerFlush", None)
             if pendingFlush is not None:
@@ -737,7 +750,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 return
             message = get_speech_hook_loaded_message()
             if message:
-                ui.message(message)
+                speak_message(message)
         except Exception:
             log.debug("ClassicSpeech: failed to announce speech hook loaded", exc_info=True)
 
@@ -1124,22 +1137,102 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             self._schemeSpeechCanceled = None
         scheme_runtime.reset_carried_state()
 
+    def _install_nvda_sounds(self):
+        """Play the active scheme's sounds instead of NVDA's own sounds."""
+        try:
+            nvda_sounds.install()
+        except Exception:
+            log.exception("ClassicSpeech: failed to install the scheme's NVDA sounds")
+        try:
+            nvda_sounds.handle_nvda_start()
+        except Exception:
+            log.exception("ClassicSpeech: failed to handle NVDA's start sound")
+        self._windowsSessionApp = None
+        try:
+            app = wx.GetApp()
+            app.Bind(wx.EVT_END_SESSION, self._onWindowsSessionEnd)
+            self._windowsSessionApp = app
+        except Exception:
+            log.debug("ClassicSpeech: Windows session end is unavailable", exc_info=True)
+
+    def _onWindowsSessionEnd(self, evt):
+        try:
+            nvda_sounds.handle_windows_session_end()
+        except Exception:
+            log.debug("ClassicSpeech: could not play the exit sound at sign-out", exc_info=True)
+        finally:
+            # NVDA's own handler saves its configuration.
+            evt.Skip()
+
+    def _nvda_is_exiting(self):
+        try:
+            import core
+
+            return bool(getattr(core, "_hasShutdownBeenTriggered", False))
+        except Exception:
+            return False
+
+    def _addon_is_leaving(self):
+        """True when NVDA exits to disable or remove ClassicSpeech, not to update it."""
+        try:
+            import addonHandler
+
+            addon = addonHandler.getCodeAddon()
+        except Exception:
+            return False
+        if getattr(addon, "isPendingDisable", False):
+            return True
+        if getattr(addon, "isPendingRemove", False):
+            # An update also removes the old copy; the new one keeps the sounds.
+            try:
+                pending = os.path.join(os.path.dirname(addon.path), addon.name + ".pendingInstall")
+                return not os.path.isdir(pending)
+            except Exception:
+                return True
+        return False
+
+    def _uninstall_nvda_sounds(self):
+        app = getattr(self, "_windowsSessionApp", None)
+        if app is not None:
+            try:
+                app.Unbind(wx.EVT_END_SESSION, handler=self._onWindowsSessionEnd)
+            except Exception:
+                pass
+        self._windowsSessionApp = None
+        exiting = self._nvda_is_exiting()
+        if exiting:
+            try:
+                nvda_sounds.handle_nvda_exit(addon_leaving=self._addon_is_leaving())
+            except Exception:
+                log.exception("ClassicSpeech: failed to handle NVDA's exit sound")
+        try:
+            nvda_sounds.uninstall(nvda_exiting=exiting)
+        except Exception:
+            log.debug("ClassicSpeech: failed to remove the scheme's NVDA sounds", exc_info=True)
+
     def _filterSpeechSequence(self, speechSequence):
         """ClassicSpeech speech filter, followed by Speech and Sound Schemes.
 
         Scheme markers added while NVDA generated the speech are always
         converted or removed here, so they never reach other filters or the
         synthesizer.
+
+        A ClassicSpeech message given priority ends with a callback that
+        tells ClassicSpeech it has been spoken. It is set aside while the
+        message is processed, so the message is processed exactly as without
+        priority, and put back right after the message's text.
         """
+        speechSequence, messageEnds = split_message_ends(speechSequence)
         output = self._filterSpeechSequenceCore(speechSequence)
         try:
-            return scheme_runtime.apply_schemes(output)
+            output = scheme_runtime.apply_schemes(output)
         except Exception:
             log.exception("ClassicSpeech: Speech and Sound Schemes failed")
             try:
-                return strip_markers(output)
+                output = strip_markers(output)
             except Exception:
-                return output
+                pass
+        return join_message_ends(output, messageEnds)
 
     def _filterSpeechSequenceCore(self, speechSequence):
         try:
@@ -1572,7 +1665,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         try:
             enabled = not bool(scheme_store.runtime_data().data and scheme_store.runtime_data().data.get("enabled"))
             scheme_store.set_schemes_enabled(enabled)
-            ui.message(_("Speech and sound schemes on") if enabled else _("Speech and sound schemes off"))
+            speak_message(_("Speech and sound schemes on") if enabled else _("Speech and sound schemes off"))
         except Exception:
             log.exception("ClassicSpeech: toggling speech and sound schemes failed")
 
@@ -1583,7 +1676,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def script_nextSpeechScheme(self, gesture):
         try:
             name = scheme_store.cycle_active_scheme()
-            ui.message(_("Scheme {name}").format(name=name))
+            speak_message(_("Scheme {name}").format(name=name))
         except Exception:
             log.exception("ClassicSpeech: switching speech and sound schemes failed")
 
@@ -1597,7 +1690,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 document_title = getattr(getattr(document, "rootNVDAObject", None), "name", None)
             except Exception:
                 log.debugWarning("ClassicSpeech: unable to read Page Summary document title", exc_info=True)
-        ui.message(format_summary_with_document_title(document_title, summary))
+        speak_message(format_summary_with_document_title(document_title, summary))
 
     def _get_web_page_lifecycle(self):
         """Return the automatic web lifecycle, including test-double fallback."""
@@ -1643,12 +1736,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             focus = api.getFocusObject()
             document = getattr(focus, "treeInterceptor", None)
             if document is None or not hasattr(document, "_iterNodesByType"):
-                ui.message(_("Page summary is not available here."))
+                speak_message(_("Page summary is not available here."))
                 return
             self._report_page_summary_for_document(document)
         except Exception:
             log.exception("ClassicSpeech page summary failed")
-            ui.message(_("Page summary is not available here."))
+            speak_message(_("Page summary is not available here."))
 
 
     @scriptHandler.script(
@@ -1671,7 +1764,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
             focus = self._get_query_object()
             if not focus:
-                ui.message(_("No object"))
+                speak_message(_("No object"))
                 return
 
             repeatCount = scriptHandler.getLastScriptRepeatCount()
@@ -1681,14 +1774,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
             text = self.processor.get_query_object_text(focus)
             if not text:
-                ui.message(_("No object"))
+                speak_message(_("No object"))
                 return
 
             speech.speakSpelling(text)
             api.copyToClip(text, notify=False)
         except Exception as e:
             log.error(f"ClassicSpeech query object failed: {e}", exc_info=True)
-            ui.message(_("No focus"))
+            speak_message(_("No focus"))
     @scriptHandler.script(
         description=_("Reviews the previous ClassicSpeech history item"),
         category=_("ClassicSpeech"),
@@ -1733,7 +1826,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             show_history_dialog(self.history)
         except Exception as e:
             log.error(f"Failed to open ClassicSpeech history: {e}", exc_info=True)
-            ui.message(_("Could not open speech history"))
+            speak_message(_("Could not open speech history"))
 
 
     def _getWxDefaultButtonName(self):
@@ -1789,19 +1882,19 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             try:
                 if getattr(focus, "role", None) == controlTypes.Role.BUTTON:
                     name = get_object_name(focus) or _("unknown")
-                    ui.message(_("Default button {name}").format(name=name))
+                    speak_message(_("Default button {name}").format(name=name))
                     return
             except Exception:
                 pass
 
             name = self._getDefaultButtonName()
             if not name:
-                ui.message(_("No default button"))
+                speak_message(_("No default button"))
                 return
-            ui.message(_("Default button {name}").format(name=name))
+            speak_message(_("Default button {name}").format(name=name))
         except Exception as e:
             log.error(f"Failed announcing default button: {e}", exc_info=True)
-            ui.message(_("No default button"))
+            speak_message(_("No default button"))
 
     def _onWebBrowseDialogClosed(self, evt):
         try:
@@ -1901,6 +1994,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             scheme_store.prepare_scheme_folders()
         except Exception:
             log.debug("ClassicSpeech: failed to reload Speech and Sound Schemes", exc_info=True)
+        try:
+            nvda_sounds.sync_start_and_exit_sounds()
+        except Exception:
+            log.debug("ClassicSpeech: failed to update NVDA's start and exit sounds", exc_info=True)
         self.set_speech_hook_enabled(get_speech_hook_enabled())
 
     def _open_settings_dialogs(self):

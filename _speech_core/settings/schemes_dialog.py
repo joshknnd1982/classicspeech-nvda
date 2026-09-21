@@ -2,7 +2,8 @@
 
 A JAWS-style Speech and Sounds Manager for NVDA: named schemes, and for every
 item (object roles, states, window classes, document formatting and web
-elements) an optional WAV sound and an optional voice. Each scheme is a folder,
+elements) an optional WAV sound and an optional voice, and sounds that play
+instead of NVDA's own sounds (the NVDA sounds category). Each scheme is a folder,
 which Open schemes folder shows in File Explorer, and Export and Import share
 schemes as package files. Nothing changes until OK or Apply; Cancel and Close
 restore the saved schemes.
@@ -46,8 +47,8 @@ class SpeechSoundSchemesDialog(wx.Dialog):
 			self,
 			label=_(
 				"Choose sounds and voices for object types, object states, window classes, document formatting "
-				"and web elements. Items without a sound or voice keep NVDA's normal speech. Search for an item "
-				"by name, or list only the items you have changed."
+				"and web elements, and sounds to play instead of NVDA's own sounds. Items without a sound or voice "
+				"keep NVDA's normal speech and sounds. Search for an item by name, or list only the items you have changed."
 			),
 		)
 		outer.Add(intro, 0, wx.EXPAND | wx.ALL, 8)

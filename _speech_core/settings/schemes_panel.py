@@ -23,6 +23,7 @@ import logHandler
 from ..localization import _
 from ..nvda_settings_backup import recording_nvda_change
 from ..schemes import catalog as schemeCatalog
+from ..schemes import nvda_sounds
 from ..voice_profile_trigger import keep_settings_out_of_nvda_config
 from .voice_profile_controls import VoiceProfileControls
 from .voice_profiles_config import (
@@ -377,9 +378,19 @@ class SchemeItemsPanel(wx.Panel):
 			self._currentCategoryKind = category_kind or ""
 			self.removeEntryButton.Enable(bool(item_id) and self._isCustomEntry(category_kind, item_id))
 			enabled = item_id is not None
+			nvdaSound = schemeCatalog.is_nvda_sound_item(item_id)
 			item = self._itemsById.get(item_id) if item_id else None
 			if item is None:
 				self.itemDetails.SetValue(_("Select an item in the tree to change its sound or voice."))
+			elif nvdaSound:
+				self.itemDetails.SetValue(" ".join(part for part in (
+					item.label + ".",
+					item.description,
+					_(
+						"NVDA's own sound is {file}. Choose a sound to play instead of it; "
+						"Remove sound brings NVDA's sound back."
+					).format(file=schemeCatalog.nvda_sound_file_name(item_id)),
+				) if part))
 			else:
 				scope = {
 					schemeCatalog.SCOPE_TEXT: _("A voice applies to the announcement and to the formatted text or element content."),
@@ -392,12 +403,15 @@ class SchemeItemsPanel(wx.Panel):
 				self.soundPath.SetValue(sound)
 				self.soundModeChoice.SetSelection(1 if settings.get("soundOnly") else 0)
 				self.browseSoundButton.Enable(enabled)
-				self.playSoundButton.Enable(enabled and bool(sound))
+				# An NVDA sound item without a sound plays NVDA's own sound.
+				self.playSoundButton.Enable(enabled and (bool(sound) or nvdaSound))
 				self.removeSoundButton.Enable(enabled and bool(sound))
-				self.soundModeChoice.Enable(enabled and bool(sound))
+				# NVDA's sounds are not announcements, so there is nothing to speak or not.
+				self.soundModeChoice.Enable(enabled and bool(sound) and not nvdaSound)
 			voice = settings.get("voice") or {}
-			self.voiceCheckBox.Enable(enabled)
-			self.voiceCheckBox.SetValue(bool(voice.get("enabled")))
+			# NVDA's sounds are not speech and have no voice.
+			self.voiceCheckBox.Enable(enabled and not nvdaSound)
+			self.voiceCheckBox.SetValue(bool(voice.get("enabled")) and not nvdaSound)
 			self.resetItemButton.Enable(enabled and bool(settings))
 			self._loadSynthChoices(voice.get("engine", ""))
 			self._rebuildVoiceControls()
@@ -479,7 +493,11 @@ class SchemeItemsPanel(wx.Panel):
 	def _rebuildVoiceControls(self):
 		self._clearVoiceControls()
 		item_id = self._currentItemId
-		enabled = item_id is not None and self.voiceCheckBox.GetValue()
+		enabled = (
+			item_id is not None
+			and not schemeCatalog.is_nvda_sound_item(item_id)
+			and self.voiceCheckBox.GetValue()
+		)
 		self.previewVoiceButton.Enable(enabled)
 		self.engineNote.Show(enabled)
 		if not enabled:
@@ -583,12 +601,14 @@ class SchemeItemsPanel(wx.Panel):
 		self.soundPath.SetValue(path)
 		self.playSoundButton.Enable(True)
 		self.removeSoundButton.Enable(True)
-		self.soundModeChoice.Enable(True)
+		self.soundModeChoice.Enable(not schemeCatalog.is_nvda_sound_item(item_id))
 		self._changed(item_id)
 		self.browseSoundButton.SetFocus()
 
 	def onPlaySound(self, event):
 		path = self.soundPath.GetValue().strip()
+		if not path and schemeCatalog.is_nvda_sound_item(self._currentItemId):
+			path = nvda_sounds.nvda_sound_path_for_item(self._currentItemId) or ""
 		if not path:
 			return
 		if not os.path.isfile(path):
@@ -600,8 +620,8 @@ class SchemeItemsPanel(wx.Panel):
 			)
 			return
 		try:
-			import nvwave
-			nvwave.playWaveFile(path, asynchronous=True)
+			# Exactly this file, even one of NVDA's own that the scheme replaces.
+			nvda_sounds.play_sound_file(path, asynchronous=True)
 		except Exception:
 			log.error("ClassicSpeech schemes: could not play %s", path, exc_info=True)
 
@@ -614,7 +634,8 @@ class SchemeItemsPanel(wx.Panel):
 		settings.pop("soundOnly", None)
 		self.store.set_item(item_id, settings)
 		self.soundPath.SetValue("")
-		self.playSoundButton.Disable()
+		# Without its own sound, an NVDA sound item plays NVDA's sound again.
+		self.playSoundButton.Enable(schemeCatalog.is_nvda_sound_item(item_id))
 		self.removeSoundButton.Disable()
 		self.soundModeChoice.Disable()
 		self._changed(item_id)
@@ -634,7 +655,7 @@ class SchemeItemsPanel(wx.Panel):
 	# -- voice events -----------------------------------------------------------
 	def onVoiceToggled(self, event):
 		item_id = self._currentItemId
-		if item_id is None or self._loading:
+		if item_id is None or self._loading or schemeCatalog.is_nvda_sound_item(item_id):
 			return
 		enabled = self.voiceCheckBox.GetValue()
 		settings = self.store.get_item(item_id)

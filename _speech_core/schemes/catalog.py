@@ -13,14 +13,19 @@ Item identifiers are stable strings stored in the scheme data:
 * ``fmt.fontName.<name>``         one specific font, lower case
 * ``fmt.fontSize.<number>``       one specific font size
 * ``fmt.styleName.<name>``        one specific document style, lower case
+* ``nvdaSound.<name>``            one of NVDA's own sounds, ``<name>.wav`` in its waves folder
 
 Categories mirror the groups of NVDA's Document Formatting panel first, then the
 object categories, so an item can be found where a user expects it. An item may
 be listed in more than one category (Links appear under Elements and under
 Object types); both entries edit the same settings.
+
+NVDA sound items are not speech: their sound plays instead of NVDA's own
+sound for that event (``nvda_sounds``), and they have no voice.
 """
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field
 
@@ -33,6 +38,10 @@ SCOPE_ANNOUNCEMENT = "announcement"
 SCOPE_TEXT = "text"
 #: The voice applies to the whole spoken description of the object.
 SCOPE_OBJECT = "object"
+#: Not speech: one of NVDA's own sounds, which the item's sound replaces.
+SCOPE_NVDA_SOUND = "nvdaSound"
+
+NVDA_SOUND_PREFIX = "nvdaSound."
 
 
 @dataclass(frozen=True)
@@ -178,6 +187,117 @@ def normalize_window_class(name) -> str:
 
 def window_class_item_id(name) -> str:
 	return f"class.{normalize_window_class(name)}"
+
+
+def nvda_sound_item_id(name) -> str:
+	"""Item id for NVDA's sound ``name`` (the file name without ``.wav``)."""
+	return f"{NVDA_SOUND_PREFIX}{name}"
+
+
+def is_nvda_sound_item(item_id) -> bool:
+	return str(item_id or "").startswith(NVDA_SOUND_PREFIX)
+
+
+def nvda_sound_file_name(item_id) -> str:
+	"""The file in NVDA's waves folder that an NVDA sound item replaces."""
+	return f"{str(item_id)[len(NVDA_SOUND_PREFIX):]}.wav"
+
+
+#: NVDA's own sounds, in its waves folder, with the event each one reports.
+#: ``(name, label, when NVDA plays it)``; the file is ``<name>.wav``.
+NVDA_SOUNDS = (
+	("start", _("NVDA starts"), _(
+		"When NVDA starts, if Play sounds when starting or exiting NVDA is checked in NVDA's General settings. "
+		"NVDA plays it before add-ons load, so while this item has a sound, ClassicSpeech turns that option off "
+		"and plays the start and exit sounds itself."
+	)),
+	("exit", _("NVDA exits"), _(
+		"When NVDA exits, if Play sounds when starting or exiting NVDA is checked in NVDA's General settings."
+	)),
+	("browseMode", _("Switching to browse mode"), _(
+		"When NVDA switches to browse mode, if Audio indication of focus and browse modes is checked "
+		"in NVDA's Browse Mode settings."
+	)),
+	("focusMode", _("Switching to focus mode"), _(
+		"When NVDA switches to focus mode, if Audio indication of focus and browse modes is checked "
+		"in NVDA's Browse Mode settings."
+	)),
+	("suggestionsOpened", _("Auto-suggestions appear"), _(
+		"When suggestions appear as you type in a search field or another field that offers them, "
+		"if Play a sound when auto-suggestions appear is checked in NVDA's Object Presentation settings."
+	)),
+	("suggestionsClosed", _("Auto-suggestions close"), _(
+		"When those suggestions close, if Play a sound when auto-suggestions appear is checked "
+		"in NVDA's Object Presentation settings."
+	)),
+	("textError", _("Spelling or grammar error"), _(
+		"When you type a word with a spelling error, if Play sound for spelling errors while typing is checked "
+		"in NVDA's Keyboard settings, and when NVDA reads a spelling or grammar error, if Spelling or grammar "
+		"errors includes Sound in NVDA's Document Formatting settings."
+	)),
+	("error", _("Error written to the NVDA log"), _(
+		"When NVDA writes an error to its log, if Play a sound for logged errors allows it in NVDA's "
+		"Advanced settings. By default NVDA plays it only in its test versions."
+	)),
+	("screenCurtainOn", _("Screen curtain turned on"), _(
+		"When the screen curtain turns on, if Play sound when toggling Screen Curtain is checked in NVDA's settings."
+	)),
+	("screenCurtainOff", _("Screen curtain turned off"), _(
+		"When the screen curtain turns off, if Play sound when toggling Screen Curtain is checked in NVDA's settings."
+	)),
+	("connected", _("Remote Access: connected to control another computer"), _(
+		"When NVDA's Remote Access connects this computer to control another computer."
+	)),
+	("controlled", _("Remote Access: ready to be controlled"), _(
+		"When NVDA's Remote Access connects this computer so that another computer can control it."
+	)),
+	("controlling", _("Remote Access: another computer joined"), _(
+		"When another computer joins this computer's Remote Access session."
+	)),
+	("disconnected", _("Remote Access: disconnected"), _(
+		"When Remote Access disconnects, or another computer leaves the session."
+	)),
+	("clipboardPush", _("Remote Access: clipboard sent"), _(
+		"When Remote Access sends this computer's clipboard to the other computer."
+	)),
+	("clipboardReceive", _("Remote Access: clipboard received"), _(
+		"When Remote Access receives the other computer's clipboard."
+	)),
+)
+
+
+def nvda_waves_folder():
+	"""NVDA's waves folder, or None outside NVDA."""
+	try:
+		import globalVars
+
+		folder = globalVars.appDir
+	except Exception:
+		return None
+	return os.path.join(folder, "waves") if folder else None
+
+
+def _nvda_sound_items():
+	items = [SchemeItem(nvda_sound_item_id(name), label, SCOPE_NVDA_SOUND, description) for name, label, description in NVDA_SOUNDS]
+	# A later NVDA may add sounds ClassicSpeech doesn't know yet; list them by file name.
+	known = {name.lower() for name, _label, _description in NVDA_SOUNDS}
+	folder = nvda_waves_folder()
+	try:
+		files = sorted(os.listdir(folder)) if folder else []
+	except OSError:
+		files = []
+	for file_name in files:
+		name, extension = os.path.splitext(file_name)
+		if extension.lower() != ".wav" or not name or name.lower() in known:
+			continue
+		known.add(name.lower())
+		items.append(SchemeItem(
+			nvda_sound_item_id(name),
+			_("NVDA sound {file}").format(file=file_name),
+			SCOPE_NVDA_SOUND,
+			_("NVDA plays {file} for an event ClassicSpeech doesn't know yet.").format(file=file_name),
+		))
+	return items
 
 
 def custom_entry_label(kind: str, value: str) -> str:
@@ -445,6 +565,7 @@ def build_categories(custom_entries=None, installed_fonts=()):
 			[SchemeItem(window_class_item_id(name), custom_entry_label("classes", name), SCOPE_OBJECT) for name in classes],
 			custom_kind="classes",
 		),
+		SchemeCategory("nvdaSounds", _("NVDA sounds"), _nvda_sound_items()),
 	]
 	return categories
 
@@ -472,4 +593,6 @@ def describe_item_id(item_id: str) -> str:
 		return custom_entry_label("classes", item_id[len("class."):])
 	if item_id.startswith("fmt.styleName."):
 		return custom_entry_label("styles", item_id[len("fmt.styleName."):])
+	if is_nvda_sound_item(item_id):
+		return _("NVDA sound {file}").format(file=nvda_sound_file_name(item_id))
 	return item_id
