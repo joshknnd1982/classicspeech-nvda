@@ -326,7 +326,7 @@ msgstr ""
 msgid "Announce only first item"
 msgstr ""
 
-#: classicSpeech.py:1859
+#: classicSpeech.py:1872
 msgid "Announces the default button in the current dialog"
 msgstr ""
 
@@ -478,7 +478,7 @@ msgstr ""
 msgid "Check for ClassicSpeech updates automatically"
 msgstr ""
 
-#: classicSpeech.py:1496
+#: classicSpeech.py:1497
 msgid "Check for Updates..."
 msgstr ""
 
@@ -486,7 +486,7 @@ msgstr ""
 msgid "Checking for ClassicSpeech updates"
 msgstr ""
 
-#: classicSpeech.py:1645
+#: classicSpeech.py:1646
 msgid "Checks for ClassicSpeech updates"
 msgstr ""
 
@@ -510,7 +510,7 @@ msgstr ""
 msgid "Choose the active verbosity profile and which object details ClassicSpeech speaks for that profile."
 msgstr ""
 
-#: classicSpeech.py:1498 classicSpeech.py:1601 classicSpeech.py:1608 classicSpeech.py:1615 classicSpeech.py:1622 classicSpeech.py:1629 classicSpeech.py:1639 classicSpeech.py:1646 classicSpeech.py:1664 classicSpeech.py:1676 classicSpeech.py:1735 classicSpeech.py:1752 classicSpeech.py:1790 classicSpeech.py:1797 classicSpeech.py:1804 classicSpeech.py:1811 classicSpeech.py:1818 classicSpeech.py:1825 classicSpeech.py:1860
+#: classicSpeech.py:1499 classicSpeech.py:1602 classicSpeech.py:1609 classicSpeech.py:1616 classicSpeech.py:1623 classicSpeech.py:1630 classicSpeech.py:1640 classicSpeech.py:1647 classicSpeech.py:1665 classicSpeech.py:1677 classicSpeech.py:1736 classicSpeech.py:1753 classicSpeech.py:1791 classicSpeech.py:1798 classicSpeech.py:1805 classicSpeech.py:1812 classicSpeech.py:1819 classicSpeech.py:1826 classicSpeech.py:1873
 msgid "ClassicSpeech"
 msgstr ""
 
@@ -538,7 +538,7 @@ msgstr ""
 msgid "ClassicSpeech could not download the update. {reason}"
 msgstr ""
 
-#: classicSpeech.py:2025
+#: classicSpeech.py:2038
 msgid "ClassicSpeech could not finish the reset. Details are in the NVDA log."
 msgstr ""
 
@@ -554,7 +554,7 @@ msgstr ""
 msgid "ClassicSpeech scheme package"
 msgstr ""
 
-#: classicSpeech.py:2030
+#: classicSpeech.py:2043
 msgid "ClassicSpeech settings were reset, and the NVDA settings it changed were put back. ClassicSpeech now uses its default settings. To remove ClassicSpeech, uninstall it from the Add-on Store."
 msgstr ""
 
@@ -582,7 +582,7 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: classicSpeech.py:2001
+#: classicSpeech.py:2014
 msgid "Close the ClassicSpeech settings dialogs first, then choose Reset All ClassicSpeech Settings again."
 msgstr ""
 
@@ -646,7 +646,7 @@ msgstr ""
 msgid "Content information landmark"
 msgstr ""
 
-#: classicSpeech.py:1817
+#: classicSpeech.py:1818
 msgid "Copies the current ClassicSpeech history item to the clipboard"
 msgstr ""
 
@@ -658,7 +658,7 @@ msgstr ""
 msgid "Copy scheme"
 msgstr ""
 
-#: classicSpeech.py:1832
+#: classicSpeech.py:1833
 msgid "Could not open speech history"
 msgstr ""
 
@@ -682,8 +682,12 @@ msgstr ""
 msgid "Day month year"
 msgstr ""
 
-#: classicSpeech.py:1856
+#: classicSpeech.py:1869
 msgid "Default button {name}"
+msgstr ""
+
+#: classicSpeech.py:1863
+msgid "Default button {name}, by appearance"
 msgstr ""
 
 #: _speech_core/schemes/catalog.py:364
@@ -718,7 +722,7 @@ msgstr ""
 msgid "Do not speak the announcement (sound only)"
 msgstr ""
 
-#: classicSpeech.py:2007
+#: classicSpeech.py:2020
 msgid "Do you really want to reset all ClassicSpeech settings?\n\nThis deletes every ClassicSpeech setting, voice profile and speech and sound scheme, including the sounds copied into your schemes, and puts back the NVDA settings ClassicSpeech changed. To keep your schemes or voice profiles, export them first. You can't undo a reset.\n\nNVDA saves its configuration after the reset."
 msgstr ""
 
@@ -926,7 +930,7 @@ msgstr ""
 msgid "Full numbers"
 msgstr ""
 
-#: classicSpeech.py:1491
+#: classicSpeech.py:1492
 msgid "General Settings..."
 msgstr ""
 
@@ -1258,11 +1262,11 @@ msgstr ""
 msgid "Month day year"
 msgstr ""
 
-#: classicSpeech.py:1810
+#: classicSpeech.py:1811
 msgid "Moves to the newest ClassicSpeech history item"
 msgstr ""
 
-#: classicSpeech.py:1803
+#: classicSpeech.py:1804
 msgid "Moves to the oldest ClassicSpeech history item"
 msgstr ""
 
@@ -1362,15 +1366,19 @@ msgstr ""
 msgid "No additional delay"
 msgstr ""
 
-#: classicSpeech.py:1848 classicSpeech.py:1870
+#: classicSpeech.py:1856 classicSpeech.py:1883
 msgid "No default button"
 msgstr ""
 
-#: classicSpeech.py:1855
+#: classicSpeech.py:1853
+msgid "No default button found. Turn off Screen Curtain so ClassicSpeech can check how the buttons look."
+msgstr ""
+
+#: classicSpeech.py:1868
 msgid "No default button known. Enter presses {name}"
 msgstr ""
 
-#: classicSpeech.py:1787
+#: classicSpeech.py:1788
 msgid "No focus"
 msgstr ""
 
@@ -1426,7 +1434,7 @@ msgstr ""
 msgid "No longer underlined"
 msgstr ""
 
-#: classicSpeech.py:1770 classicSpeech.py:1780
+#: classicSpeech.py:1771 classicSpeech.py:1781
 msgid "No object"
 msgstr ""
 
@@ -1498,27 +1506,27 @@ msgstr ""
 msgid "Open schemes folder"
 msgstr ""
 
-#: classicSpeech.py:1621
+#: classicSpeech.py:1622
 msgid "Opens ClassicSpeech Speech and Sound Schemes"
 msgstr ""
 
-#: classicSpeech.py:1614
+#: classicSpeech.py:1615
 msgid "Opens ClassicSpeech Voice Profiles"
 msgstr ""
 
-#: classicSpeech.py:1607
+#: classicSpeech.py:1608
 msgid "Opens ClassicSpeech Web / Browse Mode Settings"
 msgstr ""
 
-#: classicSpeech.py:1600
+#: classicSpeech.py:1601
 msgid "Opens ClassicSpeech settings"
 msgstr ""
 
-#: classicSpeech.py:1824
+#: classicSpeech.py:1825
 msgid "Opens the ClassicSpeech history dialog"
 msgstr ""
 
-#: classicSpeech.py:1628
+#: classicSpeech.py:1629
 msgid "Opens the ClassicSpeech user guide"
 msgstr ""
 
@@ -1554,7 +1562,7 @@ msgstr ""
 msgid "Page ready message:"
 msgstr ""
 
-#: classicSpeech.py:1742 classicSpeech.py:1747
+#: classicSpeech.py:1743 classicSpeech.py:1748
 msgid "Page summary is not available here."
 msgstr ""
 
@@ -1730,15 +1738,15 @@ msgstr ""
 msgid "Report transparent color values"
 msgstr ""
 
-#: classicSpeech.py:1734
+#: classicSpeech.py:1735
 msgid "Reports selected Browse Mode element counts for the current page"
 msgstr ""
 
-#: classicSpeech.py:1497
+#: classicSpeech.py:1498
 msgid "Reset All ClassicSpeech Settings..."
 msgstr ""
 
-#: classicSpeech.py:1998
+#: classicSpeech.py:2011
 msgid "Reset ClassicSpeech"
 msgstr ""
 
@@ -1782,7 +1790,7 @@ msgstr ""
 msgid "Reset token editor settings to defaults now?\n\nThis will immediately clear all global token renames and muted labels, and restore the default token order.\n\nCancel will not undo this reset.\n\nChoose Yes to reset now, or No to keep your current settings."
 msgstr ""
 
-#: classicSpeech.py:1638
+#: classicSpeech.py:1639
 msgid "Resets all ClassicSpeech settings and restores the NVDA settings it changed"
 msgstr ""
 
@@ -1794,11 +1802,11 @@ msgstr ""
 msgid "Restore native message\tDelete"
 msgstr ""
 
-#: classicSpeech.py:1796
+#: classicSpeech.py:1797
 msgid "Reviews the next ClassicSpeech history item"
 msgstr ""
 
-#: classicSpeech.py:1789
+#: classicSpeech.py:1790
 msgid "Reviews the previous ClassicSpeech history item"
 msgstr ""
 
@@ -1846,7 +1854,7 @@ msgstr ""
 msgid "Scheme name:"
 msgstr ""
 
-#: classicSpeech.py:1681
+#: classicSpeech.py:1682
 msgid "Scheme {name}"
 msgstr ""
 
@@ -1914,7 +1922,7 @@ msgstr ""
 msgid "Some"
 msgstr ""
 
-#: classicSpeech.py:2041
+#: classicSpeech.py:2054
 msgid "Some files could not be deleted. Delete this folder yourself: {folder}"
 msgstr ""
 
@@ -1954,7 +1962,7 @@ msgstr ""
 msgid "Speak single digits if number contains:"
 msgstr ""
 
-#: classicSpeech.py:1751
+#: classicSpeech.py:1752
 msgid "Speaks the current object. Press twice quickly to spell and copy it"
 msgstr ""
 
@@ -1982,15 +1990,15 @@ msgstr ""
 msgid "Speech and Sound Schemes"
 msgstr ""
 
-#: classicSpeech.py:1494
+#: classicSpeech.py:1495
 msgid "Speech and Sound Schemes..."
 msgstr ""
 
-#: classicSpeech.py:1670
+#: classicSpeech.py:1671
 msgid "Speech and sound schemes off"
 msgstr ""
 
-#: classicSpeech.py:1670
+#: classicSpeech.py:1671
 msgid "Speech and sound schemes on"
 msgstr ""
 
@@ -2118,7 +2126,7 @@ msgstr ""
 msgid "Suppress dashes inside words, such as sister-in-law"
 msgstr ""
 
-#: classicSpeech.py:1675
+#: classicSpeech.py:1676
 msgid "Switches to the next ClassicSpeech speech and sound scheme"
 msgstr ""
 
@@ -2306,7 +2314,7 @@ msgstr ""
 msgid "Turning the speech hook off leaves ClassicSpeech commands available, but lets NVDA speech pass through without ClassicSpeech processing."
 msgstr ""
 
-#: classicSpeech.py:1663
+#: classicSpeech.py:1664
 msgid "Turns ClassicSpeech speech and sound schemes on or off"
 msgstr ""
 
@@ -2362,7 +2370,7 @@ msgstr ""
 msgid "Visited links"
 msgstr ""
 
-#: classicSpeech.py:1493
+#: classicSpeech.py:1494
 msgid "Voice Profiles..."
 msgstr ""
 
@@ -2374,7 +2382,7 @@ msgstr ""
 msgid "Wave files (*.wav)|*.wav"
 msgstr ""
 
-#: classicSpeech.py:1492
+#: classicSpeech.py:1493
 msgid "Web / Browse Mode Settings..."
 msgstr ""
 
@@ -2574,7 +2582,7 @@ msgstr ""
 msgid "table"
 msgstr ""
 
-#: classicSpeech.py:1850
+#: classicSpeech.py:1858
 msgid "unknown"
 msgstr ""
 
@@ -2586,7 +2594,7 @@ msgstr ""
 msgid "voice on {engine}"
 msgstr ""
 
-#: classicSpeech.py:2036
+#: classicSpeech.py:2049
 msgid "{count} NVDA settings were left as they are, because they were changed in NVDA's own settings after ClassicSpeech last changed them."
 msgstr ""
 

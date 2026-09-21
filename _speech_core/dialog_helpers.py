@@ -8,6 +8,7 @@ import re
 import controlTypes
 import logHandler
 
+from . import default_button_appearance as appearance
 from . import focus_ancestry
 from . import win32_default_button as win32
 
@@ -171,6 +172,7 @@ def iter_dialog_descendants(container, max_depth=8, max_objects=150):
 # 4. The accessibility tree: a button, or split button, that reports the
 #    default state (MSAA, IAccessible2, or UI Automation's LegacyIAccessible),
 #    in the dialog or, for web pages, the form around the focus.
+# 5. For NVDA+E only, how the dialog's buttons look on screen.
 #
 # Many toolkits make a push button the default for as long as it has focus
 # (Windows itself, wxWidgets, WinForms, Delphi, Qt, Microsoft Office). Such a
@@ -185,13 +187,14 @@ SOURCE_WX = "wx"
 SOURCE_DIALOG = "dialog"
 SOURCE_STYLE = "style"
 SOURCE_ACCESSIBILITY = "accessibility"
+SOURCE_APPEARANCE = "appearance"
 
 
 class DefaultButton:
 	"""A dialog's default button, as ClassicSpeech found it.
 
 	``certain`` is False for a guess: a focused button that is the default only
-	because it has focus.
+	because it has focus, or a button picked by how it looks.
 	"""
 
 	__slots__ = ("name", "hwnd", "obj", "source", "certain")
@@ -211,12 +214,15 @@ class DefaultButton:
 
 
 class DefaultButtonQuery:
-	"""What NVDA+E reports: the default button, or None."""
+	"""What NVDA+E reports: the default button, or why none was found."""
 
-	__slots__ = ("button",)
+	__slots__ = ("button", "screenCurtainBlocked")
 
-	def __init__(self, button=None):
+	def __init__(self, button=None, *, screenCurtainBlocked=False):
 		self.button = button
+		#: True when only the appearance check could have found the button, and
+		#: NVDA's Screen Curtain kept it from seeing the screen.
+		self.screenCurtainBlocked = bool(screenCurtainBlocked)
 
 
 def _default_button_roles():
@@ -819,10 +825,34 @@ def find_default_button_info(obj, *, use_negative_cache=True):
 	return answer or guess
 
 
+def _dialog_buttons(dialog):
+	buttons = []
+	for child in iter_dialog_descendants(dialog):
+		if is_button(child):
+			buttons.append(child)
+			if len(buttons) >= appearance.MAX_BUTTONS:
+				break
+	return buttons
+
+
 def query_default_button(obj) -> DefaultButtonQuery:
-	"""Answer NVDA+E: look again from scratch."""
-	answer, guess, _settled = _lookup(obj, use_negative_cache=False)
-	return DefaultButtonQuery(answer or guess)
+	"""Answer NVDA+E: look again from scratch, and by appearance when nothing else can tell."""
+	answer, guess, settled = _lookup(obj, use_negative_cache=False)
+	if answer is not None:
+		return DefaultButtonQuery(answer)
+	if guess is not None:
+		return DefaultButtonQuery(guess)
+	if settled:
+		return DefaultButtonQuery()
+	dialog = get_dialog_ancestor(obj)
+	if dialog is None:
+		return DefaultButtonQuery()
+	result = appearance.pick_default_button(_dialog_buttons(dialog), focusIsButton=is_button(obj))
+	if result.button is not None:
+		return DefaultButtonQuery(
+			DefaultButton(get_object_name(result.button), obj=result.button, source=SOURCE_APPEARANCE, certain=False)
+		)
+	return DefaultButtonQuery(screenCurtainBlocked=result.screenCurtainBlocked)
 
 
 def get_default_button_name(obj, *, use_negative_cache=True) -> str:

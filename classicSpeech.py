@@ -23,6 +23,7 @@ import inputCore
 from speech.commands import BreakCommand
 
 from ._speech_core.dialog_helpers import (
+    SOURCE_APPEARANCE,
     focused_button_default_status,
     query_default_button,
     remember_default_button_for_focus,
@@ -1845,9 +1846,21 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def _defaultButtonMessage(query):
         button = query.button
         if button is None:
+            if query.screenCurtainBlocked:
+                # Translators: NVDA+E found no default button, and could not
+                # look at the dialog's buttons while NVDA's Screen Curtain
+                # hides the screen.
+                return _(
+                    "No default button found. Turn off Screen Curtain so ClassicSpeech can check how the buttons look."
+                )
             return _("No default button")
         # A button can have no label, such as one that only shows a picture.
         name = button.name or _("unknown")
+        if button.source == SOURCE_APPEARANCE:
+            # Translators: NVDA+E names the dialog's default button, found by
+            # how it looks on screen (its color or border), because the
+            # application does not report it.
+            return _("Default button {name}, by appearance").format(name=name)
         if not button.certain:
             # Translators: NVDA+E cannot tell the dialog's default button,
             # because the focused button counts as the default for as long as

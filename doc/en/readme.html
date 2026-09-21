@@ -543,6 +543,7 @@ li { margin: .25em 0; }
 <li>Web forms: the button that <kbd>Enter</kbd> presses in the form's edit fields, when the browser reports it.</li>
 </ul>
 <p>In many programs, a button counts as the default only while it has focus, so the dialog's own default button can't be read while you are on another button. ClassicSpeech remembers it from when focus was in another control of the dialog. If focus has only been on buttons since the dialog opened, you hear, for example, "No default button known. Enter presses Cancel". Move to an edit field or another control and press <kbd>NVDA+E</kbd> again.</p>
+<p>When neither Windows nor the program reports a default button, ClassicSpeech looks at the dialog's buttons on the screen, the way a sighted person tells them apart: many dialogs fill their default button, or draw its border, in the accent color. If exactly one button stands out that way, you hear, for example, "Default button Save, by appearance". This check needs the dialog on the screen. While NVDA's Screen Curtain is on, ClassicSpeech can't see the buttons, and you hear "No default button found. Turn off Screen Curtain so ClassicSpeech can check how the buttons look." ClassicSpeech only compares the colors of the buttons; nothing is saved. Focus speech never uses this check.</p>
 <h3 id="page-summary-command">Page summary: NVDA+Shift+U</h3>
 <p>In browse mode, speaks the element counts chosen on the <a href="#page-summary">Page Summary</a> page. Elsewhere, you hear "Page summary is not available here."</p>
 

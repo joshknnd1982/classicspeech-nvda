@@ -10,9 +10,9 @@ ClassicSpeech 1.14 reported the wrong button in two common dialogs:
   Cancel, because NVDA+E reported whichever button had focus.
 
 The default button is the one Enter activates after a change in another
-control. These tests use fake window handles and fake wx windows. A
-Windows-only test checks the Windows behavior they rely on with a real dialog
-that is never shown.
+control. These tests use fake window handles, fake wx windows and fake screen
+pixels. A Windows-only test checks the Windows behavior they rely on with a
+real dialog that is never shown.
 """
 from __future__ import annotations
 
@@ -274,12 +274,14 @@ class DefaultButtonTestBase(unittest.TestCase):
 		nvda_harness.ClassicSpeechNVDAConfigStartupTests().setUp()
 		self.module = nvda_harness._import_classic_speech_like_nvda()
 		from globalPlugins._speech_core import (
+			default_button_appearance,
 			dialog_helpers,
 			focus_ancestry,
 			win32_default_button,
 		)
 
 		self.helpers = dialog_helpers
+		self.appearance = default_button_appearance
 		self.win32 = win32_default_button
 		self.focus_ancestry = focus_ancestry
 		focus_ancestry.reset_cache()
@@ -311,6 +313,7 @@ class DefaultButtonTestBase(unittest.TestCase):
 			else:
 				sys.modules[name] = original
 		self.win32.set_api(False)
+		self.appearance.set_capture(None)
 		self.focus_ancestry.reset_cache()
 		globalPluginHandler.runningPlugins.clear()
 		speech.extensions.filter_speechSequence.callbacks.clear()
@@ -574,7 +577,9 @@ class NvdaDialogTests(DefaultButtonTestBase):
 	def test_wx_dialog_without_a_default_says_so(self):
 		self.state.top = self.Dialog(None)
 		self._focus(self.slider, self.dialogObj)
-		self.assertIsNone(self.helpers.query_default_button(self.slider).button)
+		query = self.helpers.query_default_button(self.slider)
+		self.assertIsNone(query.button)
+		self.assertFalse(query.screenCurtainBlocked)
 
 	def test_disabled_default_is_not_reported(self):
 		self.state.top = self.Dialog(type(self.ok)("OK", self.OK_HWND, enabled=False))
@@ -818,6 +823,121 @@ class AccessibilityTreeTests(DefaultButtonTestBase):
 		reads = self.dialogObj.childReads
 		self.helpers.focused_button_default_status(self.cancelObj)
 		self.assertEqual(self.dialogObj.childReads, reads)
+
+
+def _solid_button(fill, edge=None, label=(20, 20, 20), width=80, height=24):
+	edge = edge or fill
+	rows = []
+	for y in range(height):
+		row = []
+		for x in range(width):
+			if x in (0, width - 1) or y in (0, height - 1):
+				row.append(edge)
+			elif height // 3 <= y < 2 * height // 3 and width // 3 <= x < width // 2:
+				row.append(label)
+			else:
+				row.append(fill)
+		rows.append(row)
+	return rows
+
+
+class AppearanceTests(DefaultButtonTestBase):
+	"""NVDA+E's last resort: the button drawn as the default one, as a sighted user sees it."""
+
+	HOST = 0xA00
+	GRAY = (251, 251, 251)
+	BORDER_GRAY = (173, 173, 173)
+	ACCENT = (0, 103, 192)
+
+	def setUp(self):
+		super().setUp()
+		self.user32 = FakeUser32()
+		self.user32.add(self.HOST, "WinUIDesktopWin32WindowClass", text="Notepad")
+		self.user32.foregroundHwnd = self.HOST
+		self.win32.set_api(self.user32)
+		self.appearance.screen_curtain_active = lambda: False
+		self.looks = {}
+		self.appearance.set_capture(lambda left, top, width, height: self.looks[(left, top)])
+		self.save = self._button("Save", 10, fill=self.ACCENT)
+		self.dontSave = self._button("Don't save", 100, fill=self.GRAY, edge=self.BORDER_GRAY)
+		self.cancel = self._button("Cancel", 190, fill=self.GRAY, edge=self.BORDER_GRAY)
+		self.text = FakeObject("STATICTEXT", "Save your changes?", hwnd=self.HOST)
+		self.dialogObj = FakeObject("DIALOG", "Notepad", hwnd=self.HOST, children=[self.text, self.save, self.dontSave, self.cancel])
+
+	def _button(self, name, left, *, fill, edge=None):
+		self.looks[(left, 400)] = _solid_button(fill, edge)
+		return FakeObject("BUTTON", name, hwnd=self.HOST, location=(left, 400, 80, 24))
+
+	def test_accent_filled_button_is_reported_by_appearance(self):
+		self._focus(self.text, self.dialogObj)
+		self.assertEqual(self._message(self.text), "Default button Save, by appearance")
+
+	def test_accent_fill_counts_while_a_button_has_focus(self):
+		self._focus(self.cancel, self.dialogObj)
+		self.assertEqual(self._message(self.cancel), "Default button Save, by appearance")
+
+	def test_accent_border_counts_only_away_from_buttons(self):
+		self.looks[(10, 400)] = _solid_button(self.GRAY, (0, 120, 215))
+		self._focus(self.text, self.dialogObj)
+		self.assertEqual(self._query_name(self.text), "Save")
+		# With focus on a button, a colored border may just show focus.
+		self._focus(self.cancel, self.dialogObj)
+		self.assertIsNone(self.helpers.query_default_button(self.cancel).button)
+
+	def test_two_colored_buttons_are_not_guessed(self):
+		self.looks[(190, 400)] = _solid_button((196, 43, 28))
+		self._focus(self.text, self.dialogObj)
+		self.assertEqual(self._message(self.text), "No default button")
+
+	def test_button_under_the_mouse_pointer_is_not_guessed(self):
+		self.user32.cursorPos = (20, 410)
+		self._focus(self.text, self.dialogObj)
+		self.assertIsNone(self.helpers.query_default_button(self.text).button)
+
+	def test_unavailable_buttons_do_not_count(self):
+		self.save.states.add(controlTypes.State.UNAVAILABLE)
+		self._focus(self.text, self.dialogObj)
+		self.assertIsNone(self.helpers.query_default_button(self.text).button)
+
+	def test_screen_curtain_is_named_when_it_hides_the_buttons(self):
+		self.appearance.screen_curtain_active = lambda: True
+		self._focus(self.text, self.dialogObj)
+		query = self.helpers.query_default_button(self.text)
+		self.assertIsNone(query.button)
+		self.assertTrue(query.screenCurtainBlocked)
+		self.assertEqual(
+			self._message(self.text),
+			"No default button found. Turn off Screen Curtain so ClassicSpeech can check how the buttons look.",
+		)
+
+	def test_screen_curtain_is_not_named_without_buttons_to_compare(self):
+		self.appearance.screen_curtain_active = lambda: True
+		self.dialogObj.children = [self.text, self.save]
+		self._focus(self.text, self.dialogObj)
+		self.assertEqual(self._message(self.text), "No default button")
+
+	def test_black_screen_is_not_guessed(self):
+		for key in self.looks:
+			self.looks[key] = _solid_button((0, 0, 0))
+		self._focus(self.text, self.dialogObj)
+		query = self.helpers.query_default_button(self.text)
+		self.assertIsNone(query.button)
+		self.assertFalse(query.screenCurtainBlocked)
+
+	def test_dialog_behind_another_window_is_not_guessed(self):
+		self.user32.add(0xB00, "Chrome_WidgetWin_1")
+		self.user32.foregroundHwnd = 0xB00
+		self._focus(self.text, self.dialogObj)
+		self.assertIsNone(self.helpers.query_default_button(self.text).button)
+
+	def test_reported_default_buttons_are_not_second_guessed(self):
+		self.cancel.IAccessibleStates = STATE_SYSTEM_DEFAULT
+		self._focus(self.text, self.dialogObj)
+		self.assertEqual(self._message(self.text), "Default button Cancel")
+
+	def test_focus_speech_never_uses_appearance(self):
+		self._focus(self.save, self.dialogObj)
+		self.assertEqual(self.helpers.focused_button_default_status(self.save), (True, False, ""))
 
 
 class Win32ApiTests(DefaultButtonTestBase):

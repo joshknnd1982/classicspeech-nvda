@@ -105,6 +105,8 @@ class _User32:
 			"GetWindowThreadProcessId", wintypes.DWORD, HWND, ctypes.POINTER(wintypes.DWORD)
 		)
 		self._EnumChildWindows = proto("EnumChildWindows", BOOL, HWND, self._enumProc, wintypes.LPARAM)
+		self._GetForegroundWindow = proto("GetForegroundWindow", HWND)
+		self._GetPhysicalCursorPos = proto("GetPhysicalCursorPos", BOOL, ctypes.POINTER(wintypes.POINT))
 		self._SendMessageTimeout = proto(
 			"SendMessageTimeoutW",
 			wintypes.LPARAM,
@@ -160,6 +162,15 @@ class _User32:
 
 	def dialog_item(self, dialog, control_id):
 		return self._handle(self._GetDlgItem(dialog, control_id))
+
+	def foreground(self):
+		return self._handle(self._GetForegroundWindow())
+
+	def cursor(self):
+		point = self._wintypes.POINT()
+		if not self._GetPhysicalCursorPos(self._ctypes.byref(point)):
+			return None
+		return (int(point.x), int(point.y))
 
 	def process_id(self, hwnd):
 		pid = self._wintypes.DWORD()
@@ -426,3 +437,18 @@ def process_id(hwnd, api=None):
 	if not api or not hwnd:
 		return None
 	return _call(api, "process_id", hwnd, default=None)
+
+
+def foreground_window(api=None):
+	api = api or get_api()
+	if not api:
+		return 0
+	return _call(api, "foreground", default=0) or 0
+
+
+def cursor_position(api=None):
+	"""Return the mouse pointer's ``(x, y)`` in physical screen pixels, or None."""
+	api = api or get_api()
+	if not api:
+		return None
+	return _call(api, "cursor", default=None)
