@@ -62,6 +62,11 @@ log = logHandler.log
 class ClassicSpeechDialog(SettingsDialogTransactionMixin, wx.Dialog):
 	"""Main ClassicSpeech settings dialog with category list and dynamic panel area."""
 
+	# Like NVDA's own settings dialogs: while this dialog is open, NVDA and
+	# ClassicSpeech keep their configuration profiles as they were, so changed
+	# settings are saved in the profile the user was using (gui.shouldConfigProfileTriggersBeSuspended).
+	shouldSuspendConfigProfileTriggers = True
+
 	CATEGORY_NAMES = [
 		_("Verbosity"),
 		_("Token Editor"),

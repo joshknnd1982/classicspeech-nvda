@@ -39,6 +39,11 @@ FORMATTING_ROW_LABEL = _("Document and web formatting")
 class VoiceProfilesDialog(wx.Dialog):
 	"""Edit synthesizer-specific ClassicSpeech voice snapshots."""
 
+	# Like NVDA's own settings dialogs: while this dialog is open, NVDA and
+	# ClassicSpeech keep their configuration profiles as they were, so changed
+	# settings are saved in the profile the user was using (gui.shouldConfigProfileTriggersBeSuspended).
+	shouldSuspendConfigProfileTriggers = True
+
 	def __init__(self, parent, driver=None):
 		super().__init__(
 			parent,

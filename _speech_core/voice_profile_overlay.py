@@ -24,6 +24,55 @@ def _nvda_profile_factory():
 	return ConfigObj(indent_type="\t", encoding="UTF-8")
 
 
+def _stored_values(section, path=()):
+	"""Yield ``(section path, key, value)`` for every value stored in a profile."""
+	for key in list(section.keys()):
+		value = dict.__getitem__(section, key) if isinstance(section, dict) else section[key]
+		if hasattr(value, "keys"):
+			yield from _stored_values(value, path + (key,))
+		else:
+			yield path, key, value
+
+
+def writes_to_carry(profile, belongs_to_overlay):
+	"""Return the values NVDA stored in a temporary overlay profile that must outlive it.
+
+	While an overlay is the newest profile, NVDA stores every setting that
+	changes in it: a settings dialog's OK, a toggle command, or a new
+	synthesizer. ``belongs_to_overlay(path, key, value)`` is True for the
+	overlay's own values, such as the voice it speaks with, which must vanish
+	with it.
+	"""
+	try:
+		return [
+			(path, key, value)
+			for path, key, value in _stored_values(profile)
+			if not belongs_to_overlay(path, key, value)
+		]
+	except Exception:
+		_trace("could not read what was stored in the overlay")
+		return []
+
+
+def carry_writes(config_manager, writes):
+	"""Store ``writes`` through NVDA's configuration, now that the overlay is gone.
+
+	NVDA stores each one in the configuration profile it would have used without
+	the overlay, and saves it with that profile.
+	"""
+	for path, key, value in writes:
+		try:
+			section = config_manager
+			for part in path:
+				if part not in section:
+					section[part] = {}
+				section = section[part]
+			section[key] = value
+			_trace(f"kept {'/'.join(path + (key,))} changed while the voice was speaking")
+		except Exception:
+			_trace(f"could not keep {'/'.join(path + (key,))}")
+
+
 class VoiceProfileOverlay:
 	"""Push one full resolved Voice Profile snapshot onto NVDA's config stack.
 
@@ -108,12 +157,17 @@ class VoiceProfileOverlay:
 		self._refresh_aggregate()
 		_trace(f"synchronized synth={self._synth_name} requestedVariant={snapshot.get('variant')!r}")
 
+	def _belongs_to_overlay(self, path, key, value):
+		"""The overlay's own values: the settings of the synthesizer it speaks with."""
+		return path[:2] == ("speech", self._synth_name)
+
 	def exit(self):
 		if not self.active:
 			return
 		if not self._config.profiles or self._config.profiles[-1] is not self._profile:
 			raise RuntimeError("ClassicSpeech Voice Profile overlays must exit in LIFO order")
 		_trace(f"exit synth={self._synth_name} effectiveVariantBefore={self._effective_value('variant')!r}")
+		writes = writes_to_carry(self._profile, self._belongs_to_overlay)
 		self._config.profiles.pop()
 		try:
 			self._refresh_aggregate()
@@ -122,4 +176,5 @@ class VoiceProfileOverlay:
 			raise
 		self._profile = None
 		self.active = False
+		carry_writes(self._config, writes)
 		_trace(f"exited synth={self._synth_name} effectiveVariantAfter={self._effective_value('variant')!r}")

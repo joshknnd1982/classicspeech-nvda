@@ -152,8 +152,50 @@ def _same(first, second):
 # -- NVDA configuration profiles ---------------------------------------------------
 
 def _base_profile(conf):
+	"""The base configuration, which holds ClassicSpeech's own section."""
 	profiles = getattr(conf, "profiles", None)
 	return profiles[0] if profiles else conf
+
+
+def _nvda_base(conf):
+	"""The base configuration that holds NVDA's own settings.
+
+	NVDA's configuration manager keeps them in its first profile. A plain
+	mapping, as tests use for ``config.conf``, keeps them in itself.
+	"""
+	return conf if isinstance(conf, dict) else _base_profile(conf)
+
+
+def _is_temporary(profile, base):
+	"""True for a profile NVDA never saves: ClassicSpeech's voice overlays have no name or file."""
+	if profile is base:
+		return False
+	name = getattr(profile, "name", None)
+	return not (isinstance(name, str) and name and getattr(profile, "filename", None))
+
+
+@contextlib.contextmanager
+def _below_temporary_profiles(conf):
+	"""Take ClassicSpeech's temporary voice overlays off NVDA's profile stack for a moment.
+
+	While a voice profile's voice speaks, its overlay is the newest profile, so a
+	write through ``config.conf`` would land in it and vanish with it. With the
+	overlays off, the write reaches the configuration NVDA saves. They go back on
+	top, in the same order, afterwards.
+	"""
+	profiles = getattr(conf, "profiles", None)
+	lifted = []
+	if isinstance(profiles, list) and not isinstance(conf, dict):
+		while len(profiles) > 1 and _is_temporary(profiles[-1], profiles[0]):
+			lifted.append(profiles.pop())
+	if lifted:
+		_refresh(conf)
+	try:
+		yield
+	finally:
+		if lifted:
+			profiles.extend(reversed(lifted))
+			_refresh(conf)
 
 
 def _write_target(conf, path):
@@ -161,28 +203,26 @@ def _write_target(conf, path):
 
 	NVDA writes a setting into the most recently activated configuration
 	profile, or into the base configuration for sections that only live there.
-	The base configuration's name is None. ClassicSpeech's voice profiles push
-	temporary unnamed profiles while they speak; a write into one of those does
-	not last, so there is nothing to record.
+	The base configuration's name is None. A temporary profile, such as a voice
+	overlay, doesn't last, so there is nothing to record for it.
 	"""
 	profiles = getattr(conf, "profiles", None)
-	if not profiles:
-		return conf, None, True
-	if path and path[0] in getattr(conf, "BASE_ONLY_SECTIONS", ()):
+	if profiles and path and path[0] in getattr(conf, "BASE_ONLY_SECTIONS", ()):
 		return profiles[0], None, True
+	if isinstance(conf, dict) or not profiles:
+		return conf, None, True
 	profile = profiles[-1]
 	if profile is profiles[0]:
 		return profile, None, True
-	name = getattr(profile, "name", None)
-	if isinstance(name, str) and name and getattr(profile, "filename", None):
-		return profile, name, True
-	return profile, None, False
+	if _is_temporary(profile, profiles[0]):
+		return profile, None, False
+	return profile, profile.name, True
 
 
 def _profile_named(conf, name):
 	"""Return the base configuration (None) or a named profile, loading it if needed."""
 	if name is None:
-		return _base_profile(conf)
+		return _nvda_base(conf)
 	cache = getattr(conf, "_profileCache", None)
 	if isinstance(cache, dict) and name in cache:
 		return cache[name]
@@ -315,34 +355,39 @@ def recording_nvda_change(path, key, conf=None):
 
 	The first change ClassicSpeech makes to a setting records the value it had
 	before; every change records the value ClassicSpeech gave it. Recording
-	never stops the change itself.
+	never stops the change itself. The change reaches the configuration NVDA
+	saves even while a voice profile's voice is speaking.
 	"""
 	path = tuple(path)
-	pending = None
 	try:
 		conf = conf if conf is not None else _config()
-		profile, name, lasting = _write_target(conf, path)
-		if lasting:
-			pending = (profile, name, _raw_state(profile, path, key))
 	except Exception:
-		_debug("could not read %s/%s before changing it", "/".join(path), key)
-	yield
-	if pending is None:
-		return
-	try:
-		profile, name, before = pending
-		after = _raw_state(profile, path, key)
-		if _same(before, after):
+		conf = None
+	with _below_temporary_profiles(conf) if conf is not None else contextlib.nullcontext():
+		pending = None
+		try:
+			profile, name, lasting = _write_target(conf, path)
+			if conf is not None and lasting:
+				pending = (profile, name, _raw_state(profile, path, key))
+		except Exception:
+			_debug("could not read %s/%s before changing it", "/".join(path), key)
+		yield
+		if pending is None:
 			return
-		backup = load_backup()
-		entry = _find(backup, name, path, key)
-		if entry is None:
-			entry = {"profile": name, "section": list(path), "key": key, "before": before}
-			backup["settings"].append(entry)
-		entry["after"] = after
-		_save_backup(backup)
-	except Exception:
-		_debug("could not record the change to %s/%s", "/".join(path), key)
+		try:
+			profile, name, before = pending
+			after = _raw_state(profile, path, key)
+			if _same(before, after):
+				return
+			backup = load_backup()
+			entry = _find(backup, name, path, key)
+			if entry is None:
+				entry = {"profile": name, "section": list(path), "key": key, "before": before}
+				backup["settings"].append(entry)
+			entry["after"] = after
+			_save_backup(backup)
+		except Exception:
+			_debug("could not record the change to %s/%s", "/".join(path), key)
 
 
 def set_nvda_setting(path, key, value, conf=None):
@@ -356,6 +401,34 @@ def set_nvda_setting(path, key, value, conf=None):
 				section[part] = {}
 			section = section[part]
 		section[key] = value
+
+
+def nvda_setting_state(path, key, conf=None):
+	"""Return how one of NVDA's settings is stored where NVDA would change it.
+
+	``{"set": False}`` means that configuration doesn't set it, so an earlier
+	profile or NVDA's default applies. Otherwise ``{"set": True, "value": ...}``
+	holds the stored value exactly, even one NVDA would not accept.
+	"""
+	conf = conf if conf is not None else _config()
+	path = tuple(path)
+	with _below_temporary_profiles(conf):
+		profile, _name, _lasting = _write_target(conf, path)
+		return _raw_state(profile, path, key)
+
+
+def restore_nvda_setting(path, key, state, conf=None):
+	"""Store one of NVDA's settings exactly as ``nvda_setting_state`` returned it, recording the change."""
+	conf = conf if conf is not None else _config()
+	path = tuple(path)
+	with recording_nvda_change(path, key, conf):
+		profile, name, _lasting = _write_target(conf, path)
+		if state.get("set"):
+			_set_raw(profile, path, key, state.get("value"))
+		else:
+			_delete_raw(profile, path, key)
+		_mark_changed(conf, name)
+		_refresh(conf)
 
 
 def legacy_checked():
@@ -375,7 +448,7 @@ def record_legacy_changes(implied, conf=None):
 	if backup.get("legacyChecked"):
 		return []
 	conf = conf if conf is not None else _config()
-	base = _base_profile(conf)
+	base = _nvda_base(conf)
 	recorded = []
 	for (path, key), value in (implied or {}).items():
 		path = tuple(path)

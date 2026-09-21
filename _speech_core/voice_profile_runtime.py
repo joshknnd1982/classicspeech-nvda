@@ -7,12 +7,17 @@ from .voice_profile_trigger import VoiceProfileDirectSettingsTransaction, VoiceP
 _SEQUENCE_SAFE_PROSODY = frozenset(("rate", "pitch", "volume"))
 
 
-def make_voice_profile_overlay_trigger(profile_id, config_manager, driver, snapshot, profile_factory=None):
-	"""Build a queue-bound Preview-equivalent transaction that survives NVDA reload."""
+def make_voice_profile_overlay_trigger(profile_id, config_manager, driver, snapshot, profile_factory=None, preview=False):
+	"""Build a queue-bound Preview-equivalent transaction that survives NVDA reload.
+
+	``preview`` is for a voice the user asked to hear, which applies even while
+	a settings dialog is open.
+	"""
 	return VoiceProfileOverlayTrigger(
 		profile_id,
 		VoiceProfileOverlay(config_manager, str(driver.name), snapshot, profile_factory=profile_factory),
 		VoiceProfileDirectSettingsTransaction(driver, snapshot),
+		preview=preview,
 	)
 
 
