@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import json
 import sys
+import tempfile
+import types
 import unittest
 from pathlib import Path
 
@@ -1018,6 +1020,119 @@ class PreviewLifecycleTests(unittest.TestCase):
 		self.assertEqual(self.restore_errors, ["rate"])
 		self.assertEqual(self.driver.voice, "voiceA")
 		self.assertFalse(self.driver.rateBoost)
+
+
+
+class VoiceProfileSharingTests(unittest.TestCase):
+	def setUp(self):
+		nvda_harness.ClassicSpeechNVDAConfigStartupTests().setUp()
+		nvda_harness._import_classic_speech_like_nvda()
+		self.driver = FakeDriver()
+		self.folder = tempfile.TemporaryDirectory()
+		self.addCleanup(self.folder.cleanup)
+
+	def tearDown(self):
+		nvda_harness._reset_global_plugin_imports()
+
+	def path(self, name="mine"):
+		return str(Path(self.folder.name) / f"{name}.classicspeech-voices")
+
+	def test_export_then_import_on_another_computer(self):
+		from globalPlugins._speech_core.settings import voice_profile_packages as packages
+		from globalPlugins._speech_core.settings.voice_profiles_config import VoiceProfileStore
+
+		store = VoiceProfileStore(self.driver)
+		store.set_value("mouse", "rate", 80)
+		written = packages.write_voice_profiles(self.path(), store.shareable_profiles())
+		self.assertEqual(written["fakeSynth"]["mouse"]["overrides"], {"rate": 80})
+		self.assertEqual(sorted(written["fakeSynth"]), sorted(row.profile_id for row in store.rows))
+		# Another computer already has profiles for another synthesizer.
+		config.conf.profiles[0].setdefault("classicSpeech", {})["voiceProfileData"] = json.dumps({
+			"otherSynth": {"mouse": {"baseline": {"rate": 20}, "overrides": {"rate": 30}}},
+		})
+		receiver = VoiceProfileStore(FakeDriver("otherSynth"))
+		self.assertEqual(receiver.import_profiles(packages.read_voice_profiles(self.path())), ["fakeSynth"])
+		receiver.apply()
+		persisted = json.loads(config.conf.profiles[0]["classicSpeech"]["voiceProfileData"])
+		self.assertEqual(persisted["fakeSynth"]["mouse"]["overrides"], {"rate": 80})
+		self.assertEqual(persisted["otherSynth"]["mouse"]["overrides"], {"rate": 30})
+
+	def test_cancel_after_import_keeps_the_saved_profiles(self):
+		from globalPlugins._speech_core.settings import voice_profile_packages as packages
+		from globalPlugins._speech_core.settings.voice_profiles_config import VoiceProfileStore
+
+		packages.write_voice_profiles(self.path(), {
+			"fakeSynth": {"mouse": {"baseline": {"rate": 45}, "overrides": {"rate": 99}}},
+		})
+		store = VoiceProfileStore(self.driver)
+		store.import_profiles(packages.read_voice_profiles(self.path()))
+		self.assertEqual(store.get_snapshot("mouse")["rate"], 99)
+		store.cancel()
+		self.assertNotEqual(store.get_snapshot("mouse").get("rate"), 99)
+
+	def test_imported_profiles_keep_only_known_categories_and_plain_values(self):
+		from globalPlugins._speech_core.settings import voice_profile_packages as packages
+
+		Path(self.path()).write_text(json.dumps({
+			"format": packages.VOICES_FORMAT,
+			"version": 1,
+			"synthesizers": {"fakeSynth": {
+				"mouse": {
+					"baseline": {"rate": 40, "voice": "voiceA", "bad": [1, 2]},
+					"overrides": {"rate": 90, "nested": {"x": 1}},
+				},
+				"notACategory": {"baseline": {}, "overrides": {"rate": 1}},
+			}},
+		}), encoding="utf-8")
+		self.assertEqual(packages.read_voice_profiles(self.path()), {"fakeSynth": {"mouse": {
+			"baseline": {"rate": 40, "voice": "voiceA"},
+			"overrides": {"rate": 90},
+		}}})
+
+	def test_files_that_are_not_voice_profiles_are_refused(self):
+		from globalPlugins._speech_core.settings import voice_profile_packages as packages
+
+		cases = {
+			"text": "not json",
+			"other": json.dumps({"format": "something else", "synthesizers": {}}),
+			"empty": json.dumps({"format": packages.VOICES_FORMAT, "synthesizers": {}}),
+			"unknown": json.dumps({"format": packages.VOICES_FORMAT, "synthesizers": {
+				"fakeSynth": {"notACategory": {"rate": 1}},
+			}}),
+		}
+		for name, text in cases.items():
+			Path(self.path(name)).write_text(text, encoding="utf-8")
+			with self.assertRaises(packages.VoiceProfilesFileError, msg=name):
+				packages.read_voice_profiles(self.path(name))
+
+	def test_import_button_marks_changes_and_refreshes_the_category(self):
+		from globalPlugins._speech_core.settings import voice_profile_packages as packages
+		from globalPlugins._speech_core.settings import voice_profiles_dialog as dialog_module
+		from globalPlugins._speech_core.settings.voice_profiles_config import VoiceProfileStore
+
+		packages.write_voice_profiles(self.path(), {
+			"otherSynth": {"mouse": {"baseline": {"rate": 45}, "overrides": {"rate": 99}}},
+		})
+		calls = []
+		messages = []
+		dialog = types.SimpleNamespace(
+			store=VoiceProfileStore(self.driver),
+			currentProfileId="mouse",
+			_cancelPreview=lambda: None,
+			_markDirty=lambda: calls.append("dirty"),
+			_show_profile=lambda row: calls.append(("show", row.profile_id)),
+			_message=lambda text, title, icon=None: messages.append(text),
+		)
+		original = dialog_module.choose_import_path
+		dialog_module.choose_import_path = lambda *args, **kwargs: self.path()
+		try:
+			dialog_module.VoiceProfilesDialog.onImportProfiles(dialog, None)
+		finally:
+			dialog_module.choose_import_path = original
+		self.assertEqual(calls, ["dirty", ("show", "mouse")])
+		self.assertEqual(len(messages), 1)
+		self.assertIn("Imported voice profiles for otherSynth. Press OK or Apply to keep them.", messages[0])
+		self.assertIn("no voice profiles for your current synthesizer", messages[0])
 
 
 if __name__ == "__main__":

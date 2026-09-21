@@ -352,6 +352,13 @@ li { margin: .25em 0; }
 <li><strong>Reset all Voice Profile overrides</strong> removes your changes to the first five categories for the active synthesizer, after asking you to confirm. Document and web formatting voices are not affected.</li>
 </ul>
 
+<h3 id="sharing-voice-profiles">Sharing voice profiles</h3>
+<ul>
+<li><strong>Export voice profiles...</strong> saves the first five categories, for every synthesizer you have set them up for, in one file whose name ends in .classicspeech-voices. Send the file to someone, or keep it as a backup.</li>
+<li><strong>Import voice profiles...</strong> reads such a file. It replaces only the synthesizers and categories in the file; your other voice profiles stay as they are. Press <strong>OK</strong> or <strong>Apply</strong> to keep the imported profiles, or <strong>Cancel</strong> to discard them.</li>
+</ul>
+<p>Voice profiles belong to a synthesizer, so imported profiles for a synthesizer you aren't using wait until you switch to it. A voice that isn't installed on your computer can't be used. Document and web formatting voices are part of Speech and Sound Schemes, so share them by <a href="#sharing-schemes">exporting a scheme</a>.</p>
+
 <h3 id="formatting-voices">Document and web formatting voices</h3>
 <p>When you select <strong>Document and web formatting</strong> in the Voice profiles list, the rest of the dialog lists every formatting option and web element NVDA can report. A voice set here is used for the announcement and for the text itself. For example, bold words are read in the bold voice, and a link's text in the link voice.</p>
 <p>The items are grouped as follows:</p>
@@ -385,6 +392,24 @@ li { margin: .25em 0; }
 <li><strong>New scheme...</strong> creates an empty scheme, <strong>Copy scheme...</strong> copies the active one, <strong>Rename scheme...</strong> renames it, and <strong>Delete scheme</strong> deletes it after asking you to confirm.</li>
 </ul>
 <p>Two commands do the same without opening the dialog: <strong>Turns ClassicSpeech speech and sound schemes on or off</strong>, and <strong>Switches to the next ClassicSpeech speech and sound scheme</strong>. They have no gestures until you assign them.</p>
+<p>Below the scheme buttons are <strong>Export scheme...</strong>, <strong>Import scheme...</strong> and <strong>Open schemes folder</strong>, described in <a href="#scheme-folders">Where schemes are kept</a> and <a href="#sharing-schemes">Sharing schemes</a>.</p>
+
+<h3 id="scheme-folders">Where schemes are kept</h3>
+<p>Each scheme, including Default, is a folder inside a folder called Schemes. For an installed copy of NVDA, that is <strong>%APPDATA%\nvda\ClassicSpeech\Schemes</strong>, in NVDA's user configuration folder. Press <strong>Open schemes folder</strong> to open it in File Explorer.</p>
+<ul>
+<li>A scheme's folder has the scheme's name, with characters Windows doesn't allow in folder names replaced by an underscore.</li>
+<li>Inside it, <strong>scheme.json</strong> holds the scheme's settings, and the <strong>Sounds</strong> folder holds its sounds.</li>
+<li>When you press OK or Apply, ClassicSpeech copies each sound you chose into the scheme's Sounds folder. The scheme keeps working if you later move or delete the original file.</li>
+<li>Renaming or deleting a scheme in the dialog renames or deletes its folder when you press OK or Apply.</li>
+</ul>
+<p>Earlier versions of ClassicSpeech kept schemes inside NVDA's configuration. They are moved into folders the first time this version starts, and nothing else changes.</p>
+
+<h3 id="sharing-schemes">Sharing schemes</h3>
+<ul>
+<li><strong>Export scheme...</strong> saves the active scheme, with all of its sounds, voices and added entries, in one file whose name ends in .classicspeech-scheme. If a sound file can't be found, ClassicSpeech lists the sounds it left out.</li>
+<li><strong>Import scheme...</strong> reads a scheme file someone sent you and adds it as a new scheme, which becomes the active scheme. If you already have a scheme with that name, a number is added, such as "Default 2". Press <strong>OK</strong> or <strong>Apply</strong> to keep it, or <strong>Cancel</strong> to discard it.</li>
+</ul>
+<p>A voice in a shared scheme works only with the same synthesizer, and the same voice, on the other computer.</p>
 
 <h3 id="finding-items">Finding an item</h3>
 <ul>
@@ -429,6 +454,7 @@ li { margin: .25em 0; }
 <li><strong>Add window class...</strong>: add a window class to Window classes. The field starts with the class of the object you were on before opening the dialog, so move to that control first, then open Speech and Sound Schemes.</li>
 <li><strong>Remove added entry</strong>: remove a font, size, style or class you added, together with its sound and voice.</li>
 </ul>
+<p>Added entries belong to the active scheme and travel with it when you export it. A new scheme starts with the active scheme's added entries.</p>
 
 <h2 id="speech-history">Speech history</h2>
 <p>ClassicSpeech remembers the last 50 things NVDA said, as NVDA said them before ClassicSpeech changed them. Use it to catch something you missed.</p>
@@ -502,6 +528,7 @@ li { margin: .25em 0; }
 <li><strong>NVDA says too much or too little.</strong> Choose another verbosity profile or change its Spoken object details on the Verbosity page, and mute words you don't need in the Token Editor.</li>
 <li><strong>A key such as F12 no longer works in a program.</strong> See the note at the end of <a href="#speech-history">Speech history</a>.</li>
 <li><strong>A scheme sound doesn't play.</strong> Check that Enable speech and sound schemes is checked and that the right scheme is active. Make sure the file is a WAV file and hasn't been moved; Play sound tells you if the file can't be found.</li>
+<li><strong>A scheme you copied into the Schemes folder yourself isn't used.</strong> Open Speech and Sound Schemes and choose it in Active scheme. A scheme folder needs its scheme.json file. To add a scheme someone sent you as a file, Import scheme is easier.</li>
 <li><strong>An item doesn't use the other synthesizer you chose.</strong> ClassicSpeech tells you when it can't load a synthesizer, and uses your active synthesizer instead. The active synthesizer is also the fastest choice.</li>
 </ul>
 
