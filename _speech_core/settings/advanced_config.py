@@ -2,14 +2,19 @@
 
 import logHandler
 
-from .config_core import _ensure_classic_speech_section, _get_running_classic_speech_plugin
+from .config_core import (
+	_as_bool,
+	_ensure_classic_speech_section,
+	_get_running_classic_speech_plugin,
+	_read_classic_speech_section,
+)
 
 log = logHandler.log
 
 
 def _get_speech_hook_enabled():
-	conf = _ensure_classic_speech_section()
-	return bool(conf.get("speechHookEnabled", True))
+	conf = _read_classic_speech_section()
+	return _as_bool(conf.get("speechHookEnabled", True), True)
 
 
 def get_speech_hook_enabled():
@@ -30,8 +35,8 @@ def _set_speech_hook_enabled(enabled: bool):
 
 
 def _get_announce_speech_hook_loaded_enabled():
-	conf = _ensure_classic_speech_section()
-	return bool(conf.get("announceSpeechHookLoaded", False))
+	conf = _read_classic_speech_section()
+	return _as_bool(conf.get("announceSpeechHookLoaded", False))
 
 
 def get_announce_speech_hook_loaded_enabled():
@@ -62,8 +67,8 @@ def _set_speech_hook_loaded_message(message: str):
 
 
 def _get_debug_logging_enabled():
-	conf = _ensure_classic_speech_section()
-	return bool(conf.get("debugLogging", False))
+	conf = _read_classic_speech_section()
+	return _as_bool(conf.get("debugLogging", False))
 
 
 def get_debug_logging_enabled():

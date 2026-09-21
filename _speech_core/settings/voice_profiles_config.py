@@ -59,6 +59,9 @@ class VoiceProfileRow:
 PROFILE_ROWS = (
 	VoiceProfileRow("focusNavigation", "Focus and navigation", True),
 	VoiceProfileRow("reviewObjectNavigation", "Review and object navigation", True),
+	# Speech NVDA produces while tracking the physical mouse or touchpad
+	# (``mouseMove`` events with NVDA's mouse tracking enabled).
+	VoiceProfileRow("mouse", "Mouse", True),
 	VoiceProfileRow("keyboardEntry", "Keyboard entry", True),
 	VoiceProfileRow("systemNotifications", "System and notifications", True),
 )
@@ -95,6 +98,91 @@ def _restore_snapshot(driver, snapshot: dict) -> None:
 
 def get_synth_id(driver) -> str:
 	return str(getattr(driver, "name", "unknown") or "unknown")
+
+
+# ---------------------------------------------------------------------------
+# Single-record helpers shared by Voice Profiles and Speech and Sound Schemes.
+# ---------------------------------------------------------------------------
+
+def new_voice_record(driver) -> dict:
+	"""A record whose baseline is the driver's current native settings."""
+	return {"baseline": _supported_snapshot(driver), "overrides": {}}
+
+
+def voice_record_snapshot(record) -> dict:
+	"""Display snapshot: the baseline with explicit overrides applied."""
+	if not isinstance(record, dict):
+		return {}
+	resolved = dict(record.get("baseline") or {})
+	resolved.update(record.get("overrides") or {})
+	return resolved
+
+
+def voice_record_preview_snapshot(record) -> dict:
+	"""Voice and Variant selectors plus explicit overrides, as routing applies them."""
+	if not isinstance(record, dict):
+		return {}
+	baseline = record.get("baseline") or {}
+	preview = {}
+	for selector_id in (_VOICE_SETTING_ID, _VARIANT_SETTING_ID):
+		if selector_id in baseline:
+			preview[selector_id] = baseline[selector_id]
+	preview.update(record.get("overrides") or {})
+	return {key: value for key, value in preview.items() if value is not None}
+
+
+def capture_voice_baseline(driver, voice_value) -> dict:
+	"""Temporarily select a voice, capture its native values, restore live state."""
+	original = _supported_snapshot(driver)
+	try:
+		setattr(driver, _VOICE_SETTING_ID, voice_value)
+		return _supported_snapshot(driver)
+	finally:
+		_restore_snapshot(driver, original)
+
+
+def capture_variant_baseline(driver, voice_value, variant_value) -> dict:
+	"""Probe native Voice then Variant defaults without leaking live settings."""
+	original = _supported_snapshot(driver)
+	try:
+		if voice_value is not None:
+			setattr(driver, _VOICE_SETTING_ID, voice_value)
+		setattr(driver, _VARIANT_SETTING_ID, variant_value)
+		return _supported_snapshot(driver)
+	finally:
+		_restore_snapshot(driver, original)
+
+
+def set_voice_record_value(record: dict, driver, setting_id: str, value, *, capture_voice=None, capture_variant=None) -> None:
+	"""Apply one editor change to a baseline/overrides record.
+
+	Selecting a Voice or Variant re-captures the native baseline for that
+	selection (keeping other explicit overrides); any other setting becomes an
+	override unless it equals the baseline.
+	"""
+	capture_voice = capture_voice or (lambda voice: capture_voice_baseline(driver, voice))
+	capture_variant = capture_variant or (lambda voice, variant: capture_variant_baseline(driver, voice, variant))
+	value = _to_plain_data(value)
+	record.setdefault("baseline", {})
+	record.setdefault("overrides", {})
+	if setting_id == _VOICE_SETTING_ID:
+		old_overrides = dict(record["overrides"])
+		old_overrides.pop(_VOICE_SETTING_ID, None)
+		record["baseline"] = capture_voice(value)
+		record["overrides"] = old_overrides
+		return
+	if setting_id == _VARIANT_SETTING_ID:
+		old_overrides = dict(record["overrides"])
+		voice_value = record["baseline"].get(_VOICE_SETTING_ID)
+		record["baseline"] = capture_variant(voice_value, value)
+		old_overrides[_VARIANT_SETTING_ID] = value
+		record["overrides"] = old_overrides
+		return
+	baseline_value = record["baseline"].get(setting_id)
+	if value == baseline_value:
+		record["overrides"].pop(setting_id, None)
+	else:
+		record["overrides"][setting_id] = value
 
 
 class VoiceProfileStore:
@@ -201,25 +289,14 @@ class VoiceProfileStore:
 			# Preserve legacy compatibility for non-selector edits.
 			record[setting_id] = _to_plain_data(value)
 			return
-		value = _to_plain_data(value)
-		if setting_id == _VOICE_SETTING_ID:
-			old_overrides = dict(record["overrides"])
-			old_overrides.pop(_VOICE_SETTING_ID, None)
-			record["baseline"] = self._capture_voice_baseline(value)
-			record["overrides"] = old_overrides
-			return
-		if setting_id == _VARIANT_SETTING_ID:
-			old_overrides = dict(record["overrides"])
-			voice_value = record["baseline"].get(_VOICE_SETTING_ID)
-			record["baseline"] = self._capture_variant_baseline(voice_value, value)
-			old_overrides[_VARIANT_SETTING_ID] = value
-			record["overrides"] = old_overrides
-			return
-		baseline_value = record["baseline"].get(setting_id)
-		if value == baseline_value:
-			record["overrides"].pop(setting_id, None)
-		else:
-			record["overrides"][setting_id] = value
+		set_voice_record_value(
+			record,
+			self.driver,
+			setting_id,
+			value,
+			capture_voice=self._capture_voice_baseline,
+			capture_variant=self._capture_variant_baseline,
+		)
 
 	def apply(self) -> None:
 		"""Commit every working profile and persist it through NVDA's config manager."""

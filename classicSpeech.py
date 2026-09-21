@@ -37,6 +37,7 @@ from ._speech_core.prosody_routing import (
     mouse_pointer_profile_routing,
     system_notification_profile_routing,
     wrap_keyboard_entry_sequence,
+    wrap_mouse_sequence,
     wrap_review_literal_sequence,
     wrap_system_notification_sequence,
 )
@@ -55,6 +56,7 @@ from ._speech_core.settings import (
 )
 from ._speech_core.settings.web import WebBrowseSettingsDialog
 from ._speech_core.settings.voice_profiles_dialog import VoiceProfilesDialog
+from ._speech_core.schemes import store as scheme_store
 from ._speech_core.history import SpeechHistoryBuffer, consume_history_native_passthrough
 from ._speech_core.history_viewer import show_history_dialog, is_history_list_focus
 from ._speech_core.interrupt_control import SpeechInterruptController
@@ -79,6 +81,9 @@ from ._speech_core.settings.web.summary_config import (
     get_included_element_types,
     get_include_document_title,
 )
+from ._speech_core.schemes import runtime as scheme_runtime
+from ._speech_core.schemes.markers import LabelMarker, has_markers, strip_markers
+from ._speech_core.schemes.tagging import SchemeTagger
 
 log = logHandler.log
 
@@ -611,6 +616,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         self._settingsDialog = None
         self._webBrowseDialog = None
         self._voiceProfilesDialog = None
+        self._schemesDialog = None
         self._classicSpeechMenu = None
         self._classicSpeechMenuItem = None
         self._classicSpeechPreferencesMenu = None
@@ -625,6 +631,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         self._install_system_notification_profile_routes()
         self._install_configuration_save_revert_system_routes()
         self._install_remote_speech_compatibility()
+        self._schemeTagger = SchemeTagger(
+            is_active=lambda: bool(getattr(self, "_speechHookRegistered", False))
+        )
+        self._install_speech_schemes()
         self._pendingContainerSequence = None
         self._pendingContainerFlush = None
         self._flushingPendingContainer = False
@@ -659,6 +669,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             headingContinuityRuntime.restore()
         self._headingContinuityRuntime = None
         self._unregister_speech_hook()
+        self._uninstall_speech_schemes()
         self._restore_remote_speech_compatibility()
         self._restore_windows_toast_system_route()
         self._restore_system_notification_profile_routes()
@@ -882,25 +893,27 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         pending = getattr(self, "_pendingContainerSequence", None)
         if not pending:
             return None
+        if not self._is_mergeable_item_followup(sequence):
+            # The held container was not followed by an item of that container
+            # (for example Chrome's "tool bar" before the address bar edit
+            # field). Speak it now as its own native utterance, queued ahead of
+            # the current sequence. Merging the two would make the classifier
+            # read the edit field's name, role and contents as values of the
+            # tool bar and drop them.
+            self._cancel_pending_container_flush()
+            self._flush_pending_container_sequence()
+            return None
         self._cancel_pending_container_flush()
         self._pendingContainerSequence = None
         mergedHistoryRaw = list(pending.get("historyRaw") or []) + list(historyRaw)
-        if self._is_mergeable_item_followup(sequence):
-            merged = list(pending.get("core") or pending.get("raw") or [])
-            if merged and isinstance(merged[-1], str):
-                merged.append(BreakCommand(time=80))
-            merged.extend(list(sequence))
-            if pending.get("hotkey"):
-                merged.append(BreakCommand(time=80))
-                merged.extend(list(pending.get("hotkey") or []))
-            log.debug(f"ClassicSpeech: merged generic container/item sequence: {pending.get('raw')} -> {merged}")
-            return merged, mergedHistoryRaw
-        # If the held sequence was a false positive, do not drop it. Speak it
-        # immediately before the current sequence as one conservative utterance.
-        merged = list(pending.get("raw") or [])
+        merged = list(pending.get("core") or pending.get("raw") or [])
         if merged and isinstance(merged[-1], str):
             merged.append(BreakCommand(time=80))
         merged.extend(list(sequence))
+        if pending.get("hotkey"):
+            merged.append(BreakCommand(time=80))
+            merged.extend(list(pending.get("hotkey") or []))
+        log.debug(f"ClassicSpeech: merged generic container/item sequence: {pending.get('raw')} -> {merged}")
         return merged, mergedHistoryRaw
 
     def _merge_prefix_sequence(self, prefix, sequence):
@@ -993,7 +1006,54 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         except Exception:
             return False
 
+    def _install_speech_schemes(self):
+        """Mark scheme items in NVDA speech and reset say all state on cancel."""
+        try:
+            self._schemeTagger.install()
+        except Exception:
+            log.exception("ClassicSpeech: failed to install Speech and Sound Schemes")
+        try:
+            canceled = getattr(speech.extensions, "speechCanceled", None)
+            if canceled is not None:
+                canceled.register(scheme_runtime.reset_carried_state)
+                self._schemeSpeechCanceled = canceled
+        except Exception:
+            log.debug("ClassicSpeech: speech cancel notification unavailable", exc_info=True)
+
+    def _uninstall_speech_schemes(self):
+        tagger = getattr(self, "_schemeTagger", None)
+        if tagger is not None:
+            try:
+                tagger.uninstall()
+            except Exception:
+                log.debug("ClassicSpeech: failed to remove Speech and Sound Schemes", exc_info=True)
+        canceled = getattr(self, "_schemeSpeechCanceled", None)
+        if canceled is not None:
+            try:
+                canceled.unregister(scheme_runtime.reset_carried_state)
+            except Exception:
+                pass
+            self._schemeSpeechCanceled = None
+        scheme_runtime.reset_carried_state()
+
     def _filterSpeechSequence(self, speechSequence):
+        """ClassicSpeech speech filter, followed by Speech and Sound Schemes.
+
+        Scheme markers added while NVDA generated the speech are always
+        converted or removed here, so they never reach other filters or the
+        synthesizer.
+        """
+        output = self._filterSpeechSequenceCore(speechSequence)
+        try:
+            return scheme_runtime.apply_schemes(output)
+        except Exception:
+            log.exception("ClassicSpeech: Speech and Sound Schemes failed")
+            try:
+                return strip_markers(output)
+            except Exception:
+                return output
+
+    def _filterSpeechSequenceCore(self, speechSequence):
         try:
             self._debug_log(f"filter input: {speechSequence}")
             # History replay/copy confirmations are already final flattened text.
@@ -1043,9 +1103,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
             if is_mouse_pointer_profile_routing_active():
                 self._clear_hotkey_carryover()
-                output = wrap_review_literal_sequence(speechSequence)
+                output = wrap_mouse_sequence(speechSequence)
                 self._record_history(rawHistorySequence, output)
-                self._debug_log("mouse pointer feedback uses Review profile")
+                self._debug_log("mouse pointer feedback uses Mouse profile")
                 return output
 
             if is_system_notification_profile_routing_active() or self._is_system_voice_script_active():
@@ -1164,6 +1224,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 )
                 return output
 
+            # NVDA's own role/state label markers are dropped before semantic
+            # processing: the token editor may reorder or rename those words.
+            # The formatter marks the final role and state tokens again.
+            if has_markers(speechSequence):
+                speechSequence[:] = [item for item in speechSequence if not isinstance(item, LabelMarker)]
+
             prefix = self._menuHints.get_prefix_sequence(speechSequence)
             speechOrigin = "objectNavigation" if isObjectNavigation else "focus"
             processed = self.processor.process(speechSequence, speech_origin=speechOrigin)
@@ -1224,14 +1290,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             generalItem = classicSpeechMenu.Append(wx.ID_ANY, _("General Settings..."))
             webItem = classicSpeechMenu.Append(wx.ID_ANY, _("Web / Browse Mode Settings..."))
             voiceProfilesItem = classicSpeechMenu.Append(wx.ID_ANY, _("Voice Profiles..."))
+            schemesItem = classicSpeechMenu.Append(wx.ID_ANY, _("Speech and Sound Schemes..."))
             submenuItem = preferencesMenu.AppendSubMenu(classicSpeechMenu, _("ClassicSpeech"))
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechGeneralSettingsMenu, generalItem)
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechWebBrowseSettingsMenu, webItem)
             sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechVoiceProfilesMenu, voiceProfilesItem)
+            sysTrayIcon.Bind(wx.EVT_MENU, self.onClassicSpeechSchemesMenu, schemesItem)
             self._classicSpeechPreferencesMenu = preferencesMenu
             self._classicSpeechMenu = classicSpeechMenu
             self._classicSpeechMenuItem = submenuItem
-            self._classicSpeechMenuItems = [generalItem, webItem, voiceProfilesItem]
+            self._classicSpeechMenuItems = [generalItem, webItem, voiceProfilesItem, schemesItem]
         except Exception:
             self._classicSpeechPreferencesMenu = None
             self._classicSpeechMenu = None
@@ -1301,6 +1369,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def onClassicSpeechVoiceProfilesMenu(self, evt):
         queueHandler.queueFunction(queueHandler.eventQueue, self._openVoiceProfiles)
 
+    def onClassicSpeechSchemesMenu(self, evt):
+        queueHandler.queueFunction(queueHandler.eventQueue, self._openSpeechSchemes)
+
     @scriptHandler.script(
         description=_("Opens ClassicSpeech settings"),
         category=_("ClassicSpeech"),
@@ -1321,6 +1392,36 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     )
     def script_openClassicSpeechVoiceProfiles(self, gesture):
         queueHandler.queueFunction(queueHandler.eventQueue, self._openVoiceProfiles)
+
+    @scriptHandler.script(
+        description=_("Opens ClassicSpeech Speech and Sound Schemes"),
+        category=_("ClassicSpeech"),
+    )
+    def script_openClassicSpeechSchemes(self, gesture):
+        queueHandler.queueFunction(queueHandler.eventQueue, self._openSpeechSchemes)
+
+    @scriptHandler.script(
+        description=_("Turns ClassicSpeech speech and sound schemes on or off"),
+        category=_("ClassicSpeech"),
+    )
+    def script_toggleSpeechSchemes(self, gesture):
+        try:
+            enabled = not bool(scheme_store.runtime_data().data and scheme_store.runtime_data().data.get("enabled"))
+            scheme_store.set_schemes_enabled(enabled)
+            ui.message(_("Speech and sound schemes on") if enabled else _("Speech and sound schemes off"))
+        except Exception:
+            log.exception("ClassicSpeech: toggling speech and sound schemes failed")
+
+    @scriptHandler.script(
+        description=_("Switches to the next ClassicSpeech speech and sound scheme"),
+        category=_("ClassicSpeech"),
+    )
+    def script_nextSpeechScheme(self, gesture):
+        try:
+            name = scheme_store.cycle_active_scheme()
+            ui.message(_("Scheme {name}").format(name=name))
+        except Exception:
+            log.exception("ClassicSpeech: switching speech and sound schemes failed")
 
 
     def _report_page_summary_for_document(self, document):
@@ -1501,7 +1602,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             return ""
 
     def _getDefaultButtonName(self):
-        return get_default_button_name(api.getFocusObject())
+        # An explicit NVDA+E query always rescans; focus speech keeps using the
+        # dialog cache, including a recent "no default button" result.
+        return get_default_button_name(api.getFocusObject(), use_negative_cache=False)
 
     def _getFocusedButtonDefaultStatus(self):
         focus = api.getFocusObject()
@@ -1609,6 +1712,60 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
         except Exception as e:
             log.error(f"Failed to open ClassicSpeech web/browse settings: {e}", exc_info=True)
+            try:
+                gui.mainFrame.postPopup()
+            except Exception:
+                pass
+
+    def _schemeFocusClassName(self):
+        """Window class of the object in use before the dialog opened, if any."""
+        for getter in (
+            lambda: getattr(gui.mainFrame, "prevFocus", None),
+            api.getNavigatorObject,
+            api.getFocusObject,
+        ):
+            try:
+                obj = getter()
+                name = str(getattr(obj, "windowClassName", "") or "")
+                if name:
+                    return name
+            except Exception:
+                continue
+        return ""
+
+    def _onSchemesDialogDestroyed(self, evt):
+        try:
+            evt.Skip()
+        finally:
+            if evt.GetEventObject() is self._schemesDialog:
+                self._schemesDialog = None
+                try:
+                    gui.mainFrame.postPopup()
+                except Exception:
+                    pass
+
+    def _openSpeechSchemes(self):
+        try:
+            if self._schemesDialog:
+                try:
+                    self._schemesDialog.Raise()
+                    self._schemesDialog.SetFocus()
+                    return
+                except Exception:
+                    self._schemesDialog = None
+
+            focusClassName = self._schemeFocusClassName()
+            gui.mainFrame.prePopup()
+            from ._speech_core.settings.schemes_dialog import SpeechSoundSchemesDialog
+
+            dlg = SpeechSoundSchemesDialog(gui.mainFrame, focus_class_name=focusClassName)
+            dlg._popupActive = True
+            dlg.Bind(wx.EVT_WINDOW_DESTROY, self._onSchemesDialogDestroyed)
+            self._schemesDialog = dlg
+            dlg.Show()
+
+        except Exception as e:
+            log.error(f"Failed to open ClassicSpeech Speech and Sound Schemes: {e}", exc_info=True)
             try:
                 gui.mainFrame.postPopup()
             except Exception:

@@ -4,9 +4,11 @@ import copy
 import logHandler
 
 from .config_core import (
+	_as_bool,
 	_ensure_classic_speech_section,
 	_get_live_verbosity_manager,
 	_get_nvda_setting,
+	_read_classic_speech_section,
 	_set_nvda_setting,
 )
 from .constants import (
@@ -167,7 +169,19 @@ def _default_profile_behavior(profile_name: str = "Beginner"):
 			profile_name,
 			POSITION_MODE_EACH,
 		),
+		# NVDA natively reads an edit field's current line (or "blank") when it
+		# gains focus. Every profile keeps that by default.
+		"readEditFieldContents": True,
 	}
+
+
+def get_read_edit_field_contents_enabled() -> bool:
+	"""Return whether focus speech keeps an edit field's contents (runtime mirror)."""
+	try:
+		conf = _read_classic_speech_section()
+		return _as_bool(conf.get("readEditFieldContents", True), True)
+	except Exception:
+		return True
 
 
 def _get_profile_behavior(profile_name: str):
@@ -201,6 +215,9 @@ def _get_profile_behavior(profile_name: str):
 		except Exception:
 			pass
 
+	if "readEditFieldContents" in section:
+		result["readEditFieldContents"] = _as_bool(section.get("readEditFieldContents"), True)
+
 	return result
 
 
@@ -214,6 +231,8 @@ def _save_profile_behavior(profile_name: str, behavior: dict):
 	if mode not in {POSITION_MODE_OFF, POSITION_MODE_FIRST, POSITION_MODE_EACH}:
 		mode = POSITION_MODE_EACH
 	section["positionMode"] = mode
+	if "readEditFieldContents" in behavior:
+		section["readEditFieldContents"] = _as_bool(behavior.get("readEditFieldContents"), True)
 
 
 def _clear_profile_behavior_override(profile_name: str):
@@ -256,3 +275,4 @@ def _apply_profile_behavior_runtime(profile_config: dict, behavior: dict):
 
 	conf = _ensure_classic_speech_section()
 	conf["positionMode"] = mode
+	conf["readEditFieldContents"] = _as_bool(behavior.get("readEditFieldContents", True), True)

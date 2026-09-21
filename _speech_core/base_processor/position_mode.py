@@ -4,6 +4,7 @@ import logHandler
 
 from .debug import should_debug_log
 
+from .. import focus_ancestry
 from ..settings import POSITION_MODE_EACH, POSITION_MODE_FIRST, POSITION_MODE_OFF
 from ..tokens import TOKEN_POSITION
 
@@ -50,36 +51,49 @@ class PositionModeFilter:
 		# in some UIA-backed controls during focus/menu transitions.
 		return (app_name, handle, child_id, role_key, name)
 
+	_CONTAINER_ROLES = frozenset({
+		"list",
+		"treeview",
+		"menu",
+		"menubar",
+		"tabcontrol",
+		"table",
+		"toolbar",
+		"combobox",
+		"listbox",
+	})
+
 	def _get_position_container_signature(self, focus):
 		if not focus:
 			return None
 
-		container_roles = {
-			"list",
-			"treeview",
-			"menu",
-			"menubar",
-			"tabcontrol",
-			"table",
-			"toolbar",
-			"combobox",
-			"listbox",
-		}
+		lineage = focus_ancestry.lineage_for(focus, 8)
+		if focus_ancestry.is_focus(focus):
+			# The container is an ancestor of the focus; it cannot change while
+			# focus stays on the same object, so compute its signature once.
+			return focus_ancestry.memoized_for_focus(
+				"positionContainerSignature",
+				lambda: self._container_signature_from_lineage(focus, lineage),
+			)
+		return self._container_signature_from_lineage(focus, lineage)
 
-		current = focus
-		depth = 0
-		while current is not None and depth < 8:
-			role_key = self._get_object_role_key(current)
-			if depth > 0 and role_key in container_roles:
-				return self._object_signature(current)
-			current = self._safe_obj_attr(current, "parent", None)
-			depth += 1
+	def _container_signature_from_lineage(self, focus, lineage):
+		for index in range(1, len(lineage)):
+			role_key = self._normalize_role_key_for_role(focus_ancestry.role_at(lineage, index))
+			if role_key in self._CONTAINER_ROLES:
+				return self._ancestor_signature(lineage[index])
 
-		parent = self._safe_obj_attr(focus, "parent", None)
-		if parent is not None:
-			return self._object_signature(parent)
+		if len(lineage) > 1:
+			return self._ancestor_signature(lineage[1])
 
 		return self._object_signature(focus)
+
+	def _ancestor_signature(self, container):
+		# Moving between items keeps the same container object; its signature
+		# (which reads the container name across processes) is fetched once.
+		return focus_ancestry.memoized_for_ancestor(
+			container, "positionSignature", lambda: self._object_signature(container)
+		)
 
 	def _apply_position_mode(self, semantic_tokens, mode_override=None):
 		mode = mode_override if mode_override is not None else self._get_position_mode()

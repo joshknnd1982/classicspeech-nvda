@@ -7,6 +7,8 @@ import re
 import controlTypes
 import logHandler
 
+from . import focus_ancestry
+
 log = logHandler.log
 
 _cached_dialog_key = None
@@ -37,22 +39,41 @@ def get_object_name(obj) -> str:
 	return ""
 
 
-def get_dialog_ancestor(obj):
-	cur = obj
-	for _ in range(20):
-		if not cur:
-			return None
+def _find_dialog_in_lineage(lineage, start=0):
+	for index in range(start, len(lineage)):
 		try:
-			role = getattr(cur, "role", None)
-			if role == controlTypes.Role.DIALOG:
-				return cur
+			if focus_ancestry.role_at(lineage, index) == controlTypes.Role.DIALOG:
+				return lineage[index]
+		except Exception:
+			continue
+	return None
+
+
+def get_dialog_ancestor(obj):
+	"""Return the nearest dialog containing ``obj`` (``obj`` included).
+
+	For the focus object this reads NVDA's cached focus ancestors and
+	remembers the answer until focus moves, instead of creating up to twenty
+	parent objects for every speech sequence.
+	"""
+	if not obj:
+		return None
+	lineage = focus_ancestry.lineage_for(obj, 20)
+	if not lineage:
+		return None
+	if focus_ancestry.is_focus(obj):
+		# The focus itself may be a dialog; check it fresh, then reuse the
+		# remembered ancestor answer.
+		try:
+			if getattr(obj, "role", None) == controlTypes.Role.DIALOG:
+				return obj
 		except Exception:
 			pass
-		try:
-			cur = cur.parent
-		except Exception:
-			return None
-	return None
+		return focus_ancestry.memoized_for_focus(
+			"dialogAncestor",
+			lambda: _find_dialog_in_lineage(lineage, start=1),
+		)
+	return _find_dialog_in_lineage(lineage)
 
 
 def object_is_in_dialog(obj) -> bool:
@@ -71,7 +92,39 @@ def iter_dialog_children(container):
 	return []
 
 
-def iter_dialog_descendants(container, max_depth=8, max_objects=250):
+def _default_button_scan_skips(obj) -> bool:
+	"""Return True for containers that never hold a dialog's default button.
+
+	File dialogs expose Explorer's item list, navigation tree and preview
+	document inside the dialog. Enumerating those children is slow and can
+	touch hundreds of cross-process objects, so the default-button scan does
+	not descend into them.
+	"""
+	try:
+		role = getattr(obj, "role", None)
+		return role in _DEFAULT_BUTTON_SCAN_SKIP_ROLES
+	except Exception:
+		return False
+
+
+def _default_button_scan_skip_roles():
+	names = (
+		"LIST", "LISTITEM", "TREEVIEW", "TREEVIEWITEM", "TABLE", "TABLEROW",
+		"TABLECELL", "DOCUMENT", "EDITABLETEXT", "MENU", "MENUBAR", "POPUPMENU",
+		"DATAGRID", "DATAITEM", "TERMINAL", "RICHEDIT",
+	)
+	roles = set()
+	for name in names:
+		role = getattr(controlTypes.Role, name, None)
+		if role is not None:
+			roles.add(role)
+	return frozenset(roles)
+
+
+_DEFAULT_BUTTON_SCAN_SKIP_ROLES = _default_button_scan_skip_roles()
+
+
+def iter_dialog_descendants(container, max_depth=8, max_objects=150):
 	"""Yield descendants of a dialog without trusting one flat child list.
 
 	Some toolkits expose buttons under panels/property pages rather than as direct
@@ -94,7 +147,7 @@ def iter_dialog_descendants(container, max_depth=8, max_objects=250):
 		seen.add(key)
 		count += 1
 		yield obj
-		if depth >= max_depth:
+		if depth >= max_depth or _default_button_scan_skips(obj):
 			continue
 		try:
 			children = iter_dialog_children(obj)
@@ -199,6 +252,20 @@ def get_dialog_key(obj):
 		return ("nvda", id(dialog), get_object_name(dialog))
 
 
+#: Seconds an empty default-button scan stays valid for one dialog. A dialog
+#: without an exposed default button is otherwise rescanned on every keypress.
+NEGATIVE_DEFAULT_SCAN_SECONDS = 10.0
+_cached_scan_time = 0.0
+
+
+def _monotonic():
+	try:
+		import time
+		return time.monotonic()
+	except Exception:
+		return 0.0
+
+
 def get_cached_default_button_name(obj) -> str:
 	global _cached_dialog_key, _cached_default_name
 	key = get_dialog_key(obj)
@@ -207,8 +274,22 @@ def get_cached_default_button_name(obj) -> str:
 	return ""
 
 
+def _get_cached_default_button_lookup(obj):
+	"""Return ``(found, name)`` from the dialog cache, including recent misses."""
+	key = get_dialog_key(obj)
+	if key is None:
+		return True, ""
+	if key != _cached_dialog_key:
+		return False, ""
+	if _cached_default_name:
+		return True, _cached_default_name
+	if _monotonic() - _cached_scan_time < NEGATIVE_DEFAULT_SCAN_SECONDS:
+		return True, ""
+	return False, ""
+
+
 def cache_default_button_name(obj, name: str, *, allow_clear=False) -> str:
-	global _cached_dialog_key, _cached_default_name
+	global _cached_dialog_key, _cached_default_name, _cached_scan_time
 	key = get_dialog_key(obj)
 	if key is None:
 		if allow_clear:
@@ -216,6 +297,7 @@ def cache_default_button_name(obj, name: str, *, allow_clear=False) -> str:
 			_cached_default_name = ""
 		return ""
 	clean = _strip_label(name)
+	_cached_scan_time = _monotonic()
 	# Do not let one failed/empty scan wipe a known-good default for the same dialog.
 	if not clean and not allow_clear and key == _cached_dialog_key and _cached_default_name:
 		return _cached_default_name
@@ -273,12 +355,17 @@ def _scan_default_button_name(obj) -> str:
 	return get_object_name(button)
 
 
-def get_default_button_name(obj) -> str:
+def get_default_button_name(obj, *, use_negative_cache=True) -> str:
 	# Prefer the dialog cache so focus speech does not reclassify every focused
 	# button as default when a toolkit exposes bogus DEFAULT state on all buttons.
-	cached = get_cached_default_button_name(obj)
-	if cached:
-		return cached
+	if use_negative_cache:
+		found, cached = _get_cached_default_button_lookup(obj)
+		if found:
+			return cached
+	else:
+		cached = get_cached_default_button_name(obj)
+		if cached:
+			return cached
 	return refresh_default_button_cache(obj)
 
 
@@ -288,11 +375,13 @@ def focused_button_default_status(obj):
 	Focused-button classification is intentionally cache/name based.  Some
 	toolkits/drivers expose DEFAULT state on too many buttons; using that state
 	directly on the focused object makes every button sound default.
-	"""
-	default_name = get_default_button_name(obj)
-	if not is_button(obj):
-		return False, False, default_name
 
+	The dialog scan only runs when focus is actually on a button. Focus speech
+	for list items, edit fields and other controls never pays for it.
+	"""
+	if not is_button(obj):
+		return False, False, ""
+	default_name = get_default_button_name(obj)
 	name = get_object_name(obj)
 	return True, bool(name and default_name and name.lower() == default_name.lower()), default_name
 

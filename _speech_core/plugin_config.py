@@ -33,6 +33,7 @@ _CLASSIC_SPEECH_SPEC = {
     "hotkeyTypes": "string(default='both')",
     "hotkeyDialogAccessKeyOnly": "boolean(default=False)",
     "positionMode": "string(default='each')",
+    "readEditFieldContents": "boolean(default=True)",
     "textProcessingData": {
         "announceNewLinesDuringSayAll": "boolean(default=False)",
         "newLineMessage": "string(default='new line')",
@@ -72,6 +73,7 @@ _CLASSIC_SPEECH_SPEC = {
     "profileBehaviorData": {
         "__many__": {
             "positionMode": "string(default='each')",
+            "readEditFieldContents": "boolean(default=True)",
         },
     },
     "pageSummaryData": {
@@ -99,6 +101,9 @@ _CLASSIC_SPEECH_SPEC = {
     # Arbitrary synth setting types and nested baseline/override records are
     # serialized as JSON so ConfigObj validation cannot discard unknown keys.
     "voiceProfileData": "string(default='{}')",
+    # Speech and Sound Schemes: sounds, voices and custom catalog entries,
+    # serialized as JSON for the same reason as voiceProfileData.
+    "schemeData": "string(default='{}')",
     "keyLabelData": {
         "renames": {
             "__many__": "string(default='')",

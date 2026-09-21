@@ -109,12 +109,20 @@ class SemanticCleanup:
 		return token
 
 	def _validate_roles(self, semantic_tokens):
+		if not any(getattr(token, "kind", None) == TOKEN_ROLE for token in semantic_tokens):
+			return semantic_tokens
 		focus = api.getFocusObject()
 		focus_role_key = self._get_object_role_key(focus)
 		if not focus_role_key:
 			return semantic_tokens
 
-		in_dialog = object_is_in_dialog(focus) if focus else False
+		# Dialog ancestry is only needed for a spoken "dialog" role token.
+		in_dialog_cache = []
+
+		def in_dialog():
+			if not in_dialog_cache:
+				in_dialog_cache.append(object_is_in_dialog(focus) if focus else False)
+			return in_dialog_cache[0]
 
 		validated = []
 		for token in semantic_tokens:
@@ -130,7 +138,7 @@ class SemanticCleanup:
 				validated.append(token)
 				continue
 
-			if token_role_key == "dialog" and in_dialog:
+			if token_role_key == "dialog" and in_dialog():
 				validated.append(token)
 				continue
 
@@ -142,7 +150,8 @@ class SemanticCleanup:
 				)
 				log.debug(
 					f"Demoting role token '{token_text}' "
-					f"(classified={token_role_key}, focus={focus_role_key}, inDialog={in_dialog})"
+					f"(classified={token_role_key}, focus={focus_role_key}, "
+					f"inDialog={in_dialog_cache[0] if in_dialog_cache else 'not checked'})"
 				)
 
 			validated.append(self._demote_role_token(token))

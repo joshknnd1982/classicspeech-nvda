@@ -211,8 +211,10 @@ class ClassicSpeechNVDAConfigStartupTests(unittest.TestCase):
 
 		self.assertEqual([item.label for item in plugin._classicSpeechMenuItems], [
 			"General Settings...", "Web / Browse Mode Settings...", "Voice Profiles...",
+			"Speech and Sound Schemes...",
 		])
 		self.assertIn(("onClassicSpeechVoiceProfilesMenu", "Voice Profiles..."), bindings)
+		self.assertIn(("onClassicSpeechSchemesMenu", "Speech and Sound Schemes..."), bindings)
 		self.assertEqual(plugin._classicSpeechMenuItem.label, "ClassicSpeech")
 
 	def test_preferences_submenu_cleanup_removes_and_destroys_classic_speech_item(self):

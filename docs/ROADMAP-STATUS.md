@@ -12,11 +12,15 @@ The current automated baseline includes:
 - same-synth Voice Profiles and the Preferences → ClassicSpeech entry points;
 - Web / Browse Mode custom Browse and Focus mode messages, preserving native NVDA behavior until a message is configured;
 - Page Summary, Page Ready, heading-continuity, and supported Edge notification controls;
-- unbound Input Gestures entries for General Settings, Web / Browse Mode Settings, and Voice Profiles;
+- unbound Input Gestures entries for General Settings, Web / Browse Mode Settings, Voice Profiles, Speech and Sound Schemes, turning schemes on or off, and switching schemes;
 - conservative Number Processing that preserves combined digit strings such as `5'5`;
-- compatibility coverage for both legacy and current NVDA Braille-input source layouts.
+- compatibility coverage for both legacy and current NVDA Braille-input source layouts;
+- 1.02 latency fixes for Windows Explorer and file dialogs (cached focus ancestry and a default-button search limited to focused buttons);
+- **Read edit field contents when focused** (Verbosity, per profile, on by default);
+- the **Mouse** and **Document and web formatting** Voice Profile categories;
+- **Speech and Sound Schemes**: per-item sounds and voices for object roles, states, window classes, document formatting and web elements, with named schemes.
 
-This baseline passed the local harness gate and GitHub Actions run #42. It still requires relevant manual NVDA validation before being treated as a release candidate.
+The 1.02 baseline passed the local harness gate and a wxPython build of the new dialogs. It still requires live NVDA validation of the items listed in `RELEASE-1.02.md`.
 
 ## Current boundaries
 
@@ -32,6 +36,8 @@ This baseline passed the local harness gate and GitHub Actions run #42. It still
 | `../README.md` | Current user-facing feature, settings-access, safety, and testing overview. |
 | `DEVELOPMENT-WORKFLOW.md` | Source, branch, CI, scratchpad, and live-validation procedure. |
 | `VERSIONING.md` | CI artifact and official-release versioning rules. |
+| `RELEASE-1.02.md` | Current release notes, packaged with the add-on. |
+| `plans/2026-09-18-speech-sound-schemes-and-latency.md` | 1.02 design: latency fixes, edit fields, Mouse voice, Speech and Sound Schemes. |
 | `WEB-BUFFER-LOAD-RESEARCH.md` | Historical NVDA lifecycle research and the no-buffer-mutation boundary. |
 | `VOICE-PROFILES-RC-V24.md` | Historical Voice Profiles RC note. |
 | `PAGE-ORIENTATION-RC-V25.md` | Historical Page Orientation RC note. |

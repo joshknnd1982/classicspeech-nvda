@@ -62,6 +62,80 @@ class VoiceProfileDirectSettingsTransaction:
 		self.active = False
 
 
+class CrossSynthProfileTrigger:
+	"""Speak one scheme item with a different synthesizer.
+
+	``enter`` pushes an in-memory configuration profile naming the other
+	synthesizer and its settings. NVDA's speech manager then calls
+	``synthDriverHandler.handlePostConfigProfileSwitch``, which loads that
+	synthesizer exactly as NVDA's own configuration-profile triggers do, and
+	loads the user's synthesizer again after ``exit``. Loading a synthesizer
+	takes time, so each switch adds a delay; the Voice editor says so.
+	"""
+
+	_shouldNotifyProfileSwitch = False
+	hasProfile = True
+
+	def __init__(self, item_id: str, synth_name: str, settings: dict, config_manager=None, profile_factory=None):
+		self._item_id = str(item_id)
+		self._synth_name = str(synth_name)
+		self._settings = dict(settings or {})
+		self._config = config_manager
+		self._profile_factory = profile_factory
+		self._profile = None
+
+	@property
+	def spec(self):
+		return f"classicSpeech:scheme:{self._item_id}:{self._synth_name}"
+
+	def _config_manager(self):
+		if self._config is not None:
+			return self._config
+		import config
+		return config.conf
+
+	def _new_profile(self):
+		if self._profile_factory is not None:
+			profile = self._profile_factory()
+		else:
+			from configobj import ConfigObj
+			profile = ConfigObj(indent_type="\t", encoding="UTF-8")
+		profile["speech"] = {"synth": self._synth_name, self._synth_name: dict(self._settings)}
+		try:
+			profile.filename = None
+		except Exception:
+			pass
+		return profile
+
+	def enter(self):
+		if self._profile is not None:
+			return
+		manager = self._config_manager()
+		profile = self._new_profile()
+		manager.profiles.append(profile)
+		try:
+			manager._handleProfileSwitch(shouldNotify=False)
+		except Exception:
+			manager.profiles.remove(profile)
+			raise
+		self._profile = profile
+
+	def exit(self):
+		profile = self._profile
+		if profile is None:
+			return
+		manager = self._config_manager()
+		self._profile = None
+		try:
+			if manager.profiles and manager.profiles[-1] is profile:
+				manager.profiles.pop()
+			else:
+				manager.profiles.remove(profile)
+		except ValueError:
+			return
+		manager._handleProfileSwitch(shouldNotify=False)
+
+
 class VoiceProfileOverlayTrigger:
 	"""Minimal private-NVDA trigger contract used by ConfigProfileTriggerCommand.
 

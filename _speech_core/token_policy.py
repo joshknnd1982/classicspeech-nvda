@@ -160,13 +160,16 @@ def apply_value_suppression_rules(
     context: str = "dialog",
     suppress_editable_text_value: bool = True,
     selected_text: Optional[str] = None,
+    read_edit_field_contents: bool = False,
 ) -> List[SpeechToken]:
     """
     Targeted value handling for text-entry/document surfaces.
 
     Rules for editable text / document focus speech:
     - if text is highlighted, speak that text as the value
-    - if no text is highlighted, suppress value chatter such as "blank"
+    - if no text is highlighted, suppress value chatter such as "blank",
+      unless ``read_edit_field_contents`` is enabled; then the field's own
+      announcement keeps NVDA's current line (or "blank") as its value
     - always remove the focus-time "selected" state token for these controls
 
     Description and tooltip tokens are not part of this rule and continue
@@ -195,10 +198,15 @@ def apply_value_suppression_rules(
         clean_selected_text = ""
 
     has_selected_value = any(_is_selected_prefixed_value_token(token) for token in tokens)
+    # Reading contents applies only to the edit field's own announcement.
+    # Surrounding dialog/label sequences spoken while focus is already on the
+    # field keep the conservative behavior, so values cannot bleed into them.
+    read_contents = bool(read_edit_field_contents) and sequence_is_editable
     allow_value = (
         (bool(clean_selected_text) and sequence_is_editable)
         or has_selected_state
         or (sequence_is_editable and has_selected_value)
+        or read_contents
     )
 
     filtered: List[SpeechToken] = []
@@ -226,7 +234,7 @@ def apply_value_suppression_rules(
                 inserted_selected_value = True
                 continue
 
-            if _is_blank_value_token(current_token):
+            if _is_blank_value_token(current_token) and not read_contents:
                 continue
 
             if not clean_selected_text and _is_selected_prefixed_value_token(current_token):
@@ -306,6 +314,7 @@ def apply_token_policy(
     pending_hotkey: Optional[SpeechToken] = None,
     suppress_editable_text_value: bool = True,
     selected_text: Optional[str] = None,
+    read_edit_field_contents: bool = False,
 ) -> Tuple[List[SpeechToken], Optional[SpeechToken]]:
     """
     Central semantic-token policy pass.
@@ -323,6 +332,7 @@ def apply_token_policy(
         context=context,
         suppress_editable_text_value=suppress_editable_text_value,
         selected_text=selected_text,
+        read_edit_field_contents=read_edit_field_contents,
     )
 
     tokens, pending_hotkey = resolve_pending_hotkey(
