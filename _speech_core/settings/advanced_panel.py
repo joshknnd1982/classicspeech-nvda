@@ -3,6 +3,7 @@ from ..localization import _
 import wx
 import logHandler
 
+from ..update_check import automatic_checks_enabled, set_automatic_checks_enabled
 from .accessibility import _set_panel_description
 from .advanced_config import (
 	_get_announce_speech_hook_loaded_enabled,
@@ -27,7 +28,7 @@ class AdvancedPanel(wx.Panel):
 		_set_panel_description(
 			self,
 			_("Advanced"),
-			_("Configure ClassicSpeech diagnostic logging and the speech processing hook."),
+			_("Configure ClassicSpeech diagnostic logging, the speech processing hook and update checks."),
 		)
 
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -77,12 +78,20 @@ class AdvancedPanel(wx.Panel):
 		self.debugLogging.SetValue(_get_debug_logging_enabled())
 		mainSizer.Add(self.debugLogging, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, 8)
 
+		self.checkForUpdates = wx.CheckBox(
+			self,
+			label=_("Check for ClassicSpeech updates automatically"),
+		)
+		self.checkForUpdates.SetValue(automatic_checks_enabled())
+		mainSizer.Add(self.checkForUpdates, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, 8)
+
 		self.SetSizer(mainSizer)
 		self._syncSpeechHookLoadedMessageAvailability()
 		self.debugLogging.Bind(wx.EVT_CHECKBOX, self.onChanged)
 		self.speechHookEnabled.Bind(wx.EVT_CHECKBOX, self.onChanged)
 		self.announceSpeechHookLoaded.Bind(wx.EVT_CHECKBOX, self.onChanged)
 		self.speechHookLoadedMessage.Bind(wx.EVT_TEXT, self.onChanged)
+		self.checkForUpdates.Bind(wx.EVT_CHECKBOX, self.onChanged)
 
 	def onChanged(self, evt=None):
 		try:
@@ -102,5 +111,8 @@ class AdvancedPanel(wx.Panel):
 		_set_announce_speech_hook_loaded_enabled(self.announceSpeechHookLoaded.GetValue())
 		_set_speech_hook_loaded_message(self.speechHookLoadedMessage.GetValue())
 		_set_speech_hook_enabled(self.speechHookEnabled.GetValue())
+		checkForUpdates = self.__dict__.get("checkForUpdates")
+		if checkForUpdates is not None:
+			set_automatic_checks_enabled(checkForUpdates.GetValue())
 		if save:
 			return
