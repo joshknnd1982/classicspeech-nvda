@@ -127,17 +127,27 @@ def checksum_from_file(text):
 	return None
 
 
-def notes_for_speech(notes, limit=NOTES_LIMIT):
-	"""Return release notes as plain text for a message, shortened to ``limit`` characters."""
+def notes_as_text(notes, limit=None):
+	"""Return release notes as plain text, shortened to ``limit`` characters.
+
+	Markdown headings, list bullets, emphasis and link targets are removed, so
+	what is left reads the same in a box as it does out loud. Without a limit
+	the whole release is kept, which is what the read-only box shows.
+	"""
 	text = str(notes or "").replace("\r\n", "\n")
 	text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", text)
 	text = re.sub(r"(?m)^[ \t]{0,3}#{1,6}[ \t]*", "", text)
 	text = re.sub(r"(?m)^[ \t]*[-*+][ \t]+", "- ", text)
 	text = text.replace("**", "").replace("__", "").replace("`", "")
 	text = re.sub(r"\n{3,}", "\n\n", text).strip()
-	if len(text) > limit:
+	if limit is not None and len(text) > limit:
 		text = text[:limit].rsplit(" ", 1)[0].rstrip() + "..."
 	return text
+
+
+def notes_for_speech(notes, limit=NOTES_LIMIT):
+	"""Release notes shortened for somewhere the user cannot scroll."""
+	return notes_as_text(notes, limit=limit)
 
 
 def is_due(last_check, now=None, interval=AUTOMATIC_CHECK_INTERVAL_SECONDS):
@@ -388,27 +398,52 @@ class UpdateChecker:
 	def _offer(self, release, version, repository):
 		import wx
 
-		message = _("ClassicSpeech {new} is available. You have version {installed}.").format(
+		summary = _("ClassicSpeech {new} is available. You have version {installed}.").format(
 			new=release.version,
 			installed=version,
 		)
-		notes = notes_for_speech(release.notes)
-		if notes:
-			message += "\n\n" + _("What's new:") + "\n" + notes
+		notes = notes_as_text(release.notes)
+		if not notes:
+			# Translators: Shown in the What's new box for a release with no notes.
+			notes = _("This release has no notes.")
 		if not release.addon_url:
-			message += "\n\n" + _("This release has no add-on file to install. Download it from {url}").format(
-				url=release.page_url or RELEASES_URL.format(repository=repository)
+			self._show_offer(
+				summary,
+				notes,
+				_("This release has no add-on file to install. Download it from {url}").format(
+					url=release.page_url or RELEASES_URL.format(repository=repository)
+				),
 			)
-			self._message(message)
 			return
-		message += "\n\n" + _(
-			"Download and install it now? NVDA asks you to confirm the installation, "
-			"then offers to restart. Your ClassicSpeech settings are kept."
+		answer = self._show_offer(
+			summary,
+			notes,
+			_(
+				"Download and install it now? NVDA asks you to confirm the installation, "
+				"then offers to restart. Your ClassicSpeech settings are kept."
+			),
+			install_label=_("&Download and install"),
 		)
-		answer = self._ask(message, _("ClassicSpeech update"))
 		if answer != wx.ID_YES:
 			return
 		self._download(release, version, repository)
+
+	def _show_offer(self, summary, notes, question, install_label=""):
+		"""Show what is available and what is new in it, the notes in a box to read.
+
+		It waits for the user, so it runs only from wx's event loop
+		(``wx.CallAfter``), never inside NVDA's core queue, which it would freeze.
+		"""
+		from .update_dialog import show_update_offer
+
+		return show_update_offer(
+			_("ClassicSpeech update"),
+			summary,
+			notes,
+			question=question,
+			install_label=install_label,
+			close_label=_("&Not now") if install_label else _("&Close"),
+		)
 
 	def _download(self, release, version, repository):
 		import ui
@@ -456,23 +491,6 @@ class UpdateChecker:
 			wx.MessageBox(message, _("ClassicSpeech update"), wx.OK | icon, gui.mainFrame)
 		finally:
 			gui.mainFrame.postPopup()
-
-	def _ask(self, message, title):
-		import gui
-		import wx
-
-		gui.mainFrame.prePopup()
-		try:
-			dialog = wx.MessageDialog(gui.mainFrame, message, title, wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
-			with contextlib.suppress(Exception):
-				dialog.SetYesNoLabels(_("&Download and install"), _("&Not now"))
-			try:
-				return dialog.ShowModal()
-			finally:
-				dialog.Destroy()
-		finally:
-			gui.mainFrame.postPopup()
-
 
 def install_with_nvda(path):
 	"""Hand a downloaded add-on file to NVDA, which confirms, installs and offers a restart."""

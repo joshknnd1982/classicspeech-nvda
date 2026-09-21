@@ -217,9 +217,16 @@ class UpdateCheckTests(unittest.TestCase):
 		checker = self.updates.UpdateChecker()
 		checker.messages = []
 		checker.questions = []
+		checker.offers = []
 		checker.downloads = []
 		checker._message = lambda message, wx_icon="information": checker.messages.append(message)
-		checker._ask = lambda message, title: checker.questions.append(message) or 0
+
+		def offer(summary, notes, question, install_label=""):
+			checker.offers.append((summary, notes, question, install_label))
+			checker.questions.append(chr(10).join(part for part in (summary, notes, question) if part))
+			return 0
+
+		checker._show_offer = offer
 		checker._download = lambda release, version, repository: checker.downloads.append(release.version)
 		return checker
 
@@ -243,7 +250,7 @@ class UpdateCheckTests(unittest.TestCase):
 
 	def test_download_and_install_starts_only_after_the_user_agrees(self):
 		checker = self._checker()
-		checker._ask = lambda message, title: self.wx.ID_YES
+		checker._show_offer = lambda summary, notes, question, install_label="": self.wx.ID_YES
 		checker._checked(self.release, "1.07", "o/n", manual=True)
 		self.assertEqual(checker.downloads, ["1.08"])
 
@@ -273,6 +280,89 @@ class UpdateCheckTests(unittest.TestCase):
 		checker = self.updates.UpdateChecker()
 		checker.schedule_automatic_check()
 		self.assertIsNone(checker._timer)
+
+
+class UpdateOfferDialogTests(unittest.TestCase):
+	"""The What's new section is a box the user can read, not a spoken blob."""
+
+	def setUp(self):
+		nvda_harness.ClassicSpeechNVDAConfigStartupTests().setUp()
+		nvda_harness._import_classic_speech_like_nvda()
+		self.updates = importlib.import_module("globalPlugins._speech_core.update_check")
+		self.dialogs = importlib.import_module("globalPlugins._speech_core.update_dialog")
+		self.wx = sys.modules["wx"]
+		self._saved_id_yes = getattr(self.wx, "ID_YES", None)
+		self.wx.ID_YES = 5103
+
+	def tearDown(self):
+		if self._saved_id_yes is None:
+			del self.wx.ID_YES
+		else:
+			self.wx.ID_YES = self._saved_id_yes
+		nvda_harness._reset_global_plugin_imports()
+
+	def _dialog(self, notes="Line one.\nLine two.", **extra):
+		return self.dialogs.UpdateOfferDialog(
+			None,
+			"ClassicSpeech update",
+			"ClassicSpeech 1.11 is available. You have version 1.09.",
+			notes,
+			**extra,
+		)
+
+	def test_the_notes_are_a_read_only_multiline_box(self):
+		dialog = self._dialog(install_label="&Download and install")
+		style = dialog.notes.ctorKwargs["style"]
+		self.assertTrue(style & self.wx.TE_MULTILINE, "the notes must be readable line by line")
+		self.assertTrue(style & self.wx.TE_READONLY, "the notes must not be editable")
+		self.assertEqual(dialog.notes.ctorKwargs["value"], "Line one.\nLine two.")
+
+	def test_the_box_is_labelled_whats_new(self):
+		dialog = self._dialog()
+		self.assertIn("What's new", dialog.notes.labelText)
+
+	def test_the_install_button_is_the_default_and_close_is_always_there(self):
+		dialog = self._dialog(install_label="&Download and install")
+		self.assertIsNotNone(dialog.installButton)
+		self.assertEqual(dialog.installButton.ctorKwargs["label"], "&Download and install")
+		self.assertIsNotNone(dialog.closeButton)
+		# A release with no add-on file has nothing to install.
+		self.assertIsNone(self._dialog().installButton)
+
+	def test_the_whole_release_is_shown_not_a_shortened_version(self):
+		notes = "word " * 500
+		self.assertTrue(self.updates.notes_for_speech(notes, limit=40).endswith("..."))
+		self.assertFalse(self.updates.notes_as_text(notes).endswith("..."))
+
+	def test_markdown_is_removed_so_the_box_reads_as_plain_text(self):
+		notes = "# ClassicSpeech 1.11\n\n* **Bold** item\n* A [link](https://example.com)\n"
+		text = self.updates.notes_as_text(notes)
+		self.assertNotIn("#", text)
+		self.assertNotIn("**", text)
+		self.assertNotIn("https://example.com", text)
+		self.assertIn("- Bold item", text)
+		self.assertIn("- A link", text)
+
+	def test_an_offer_sends_the_full_notes_and_the_question_to_the_dialog(self):
+		checker = self.updates.UpdateChecker()
+		shown = []
+		checker._show_offer = lambda summary, notes, question, install_label="": shown.append(
+			(summary, notes, question, install_label)
+		) or 0
+		release = self.updates.release_from_github(_github_release())
+		checker._offer(release, "1.07", "o/n")
+		summary, notes, question, install_label = shown[0]
+		self.assertIn("is available", summary)
+		self.assertEqual(notes, self.updates.notes_as_text(release.notes))
+		self.assertIn("Download and install it now?", question)
+		self.assertIn("Download and install", install_label)
+
+	def test_a_release_without_notes_still_says_something_in_the_box(self):
+		checker = self.updates.UpdateChecker()
+		shown = []
+		checker._show_offer = lambda summary, notes, question, install_label="": shown.append(notes) or 0
+		checker._offer(self.updates.release_from_github(_github_release(body="")), "1.07", "o/n")
+		self.assertTrue(shown[0].strip())
 
 
 if __name__ == "__main__":
