@@ -77,9 +77,7 @@ class LatencyTestBase(unittest.TestCase):
 		self.dialog_helpers = dialog_helpers
 		self.focus_ancestry = focus_ancestry
 		focus_ancestry.reset_cache()
-		dialog_helpers._cached_dialog_key = None
-		dialog_helpers._cached_default_name = ""
-		dialog_helpers._cached_scan_time = 0.0
+		dialog_helpers.reset_default_button_cache()
 		self._original_get_focus = api.getFocusObject
 		self._original_get_ancestors = getattr(api, "getFocusAncestors", None)
 

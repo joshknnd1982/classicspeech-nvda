@@ -23,6 +23,7 @@
 - `installTasks.py` removes ClassicSpeech's settings only when the add-on is removed, never when a new version replaces it. It loads `nvda_settings_backup.py` on its own, so that module must not import other ClassicSpeech modules.
 - Update checks (`_speech_core/update_check.py`) use the GitHub repository in the manifest `url`. Tests must never reach the network.
 - Speech-path code must not walk `obj.parent` chains for the focus; use `_speech_core/focus_ancestry.py`, which reads NVDA's cached focus ancestors (`tests/classic_speech_latency_harness.py`).
+- A dialog's default button is the one Enter presses after a change in another control (`_speech_core/dialog_helpers.py`). Windows push buttons, wx, WinForms, Qt and Office make whichever button has focus the default, so never report a focused button's default state as the dialog's: standard dialogs answer `DM_GETDEFID`, NVDA's wx dialogs their own default item (not wx's temporary default), and other dialogs what was seen while focus was on another control. Window-handle calls go through `win32_default_button.get_api()`, which only a running NVDA turns on; tests install fakes (`tests/classic_speech_default_button_harness.py`).
 - The token editor owns speech-token ordering and placement. Text Processing owns reporting/filtering transformations; do not move token-placement policy into it.
 - `sequence_merger.py` was removed after an audit confirmed it had no active dependents. Do not reintroduce sequence-merging behavior without a defined, tested requirement.
 
