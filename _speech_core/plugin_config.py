@@ -15,6 +15,8 @@ _CLASSIC_SPEECH_SPEC = {
     "announceDefaultButton": "boolean(default=False)",
     "preventAutomaticSpeechInterrupt": "boolean(default=False)",
     "automaticSpeechInterruptFallbackMs": "integer(default=1000)",
+    # Speak ClassicSpeech's own messages first; only a key press interrupts them.
+    "prioritizeMessages": "boolean(default=False)",
     "queryObjectSource": "string(default='focus')",
     "objectNavigationProcessing": "boolean(default=False)",
     "speechHookEnabled": "boolean(default=True)",

@@ -7,9 +7,9 @@ summary-reporting and debug-log callbacks it needs.
 from __future__ import annotations
 
 import api
-import ui
 import wx
 
+from ...message_priority import speak_message
 from ...settings.web.summary_config import (
     get_automatic_reporting_enabled,
     get_notify_when_page_ready,
@@ -141,14 +141,14 @@ class WebPageLifecycle:
                 return
             if not settling and summary_enabled and get_page_entry_summary_delay_seconds() > 0:
                 if ready_enabled:
-                    ui.message(get_page_ready_message())
+                    speak_message(get_page_ready_message())
                 self._queue_automatic_page_summary(document, ready_cycle_marker, settling=True)
                 return
             if self._automaticSummaryReported == (document, ready_cycle_marker):
                 return
             self._automaticSummaryReported = (document, ready_cycle_marker)
             if ready_enabled and not settling:
-                ui.message(get_page_ready_message())
+                speak_message(get_page_ready_message())
             if summary_enabled:
                 self._report_summary(document)
         except Exception:
@@ -198,8 +198,7 @@ class WebPageLifecycle:
                 return False
             cycle_marker = self._automatic_summary_load_cycle_marker(document)
             if get_notify_when_page_ready() and self._automaticSummaryReported != (document, cycle_marker):
-                import ui
-                ui.message(get_page_ready_message())
+                speak_message(get_page_ready_message())
             delay_ms = get_page_entry_summary_delay_seconds() * 1000
             if delay_ms:
                 self._queue_page_orientation_summary(document, cycle_marker, delay_ms, on_summary, on_fallback)

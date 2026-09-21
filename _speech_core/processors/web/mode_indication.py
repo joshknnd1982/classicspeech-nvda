@@ -28,8 +28,12 @@ def _custom_message(getter) -> str | None:
 	return message or None
 
 
-def install(plugin, *, get_browse_mode_message, get_focus_mode_message):
-	"""Install the narrowly scoped reporter wrapper, failing closed to NVDA."""
+def install(plugin, *, get_browse_mode_message, get_focus_mode_message, speak_message=None):
+	"""Install the narrowly scoped reporter wrapper, failing closed to NVDA.
+
+	``speak_message`` speaks a custom message; ClassicSpeech passes the one
+	that can give its messages priority. Without it, ``ui.message`` speaks.
+	"""
 	try:
 		import browseMode
 
@@ -57,7 +61,7 @@ def install(plugin, *, get_browse_mode_message, get_focus_mode_message):
 				return original(treeInterceptor, onlyIfChanged)
 			try:
 				if not onlyIfChanged or treeInterceptor.passThrough != original.last:
-					ui.message(message)
+					(speak_message or ui.message)(message)
 				original.last = treeInterceptor.passThrough
 			except Exception:
 				return original(treeInterceptor, onlyIfChanged)
