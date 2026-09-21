@@ -23,10 +23,11 @@ import inputCore
 from speech.commands import BreakCommand
 
 from ._speech_core.dialog_helpers import (
-    find_default_button,
+    SOURCE_APPEARANCE,
     focused_button_default_status,
-    get_default_button_name,
-    get_object_name,
+    query_default_button,
+    remember_default_button_for_focus,
+    reset_default_button_cache,
 )
 from ._speech_core.menu_hints import MenuHintHelper, is_structural_menubar_sequence
 from ._speech_core.prosody_routing import (
@@ -728,6 +729,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             self._keyLabelRuntime.terminate()
         except Exception:
             log.debug("ClassicSpeech: failed to restore key labels", exc_info=True)
+        # Let go of the dialog objects the default-button lookup remembers.
+        reset_default_button_cache()
         self._removeClassicSpeechMenu()
         log.info("ClassicSpeech unloaded")
 
@@ -1721,6 +1724,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         """Keep NVDA's native focus event first, exactly once."""
         nextHandler()
         self._get_web_page_lifecycle().handle_focus_change(obj)
+        remember_default_button_for_focus(obj)
 
     def event_documentLoadComplete(self, obj, nextHandler):
         """Keep NVDA's native load event first, exactly once."""
@@ -1829,43 +1833,40 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             speak_message(_("Could not open speech history"))
 
 
-    def _getWxDefaultButtonName(self):
-        """Return the wx default button name for NVDA-owned dialogs, when available.
-
-        Some wx dialogs keep Enter wired to the default button even when the
-        accessibility tree does not expose an explicit default-button state.
-        This is especially visible after a child modal, such as the token rename
-        dialog, returns focus to the ClassicSpeech settings dialog.
-        """
-        try:
-            focusWin = wx.Window.FindFocus()
-            if not focusWin:
-                return ""
-            top = wx.GetTopLevelParent(focusWin)
-            if not isinstance(top, wx.Dialog):
-                return ""
-            defaultItem = top.GetDefaultItem()
-            if not defaultItem:
-                return ""
-            if not defaultItem.IsEnabled():
-                return ""
-            try:
-                label = defaultItem.GetLabelText()
-            except Exception:
-                label = defaultItem.GetLabel()
-            return str(label or "").replace("&", "").strip()
-        except Exception:
-            log.debugWarning("ClassicSpeech: wx default button lookup failed", exc_info=True)
-            return ""
-
-    def _getDefaultButtonName(self):
-        # An explicit NVDA+E query always rescans; focus speech keeps using the
-        # dialog cache, including a recent "no default button" result.
-        return get_default_button_name(api.getFocusObject(), use_negative_cache=False)
+    def _getDefaultButton(self):
+        # An explicit NVDA+E query always looks again; focus speech keeps using
+        # the dialog cache, including a recent "no default button" result.
+        return query_default_button(api.getFocusObject())
 
     def _getFocusedButtonDefaultStatus(self):
         focus = api.getFocusObject()
         return focus, focused_button_default_status(focus)
+
+    @staticmethod
+    def _defaultButtonMessage(query):
+        button = query.button
+        if button is None:
+            if query.screenCurtainBlocked:
+                # Translators: NVDA+E found no default button, and could not
+                # look at the dialog's buttons while NVDA's Screen Curtain
+                # hides the screen.
+                return _(
+                    "No default button found. Turn off Screen Curtain so ClassicSpeech can check how the buttons look."
+                )
+            return _("No default button")
+        # A button can have no label, such as one that only shows a picture.
+        name = button.name or _("unknown")
+        if button.source == SOURCE_APPEARANCE:
+            # Translators: NVDA+E names the dialog's default button, found by
+            # how it looks on screen (its color or border), because the
+            # application does not report it.
+            return _("Default button {name}, by appearance").format(name=name)
+        if not button.certain:
+            # Translators: NVDA+E cannot tell the dialog's default button,
+            # because the focused button counts as the default for as long as
+            # it has focus; Enter presses that button.
+            return _("No default button known. Enter presses {name}").format(name=name)
+        return _("Default button {name}").format(name=name)
 
     @scriptHandler.script(
         description=_("Announces the default button in the current dialog"),
@@ -1873,25 +1874,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     )
     def script_announceDefaultButton(self, gesture):
         try:
-            focus = api.getFocusObject()
-
-            # Classic query behavior: if focus is on a button, report the
-            # focused button as the queried default-button target.  This is
-            # intentionally independent from the true dialog default check;
-            # focus speech handles true default-token classification separately.
-            try:
-                if getattr(focus, "role", None) == controlTypes.Role.BUTTON:
-                    name = get_object_name(focus) or _("unknown")
-                    speak_message(_("Default button {name}").format(name=name))
-                    return
-            except Exception:
-                pass
-
-            name = self._getDefaultButtonName()
-            if not name:
-                speak_message(_("No default button"))
-                return
-            speak_message(_("Default button {name}").format(name=name))
+            # The dialog's default button is the one Enter activates after a
+            # change in another control, reported even while focus is on a
+            # different button.
+            speak_message(self._defaultButtonMessage(self._getDefaultButton()))
         except Exception as e:
             log.error(f"Failed announcing default button: {e}", exc_info=True)
             speak_message(_("No default button"))

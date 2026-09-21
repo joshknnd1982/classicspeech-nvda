@@ -272,7 +272,7 @@ li { margin: .25em 0; }
 
 <h3 id="misc">Misc</h3>
 <ul>
-<li><strong>Announce default button in dialogs</strong>: add "default" when focus reaches a dialog's default button, as in "OK, default, button". Default: off.</li>
+<li><strong>Announce default button in dialogs</strong>: add "default" when focus reaches a dialog's default button, as in "OK, default, button", or "Open, default, split button" in a file dialog. The default button is the one <kbd>Enter</kbd> presses after you change something in another control of the dialog; see <a href="#default-button">Default button: NVDA+E</a>. A button that counts as the default only while it has focus is not announced as the default. Default: off.</li>
 <li><strong>Guess object position information when unavailable</strong>: NVDA's own setting. It estimates positions such as "3 of 10" when an application doesn't report them. Default: off.</li>
 <li><strong>Insert+Tab reports</strong>: what the <kbd>NVDA+Tab</kbd> command reports.
 <ul>
@@ -533,7 +533,17 @@ li { margin: .25em 0; }
 <p>ClassicSpeech replaces NVDA's report current focus command with its own announcement. It uses your verbosity settings and always includes the object's shortcut key when there is one. Press <kbd>NVDA+Tab</kbd> twice quickly to spell the announcement and copy it to the clipboard.</p>
 <p><strong>Insert+Tab reports</strong>, in General Settings on the <a href="#misc">Misc</a> page, chooses whether the command reports the focused object or the navigator object, or runs NVDA's own command. When the speech processing hook is off, NVDA's own command runs.</p>
 <h3 id="default-button">Default button: NVDA+E</h3>
-<p>Says the default button of the current dialog, the button that <kbd>Enter</kbd> activates, for example "Default button OK". If there isn't one, you hear "No default button". If focus is on a button, that button is reported.</p>
+<p>Says the default button of the current dialog: the button that <kbd>Enter</kbd> presses after you change something in one of the dialog's other controls, for example "Default button OK". If there isn't one, you hear "No default button".</p>
+<p>ClassicSpeech names the dialog's default button even while focus is on another button. For example, on the Cancel button of a file dialog you hear "Default button Open". Pressing <kbd>Enter</kbd> on a button still presses that button.</p>
+<p>ClassicSpeech finds the default button in:</p>
+<ul>
+<li>NVDA's and ClassicSpeech's own dialogs. In NVDA's settings dialogs this is OK, which <kbd>Enter</kbd> presses from any control.</li>
+<li>Standard Windows dialogs, such as Open and Save As in LibreOffice, Notepad and most other programs, message boxes and property sheets. A split button, such as the Open button of the file dialog, counts too.</li>
+<li>Dialogs of other programs whose buttons report the default state, such as LibreOffice's own dialogs and Microsoft Office dialogs.</li>
+<li>Web forms: the button that <kbd>Enter</kbd> presses in the form's edit fields, when the browser reports it.</li>
+</ul>
+<p>In many programs, a button counts as the default only while it has focus, so the dialog's own default button can't be read while you are on another button. ClassicSpeech remembers it from when focus was in another control of the dialog. If focus has only been on buttons since the dialog opened, you hear, for example, "No default button known. Enter presses Cancel". Move to an edit field or another control and press <kbd>NVDA+E</kbd> again.</p>
+<p>When neither Windows nor the program reports a default button, ClassicSpeech looks at the dialog's buttons on the screen, the way a sighted person tells them apart: many dialogs fill their default button, or draw its border, in the accent color. If exactly one button stands out that way, you hear, for example, "Default button Save, by appearance". This check needs the dialog on the screen. While NVDA's Screen Curtain is on, ClassicSpeech can't see the buttons, and you hear "No default button found. Turn off Screen Curtain so ClassicSpeech can check how the buttons look." ClassicSpeech only compares the colors of the buttons; nothing is saved. Focus speech never uses this check.</p>
 <h3 id="page-summary-command">Page summary: NVDA+Shift+U</h3>
 <p>In browse mode, speaks the element counts chosen on the <a href="#page-summary">Page Summary</a> page. Elsewhere, you hear "Page summary is not available here."</p>
 
