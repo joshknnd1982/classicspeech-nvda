@@ -12,6 +12,7 @@ from .config_core import (
 	_set_nvda_setting,
 )
 from .constants import (
+	HOTKEY_MODE_OFF,
 	PAUSE_PLACEMENT_BEFORE,
 	POSITION_MODE_EACH,
 	POSITION_MODE_FIRST,
@@ -276,3 +277,37 @@ def _apply_profile_behavior_runtime(profile_config: dict, behavior: dict):
 	conf = _ensure_classic_speech_section()
 	conf["positionMode"] = mode
 	conf["readEditFieldContents"] = _as_bool(behavior.get("readEditFieldContents", True), True)
+
+
+def nvda_settings_set_by_saved_settings(verbosity=None):
+	"""Return the NVDA Object Presentation values ClassicSpeech's saved settings set.
+
+	Saving General Settings sets NVDA's Report object descriptions, Report
+	tooltips and Report object position information from the active verbosity
+	profile (``_apply_profile_behavior_runtime``, which also saves the top-level
+	``positionMode``), and Report shortcut keys from Speak hotkeys
+	(``_set_hotkey_mode``, which saves ``hotkeyMode``). Returns
+	``{(section path, key): value}`` only for values the saved settings show
+	were set, so ClassicSpeech can record changes an earlier version made.
+	"""
+	conf = _read_classic_speech_section()
+	result = {}
+	if "positionMode" in conf:
+		active = str(conf.get("defaultProfile", "Beginner"))
+		profile = None
+		if verbosity is not None and hasattr(verbosity, "get_profile_config_for"):
+			try:
+				profile = verbosity.get_profile_config_for(active)
+			except Exception:
+				profile = None
+		if profile is None:
+			profile = _clone_profile_from_manager(active)
+		enabled = profile.get("enabledTokens", {})
+		result[(("presentation",), "reportObjectDescriptions")] = bool(enabled.get("description", True))
+		result[(("presentation",), "reportTooltips")] = bool(enabled.get("tooltip", False))
+		result[(("presentation",), "reportObjectPositionInformation")] = (
+			str(conf.get("positionMode")) != POSITION_MODE_OFF
+		)
+	if "hotkeyMode" in conf:
+		result[(("presentation",), "reportKeyboardShortcuts")] = str(conf.get("hotkeyMode")) != HOTKEY_MODE_OFF
+	return result

@@ -7,6 +7,7 @@ import logHandler
 from gui import guiHelper, nvdaControls
 from wx.lib import scrolledpanel
 
+from ...nvda_settings_backup import recording_nvda_change
 from ...processors.web.summary import SUMMARY_ITEM_TYPES
 from .summary_config import (
     PAGE_LOAD_SUMMARY_MODE_AFTER_READY,
@@ -574,7 +575,8 @@ class WebBrowseSettingsDialog(SettingsDialogTransactionMixin, wx.Dialog):
 				if index in _checked_items(self.browseModeTouchNavigationList)
 			],
 		)
-		self.loadChromiumBusyCombo.saveCurrentValueToConf()
+		with recording_nvda_change(("virtualBuffers",), "loadChromiumVBufOnBusyState"):
+			self.loadChromiumBusyCombo.saveCurrentValueToConf()
 		headingContinuityCheckBox = self.__dict__.get("headingContinuityCheckBox")
 		if headingContinuityCheckBox is not None:
 			set_heading_continuity_enabled(_is_checked(headingContinuityCheckBox))
@@ -595,7 +597,8 @@ class WebBrowseSettingsDialog(SettingsDialogTransactionMixin, wx.Dialog):
 		set_web_document_formatting_setting("reportClickable", _is_checked(self.clickableCheckBox))
 		if not hasattr(config.conf.get("braille"), "get"):
 			config.conf["braille"] = {}
-		self.brailleLiveRegionsCombo.saveCurrentValueToConf()
+		with recording_nvda_change(("braille",), "reportLiveRegions"):
+			self.brailleLiveRegionsCombo.saveCurrentValueToConf()
 		if hasattr(self, "notifyWhenPageReadyCheckBox"):
 			set_notify_when_page_ready(_is_checked(self.notifyWhenPageReadyCheckBox))
 		if hasattr(self, "pageReadyMessageEdit"):

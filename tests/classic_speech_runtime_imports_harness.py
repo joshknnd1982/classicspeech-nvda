@@ -55,7 +55,8 @@ def _modules_nvda_ships(source):
 
 
 def _runtime_files():
-	files = [ROOT / "classicSpeech.py"]
+	# NVDA runs installTasks.py itself when ClassicSpeech is installed or removed.
+	files = [ROOT / "classicSpeech.py", ROOT / "installTasks.py"]
 	files += sorted((ROOT / "_speech_core").rglob("*.py"))
 	files += sorted((ROOT / "appModules").rglob("*.py"))
 	return files
@@ -76,6 +77,7 @@ class RuntimeImportTests(unittest.TestCase):
 		names = {name for name, _line in _imports(source)}
 		self.assertTrue({"ast", "sys", "unittest", "pathlib"} <= names)
 		self.assertIn("classicSpeech.py", [path.name for path in _runtime_files()])
+		self.assertIn("installTasks.py", [path.name for path in _runtime_files()])
 
 
 if __name__ == "__main__":

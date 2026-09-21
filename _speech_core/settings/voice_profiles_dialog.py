@@ -408,6 +408,9 @@ class VoiceProfilesDialog(wx.Dialog):
 		self._message(text, title)
 
 	def onApply(self, event):
+		# Saving NVDA's configuration also saves the synthesizer's current
+		# settings, so a preview still speaking would become the NVDA voice.
+		self._cancelPreview()
 		try:
 			self.store.apply()
 			self.store.mark_applied()
