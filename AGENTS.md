@@ -34,6 +34,7 @@
 - Add or extend focused harness coverage before changing subtle speech-filter, settings, or routing behavior.
 - At minimum, compile changed Python files and run the relevant project harnesses/tests.
 - Static tests do not prove speech behavior: clearly distinguish them from a live NVDA validation. Never restart NVDA automatically.
+- ClassicSpeech runs on NVDA's bundled Python, which lacks some standard library modules; 1.05 failed to load because it imported `filecmp`. Runtime code may import only modules NVDA ships, which `tests/classic_speech_runtime_imports_harness.py` checks.
 - Before a release candidate, run the project packaging and archive-member checks; report the exact output path and checksum.
 
 ## Scratchpad and live validation
