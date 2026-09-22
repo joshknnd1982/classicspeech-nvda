@@ -61,16 +61,16 @@ def find_user_guide() -> str | None:
 
 def open_user_guide(startfile=None) -> bool:
 	"""Open the guide with its default Windows program, or say why it cannot."""
-	import ui
+	from .message_priority import speak_message
 
 	path = find_user_guide()
 	if not path:
-		ui.message(_("The ClassicSpeech user guide could not be found."))
+		speak_message(_("The ClassicSpeech user guide could not be found."))
 		return False
 	try:
 		(startfile or os.startfile)(path)
 	except Exception:
 		log.exception("ClassicSpeech: failed to open the user guide")
-		ui.message(_("The ClassicSpeech user guide could not be opened."))
+		speak_message(_("The ClassicSpeech user guide could not be opened."))
 		return False
 	return True

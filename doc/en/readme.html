@@ -283,6 +283,12 @@ li { margin: .25em 0; }
 </li>
 <li><strong>Object navigation processing</strong>: when checked, ClassicSpeech applies your verbosity settings to NVDA's object navigation commands. When cleared, those commands speak as NVDA does, in the Review and object navigation voice. Default: off.</li>
 <li><strong>Prevent automatic speech interruptions</strong>: when checked, speech that NVDA starts on its own, for example when focus or the active window changes, waits for current speech to finish instead of cutting it off. Default: off.</li>
+<li><strong>Give ClassicSpeech messages priority over NVDA speech</strong>: when checked, the messages ClassicSpeech speaks itself are spoken right away, ahead of NVDA's speech, and NVDA's own speech can't cut them off. For example, the speech hook loaded message is no longer cut off when NVDA reports the focus after it starts. Speech NVDA had started continues after the message, and speech NVDA starts while the message plays waits for it. Pressing a key still stops a message, as it stops any speech; so does a key on a braille display or a touch gesture. Default: off.
+<ul>
+<li>The messages are: the speech hook loaded message, Page ready and page summaries, the speech history, the default button, speech and sound scheme, update and user guide messages, and your own browse mode, focus mode and Microsoft Edge notification messages.</li>
+<li>The object ClassicSpeech speaks for <kbd>NVDA+Tab</kbd> is not a message, and speaks as before.</li>
+</ul>
+</li>
 <li><strong>Speech interrupt for typed characters</strong> and <strong>Speech interrupt for Enter key</strong>: NVDA's own keyboard settings, shown here for convenience. Default: both checked.</li>
 </ul>
 
@@ -658,6 +664,7 @@ li { margin: .25em 0; }
 <li><strong>NVDA says too much or too little.</strong> Choose another verbosity profile or change its Spoken object details on the Verbosity page, and mute words you don't need in the Token Editor.</li>
 <li><strong>A key such as F12 no longer works in a program.</strong> See the note at the end of <a href="#speech-history">Speech history</a>.</li>
 <li><strong>A scheme sound doesn't play.</strong> Check that Enable speech and sound schemes is checked and that the right scheme is active. Make sure the file is a WAV file and hasn't been moved; Play sound tells you if the file can't be found.</li>
+<li><strong>NVDA's speech cuts off a ClassicSpeech message, such as the speech hook loaded message.</strong> Check Give ClassicSpeech messages priority over NVDA speech on the <a href="#misc">Misc</a> page.</li>
 <li><strong>A scheme you copied into the Schemes folder yourself isn't used.</strong> Open Speech and Sound Schemes and choose it in Active scheme. A scheme folder needs its scheme.json file. To add a scheme someone sent you as a file, Import scheme is easier.</li>
 <li><strong>An item doesn't use the other synthesizer you chose.</strong> ClassicSpeech tells you when it can't load a synthesizer, and uses your active synthesizer instead. The active synthesizer is also the fastest choice.</li>
 <li><strong>You want NVDA exactly as it was before ClassicSpeech.</strong> Choose Reset All ClassicSpeech Settings, or remove ClassicSpeech. See <a href="#resetting">Resetting ClassicSpeech</a>.</li>

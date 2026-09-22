@@ -12,7 +12,6 @@ import logHandler
 import queueHandler
 import scriptHandler
 import speech.extensions
-import ui
 import speech
 from speech import shortcutKeys as nvdaShortcutKeys
 import braille
@@ -66,6 +65,8 @@ from ._speech_core.cancelable import strip_cancelable
 from ._speech_core.history import SpeechHistoryBuffer, consume_history_native_passthrough
 from ._speech_core.history_viewer import show_history_dialog, is_history_list_focus
 from ._speech_core.interrupt_control import SpeechInterruptController
+from ._speech_core import message_priority
+from ._speech_core.message_priority import join_message_ends, speak_message, split_message_ends
 from ._speech_core.update_check import UpdateChecker
 from ._speech_core.user_guide import open_user_guide
 from ._speech_core.processors.web.summary import build_summary, format_summary_with_document_title
@@ -634,6 +635,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         self._menuHints = MenuHintHelper()
         self._keyLabelRuntime = get_key_label_runtime()
         self._interruptController = SpeechInterruptController()
+        # Before the speech hook: the interrupt controller wraps speech
+        # cancellation around this one, as it did around NVDA's own.
+        message_priority.install()
         self._install_shortcut_speaker_bypass()
         self._install_keyboard_entry_profile_route()
         self._install_mouse_pointer_profile_route()
@@ -661,6 +665,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             self,
             get_browse_mode_message=get_custom_browse_mode_message,
             get_focus_mode_message=get_custom_focus_mode_message,
+            speak_message=speak_message,
         )
 
         self._installClassicSpeechMenu()
@@ -707,6 +712,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         except Exception:
             log.debug("ClassicSpeech: failed to uninstall speech interrupt controller", exc_info=True)
         try:
+            message_priority.uninstall()
+        except Exception:
+            log.debug("ClassicSpeech: failed to remove message priority", exc_info=True)
+        try:
             pendingFlush = getattr(self, "_pendingContainerFlush", None)
             if pendingFlush is not None:
                 pendingFlush.Stop()
@@ -740,7 +749,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 return
             message = get_speech_hook_loaded_message()
             if message:
-                ui.message(message)
+                speak_message(message)
         except Exception:
             log.debug("ClassicSpeech: failed to announce speech hook loaded", exc_info=True)
 
@@ -1133,16 +1142,23 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         Scheme markers added while NVDA generated the speech are always
         converted or removed here, so they never reach other filters or the
         synthesizer.
+
+        A ClassicSpeech message given priority ends with a callback that
+        tells ClassicSpeech it has been spoken. It is set aside while the
+        message is processed, so the message is processed exactly as without
+        priority, and put back right after the message's text.
         """
+        speechSequence, messageEnds = split_message_ends(speechSequence)
         output = self._filterSpeechSequenceCore(speechSequence)
         try:
-            return scheme_runtime.apply_schemes(output)
+            output = scheme_runtime.apply_schemes(output)
         except Exception:
             log.exception("ClassicSpeech: Speech and Sound Schemes failed")
             try:
-                return strip_markers(output)
+                output = strip_markers(output)
             except Exception:
-                return output
+                pass
+        return join_message_ends(output, messageEnds)
 
     def _filterSpeechSequenceCore(self, speechSequence):
         try:
@@ -1575,7 +1591,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         try:
             enabled = not bool(scheme_store.runtime_data().data and scheme_store.runtime_data().data.get("enabled"))
             scheme_store.set_schemes_enabled(enabled)
-            ui.message(_("Speech and sound schemes on") if enabled else _("Speech and sound schemes off"))
+            speak_message(_("Speech and sound schemes on") if enabled else _("Speech and sound schemes off"))
         except Exception:
             log.exception("ClassicSpeech: toggling speech and sound schemes failed")
 
@@ -1586,7 +1602,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def script_nextSpeechScheme(self, gesture):
         try:
             name = scheme_store.cycle_active_scheme()
-            ui.message(_("Scheme {name}").format(name=name))
+            speak_message(_("Scheme {name}").format(name=name))
         except Exception:
             log.exception("ClassicSpeech: switching speech and sound schemes failed")
 
@@ -1600,7 +1616,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 document_title = getattr(getattr(document, "rootNVDAObject", None), "name", None)
             except Exception:
                 log.debugWarning("ClassicSpeech: unable to read Page Summary document title", exc_info=True)
-        ui.message(format_summary_with_document_title(document_title, summary))
+        speak_message(format_summary_with_document_title(document_title, summary))
 
     def _get_web_page_lifecycle(self):
         """Return the automatic web lifecycle, including test-double fallback."""
@@ -1647,12 +1663,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             focus = api.getFocusObject()
             document = getattr(focus, "treeInterceptor", None)
             if document is None or not hasattr(document, "_iterNodesByType"):
-                ui.message(_("Page summary is not available here."))
+                speak_message(_("Page summary is not available here."))
                 return
             self._report_page_summary_for_document(document)
         except Exception:
             log.exception("ClassicSpeech page summary failed")
-            ui.message(_("Page summary is not available here."))
+            speak_message(_("Page summary is not available here."))
 
 
     @scriptHandler.script(
@@ -1675,7 +1691,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
             focus = self._get_query_object()
             if not focus:
-                ui.message(_("No object"))
+                speak_message(_("No object"))
                 return
 
             repeatCount = scriptHandler.getLastScriptRepeatCount()
@@ -1685,14 +1701,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
             text = self.processor.get_query_object_text(focus)
             if not text:
-                ui.message(_("No object"))
+                speak_message(_("No object"))
                 return
 
             speech.speakSpelling(text)
             api.copyToClip(text, notify=False)
         except Exception as e:
             log.error(f"ClassicSpeech query object failed: {e}", exc_info=True)
-            ui.message(_("No focus"))
+            speak_message(_("No focus"))
     @scriptHandler.script(
         description=_("Reviews the previous ClassicSpeech history item"),
         category=_("ClassicSpeech"),
@@ -1737,7 +1753,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             show_history_dialog(self.history)
         except Exception as e:
             log.error(f"Failed to open ClassicSpeech history: {e}", exc_info=True)
-            ui.message(_("Could not open speech history"))
+            speak_message(_("Could not open speech history"))
 
 
     def _getDefaultButton(self):
@@ -1784,10 +1800,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             # The dialog's default button is the one Enter activates after a
             # change in another control, reported even while focus is on a
             # different button.
-            ui.message(self._defaultButtonMessage(self._getDefaultButton()))
+            speak_message(self._defaultButtonMessage(self._getDefaultButton()))
         except Exception as e:
             log.error(f"Failed announcing default button: {e}", exc_info=True)
-            ui.message(_("No default button"))
+            speak_message(_("No default button"))
 
     def _onWebBrowseDialogClosed(self, evt):
         try:

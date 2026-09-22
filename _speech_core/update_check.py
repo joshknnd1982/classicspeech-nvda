@@ -352,9 +352,9 @@ class UpdateChecker:
 		version, repository = addon
 		self._busy = True
 		if manual:
-			import ui
+			from .message_priority import speak_message
 
-			ui.message(_("Checking for ClassicSpeech updates"))
+			speak_message(_("Checking for ClassicSpeech updates"))
 		self._run(lambda: fetch_latest_release(version, repository), lambda outcome: self._checked(outcome, version, repository, manual))
 
 	def _run(self, work, done):
@@ -446,11 +446,11 @@ class UpdateChecker:
 		)
 
 	def _download(self, release, version, repository):
-		import ui
+		from .message_priority import speak_message
 
 		folder = tempfile.mkdtemp(prefix="ClassicSpeech-update-")
 		self._busy = True
-		ui.message(_("Downloading ClassicSpeech {version}").format(version=release.version))
+		speak_message(_("Downloading ClassicSpeech {version}").format(version=release.version))
 		self._run(
 			lambda: download_release(release, version, repository, folder),
 			lambda outcome: self._downloaded(outcome, folder),
