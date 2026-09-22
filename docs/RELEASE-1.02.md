@@ -4,6 +4,14 @@ ClassicSpeech 1.02 fixes speech lag in Windows Explorer and file dialogs, restor
 
 Supported NVDA versions: 2025.1 through 2026.2.
 
+## What's new
+
+* Speech in Windows Explorer and in Open and Save dialogs is quick again: ClassicSpeech no longer searches a dialog for its default button on every key press.
+* Tabbing into an edit field reads its current line, or "blank" when it is empty, as NVDA does. **Read edit field contents when focused**, on the Verbosity page, turns this off for a verbosity profile.
+* An address bar and similar fields keep their name when NVDA announces a tool bar just before them.
+* **Voice Profiles** has two new categories: **Mouse**, for speech from mouse tracking, and **Document and web formatting**, for a voice on any formatting or web element NVDA reports.
+* **Speech and Sound Schemes**, in the ClassicSpeech menu, works like the JAWS Speech and Sounds Manager: give object types, states, window classes, document formatting and web elements a sound, a voice or both, and keep them in named schemes.
+
 ## Fixes
 
 ### Faster speech in Windows Explorer and file dialogs

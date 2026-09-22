@@ -45,3 +45,15 @@ ClassicSpeech-4.0.0.nvda-addon
 ```
 
 Leave **Release version** blank for all ordinary main, pull-request, and manual test builds. Those continue to use the generated UTC-date-and-run version.
+
+## What's new in the manifest
+
+Every build carries the current release's What's new in the manifest's `changelog`, a field NVDA 2026.1 added. NVDA's Add-on Store shows it, converted from Markdown, when you choose **What's new** for the add-on, and the Add-on Store's submission check copies it into the store listing. NVDA 2025.1 through 2025.3 ignore the field.
+
+The changelog is the `## What's new` section of the release notes named by `RELEASE_NOTES` in `scripts/package_addon.py`, up to the next heading of level one or two. For each release:
+
+1. write `docs/RELEASE-<version>.md` with a `## What's new` section;
+2. point `RELEASE_NOTES` at it;
+3. run `python scripts/package_addon.py --sync-changelog`, which writes that section into `manifest.ini` as a triple-quoted value.
+
+Packaging stops when the manifest's changelog is missing or is not that section. A release version, the **Release version** above or `--version` given to the script, must also be the version of `RELEASE_NOTES`, so a release can't carry an older release's What's new. Date-and-run builds skip only that last check.
