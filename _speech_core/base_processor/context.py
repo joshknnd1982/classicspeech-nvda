@@ -102,6 +102,26 @@ FORM_CONTROL_ROLE_KEYS = {
 	"spinbutton",
 }
 
+#: Roles whose focused object *is* the item the user moved to, so the first
+#: spoken string is that item's own name rather than a container label. A tree
+#: view or list can hold items named after NVDA's own vocabulary; ClassicSpeech's
+#: Speech and Sound Schemes tree is entirely made of them ("menu", "selected",
+#: "tree view"). Those names must survive as names.
+ITEM_CONTROL_ROLE_KEYS = {
+	"treeviewitem",
+	"listitem",
+	"menuitem",
+	"checkmenuitem",
+	"radiomenuitem",
+	"tab",
+	"tablecell",
+	"tablerow",
+	"dataitem",
+}
+
+#: Every role whose accessible name is protected from role/state classification.
+NAMED_CONTROL_ROLE_KEYS = FORM_CONTROL_ROLE_KEYS | ITEM_CONTROL_ROLE_KEYS
+
 
 class ContextAnalyzer:
 	def __init__(self, owner):
@@ -136,18 +156,19 @@ class ContextAnalyzer:
 		return " ".join(value.lower().split())
 
 	def _should_protect_leading_control_name(self, tokens):
-		"""Return True when the first spoken string is the focused form control's name.
+		"""Return True when the first spoken string is the focused control's own name.
 
-		This prevents English control names that also exist in NVDA's role map
-		("Style", "Font name", "Font size", etc.) from being misclassified as
-		semantic roles. Keep this deliberately narrow: dialog/form controls only,
-		and only when the first string matches the focused object's accessible name
-		or display text.
+		This prevents English names that also exist in NVDA's role and state map
+		("Style", "Font name", "menu", "selected", ...) from being misclassified as
+		a semantic role or state and then dropped or reordered. Keep this
+		deliberately narrow: dialog controls and the items inside them, and only
+		when the first string matches the focused object's accessible name or
+		display text.
 		"""
 		focus = api.getFocusObject()
 		if not focus:
 			return False
-		if self._get_object_role_key(focus) not in FORM_CONTROL_ROLE_KEYS:
+		if self._get_object_role_key(focus) not in NAMED_CONTROL_ROLE_KEYS:
 			return False
 		try:
 			if not object_is_in_dialog(focus):
