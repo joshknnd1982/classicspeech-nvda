@@ -62,6 +62,7 @@ from ._speech_core.settings.profile_config import nvda_settings_set_by_saved_set
 from ._speech_core.settings.web import WebBrowseSettingsDialog
 from ._speech_core.settings.voice_profiles_dialog import VoiceProfilesDialog
 from ._speech_core.schemes import store as scheme_store
+from ._speech_core.cancelable import strip_cancelable
 from ._speech_core.history import SpeechHistoryBuffer, consume_history_native_passthrough
 from ._speech_core.history_viewer import show_history_dialog, is_history_list_focus
 from ._speech_core.interrupt_control import SpeechInterruptController
@@ -838,6 +839,49 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 return seq[:i], seq[i:]
         return seq, []
 
+    def _focus_signature(self):
+        """Identify the focused object well enough to notice it has moved.
+
+        NVDA can build a new object for the same control, so this describes what
+        the object is rather than which instance it is, as NVDA's own
+        ``FocusLossCancellableSpeechCommand`` does when it compares objects.
+        """
+        try:
+            focus = api.getFocusObject()
+        except Exception:
+            return None
+        if focus is None:
+            return None
+        try:
+            role = getattr(focus, "role", None)
+            return (
+                getattr(focus, "windowHandle", None),
+                getattr(focus, "processID", None),
+                getattr(focus, "IAccessibleChildID", None),
+                str(getattr(role, "name", role) or ""),
+                self._norm_text(getattr(focus, "name", "")),
+            )
+        except Exception:
+            return None
+
+    def _sequence_is_focus_name(self, sequence):
+        """Return True when the sequence is only the focused object's own name.
+
+        A tree view item named "list" or "tree view" is an item, not the
+        container that holds it. Holding it would delay the item a user just
+        arrowed to, and merging it into the next announcement would move it onto
+        another item. The Speech and Sound Schemes tree is full of such names.
+        """
+        strings = self._string_tokens(sequence)
+        if len(strings) != 1:
+            return False
+        try:
+            focus = api.getFocusObject()
+            name = self._norm_text(getattr(focus, "name", "")) if focus else ""
+        except Exception:
+            return False
+        return bool(name) and self._norm_text(strings[0]) == name
+
     def _is_mergeable_container_sequence(self, sequence):
         strings = self._string_tokens(sequence)
         if not strings:
@@ -845,6 +889,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         if any(self._looks_like_position_text(s) for s in strings):
             return False
         if not any(self._looks_like_container_role_text(s) for s in strings):
+            return False
+        if self._sequence_is_focus_name(sequence):
             return False
         # Only hold compact container focus fragments such as
         # ['Categories:', 'list', 'Alt+', CharacterModeCommand(True), 'c', ...].
@@ -881,6 +927,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         self._pendingContainerFlush = None
         if not pending:
             return
+        if isinstance(pending, dict) and pending.get("focus") != self._focus_signature():
+            # The focus moved on while the container was held, so this fragment
+            # describes something the user has already left. Speaking it now
+            # would talk over the new object, and NVDA would drop the whole
+            # utterance - and everything queued before it - as expired focus
+            # speech, silencing the announcement the user is waiting for.
+            log.debug("ClassicSpeech: dropped a held container after the focus moved")
+            return
         try:
             self._flushingPendingContainer = True
             raw = pending.get("raw") if isinstance(pending, dict) else pending
@@ -895,12 +949,17 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
     def _hold_container_sequence(self, sequence, historyRaw):
         self._cancel_pending_container_flush()
-        core, hotkey = self._split_container_hotkey_tail(sequence)
+        # NVDA's focus cancellation markers describe the utterance NVDA built.
+        # This fragment is spoken again later, or inside another object's
+        # announcement, so it travels without them.
+        held = strip_cancelable(sequence)
+        core, hotkey = self._split_container_hotkey_tail(held)
         self._pendingContainerSequence = {
             "core": core,
             "hotkey": hotkey,
-            "raw": list(sequence),
+            "raw": list(held),
             "historyRaw": list(historyRaw),
+            "focus": self._focus_signature(),
         }
         log.debug(f"ClassicSpeech: holding split container speech briefly: {sequence}")
         try:
@@ -912,6 +971,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def _consume_pending_container_for(self, sequence, historyRaw):
         pending = getattr(self, "_pendingContainerSequence", None)
         if not pending:
+            return None
+        if pending.get("focus") != self._focus_signature():
+            # Held for a focus the user has already left; it is not this
+            # object's container and must not be spoken with it.
+            self._cancel_pending_container_flush()
+            self._pendingContainerSequence = None
+            log.debug("ClassicSpeech: discarded a held container from an earlier focus")
             return None
         if not self._is_mergeable_item_followup(sequence):
             # The held container was not followed by an item of that container

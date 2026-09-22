@@ -452,7 +452,7 @@ class BaseSpeechProcessor:
 			profile_config=self.verbosity.get_profile_config(),
 			speech_origin=speech_origin,
 		)
-		built = self._ensure_menu_context_not_silent(built, semantic_tokens, context)
+		built = self._ensure_menu_context_not_silent(built, semantic_tokens, context, tokens)
 
 		output = self._interleave_commands_preserving_text_order(tokens, commands, built)
 		speechSequence.clear()

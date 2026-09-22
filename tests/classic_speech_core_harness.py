@@ -195,6 +195,29 @@ def _install_nvda_stubs() -> None:
     class SuppressUnicodeNormalizationCommand:
         pass
 
+    class _CancellableSpeechCommand:
+        """NVDA's focus-scoped cancellation marker, as far as ClassicSpeech sees it.
+
+        NVDA attaches one to every focus announcement and drops the whole
+        utterance - and everything queued before it - once the focus event that
+        produced it has expired.
+        """
+
+        def __init__(self, obj=None):
+            self._obj = obj
+            self._isCancelled = False
+
+        def cancelUtterance(self):
+            self._isCancelled = True
+
+        @property
+        def isCancelled(self):
+            return self._isCancelled
+
+        def __repr__(self):
+            return f"CancellableSpeech({'cancelled' if self._isCancelled else 'still valid'})"
+
+    commands_mod._CancellableSpeechCommand = _CancellableSpeechCommand
     commands_mod.BreakCommand = BreakCommand
     commands_mod.CharacterModeCommand = CharacterModeCommand
     commands_mod.EndUtteranceCommand = EndUtteranceCommand
