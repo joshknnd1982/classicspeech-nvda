@@ -251,19 +251,40 @@ class DocumentReadingProofingPanelSourceTests(unittest.TestCase):
         panel_source = (
             ROOT / "_speech_core" / "settings" / "document_reading_proofing_panel.py"
         ).read_text(encoding="utf-8")
-        self.assertIn("from gui import guiHelper, nvdaControls", panel_source)
+        check_list_source = (
+            ROOT / "_speech_core" / "settings" / "check_lists.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("from gui import guiHelper", panel_source)
         self.assertIn("guiHelper.BoxSizerHelper", panel_source)
         self.assertIn("group.addLabeledControl", panel_source)
-        self.assertIn("nvdaControls.CustomCheckListBox", panel_source)
+        # The control itself is chosen in one place, shared with every other
+        # ClassicSpeech check list, and it is NVDA's accessible one.
+        self.assertIn("check_list_class()", panel_source)
+        self.assertIn("nvdaControls.CustomCheckListBox", check_list_source)
         self.assertIn("reportSpellingErrors2.Bind(wx.EVT_CHECKLISTBOX", panel_source)
         self.assertIn("REPORT_SPELLING_ERRORS_FLAGS", panel_source)
-        self.assertIn("self.reportSpellingErrors2.Select(0)", panel_source)
+        self.assertIn("set_checked_indices", panel_source)
+        self.assertIn("control.Select(0)", check_list_source)
         self.assertIn("evt.Skip()", panel_source)
         self.assertNotIn("wx.CheckListBox", panel_source)
         self.assertNotIn("wx.ComboBox", panel_source)
         self.assertNotIn("EVT_COMBOBOX", panel_source)
         self.assertNotIn("REPORT_SPELLING_ERRORS_CHOICES", panel_source)
         self.assertNotIn("Speech, sound, and braille", panel_source)
+
+    def test_every_classic_speech_check_list_uses_the_shared_native_control(self):
+        """One check list control, chosen once, as NVDA's own panels use it."""
+        settings_dir = ROOT / "_speech_core" / "settings"
+        shared = settings_dir / "check_lists.py"
+        for path in sorted(settings_dir.rglob("*.py")):
+            if path == shared:
+                continue
+            source = path.read_text(encoding="utf-8")
+            self.assertNotIn(
+                "wx.CheckListBox",
+                source,
+                f"{path.name} builds a raw wx check list instead of using check_lists",
+            )
 
     def test_spelling_errors_checklist_builds_native_bitmask(self):
         nvda_harness._import_classic_speech_like_nvda()

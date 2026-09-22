@@ -2,9 +2,10 @@ from ..localization import _
 
 import wx
 import logHandler
-from gui import guiHelper, nvdaControls
+from gui import guiHelper
 
 from .accessibility import _set_panel_description
+from .check_lists import check_list_class, checked_indices, set_checked_indices
 from .document_formatting_config import (
 	FONT_ATTRIBUTE_REPORTING_CHOICES,
 	REPORT_CELL_BORDERS_CHOICES,
@@ -128,7 +129,7 @@ class DocumentReadingProofingPanel(wx.Panel):
 		self._add_checkbox(group, box, "revisionsCheckBox", "reportRevisions", _("&Editor revisions"))
 		self.reportSpellingErrors2 = group.addLabeledControl(
 			_("Spelling or grammar e&rrors"),
-			nvdaControls.CustomCheckListBox,
+			check_list_class(),
 			choices=_choice_labels(REPORT_SPELLING_ERRORS_FLAGS),
 		)
 
@@ -213,33 +214,16 @@ class DocumentReadingProofingPanel(wx.Panel):
 
 	def _sync_spelling_errors_checks(self):
 		value = _get_document_formatting_setting("reportSpellingErrors2")
-		indices = [index for index, (_label, flag) in enumerate(REPORT_SPELLING_ERRORS_FLAGS) if value & flag]
-		if hasattr(self.reportSpellingErrors2, "SetCheckedItems"):
-			self.reportSpellingErrors2.SetCheckedItems(indices)
-		elif hasattr(self.reportSpellingErrors2, "CheckedItems"):
-			self.reportSpellingErrors2.CheckedItems = indices
-		else:
-			for index in indices:
-				if hasattr(self.reportSpellingErrors2, "Check"):
-					self.reportSpellingErrors2.Check(index, True)
-		if hasattr(self.reportSpellingErrors2, "Select"):
-			self.reportSpellingErrors2.Select(0)
+		set_checked_indices(
+			self.reportSpellingErrors2,
+			[index for index, (_label, flag) in enumerate(REPORT_SPELLING_ERRORS_FLAGS) if value & flag],
+		)
 
 	def _get_spelling_errors_value(self):
-		if hasattr(self.reportSpellingErrors2, "GetCheckedItems"):
-			checked = self.reportSpellingErrors2.GetCheckedItems()
-		elif hasattr(self.reportSpellingErrors2, "CheckedItems"):
-			checked = self.reportSpellingErrors2.CheckedItems
-		else:
-			checked = [
-				index
-				for index, _choice in enumerate(REPORT_SPELLING_ERRORS_FLAGS)
-				if hasattr(self.reportSpellingErrors2, "IsChecked") and self.reportSpellingErrors2.IsChecked(index)
-			]
 		value = 0
-		for index in checked or []:
+		for index in checked_indices(self.reportSpellingErrors2):
 			try:
-				value |= int(REPORT_SPELLING_ERRORS_FLAGS[int(index)][1])
+				value |= int(REPORT_SPELLING_ERRORS_FLAGS[index][1])
 			except Exception:
 				continue
 		return value
