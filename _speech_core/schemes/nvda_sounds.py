@@ -135,6 +135,10 @@ class NvdaSoundReplacer:
 
 		@functools.wraps(original)
 		def playWaveFile(*args, **kwargs):
+			# A later add-on may retain this closure after uninstall. Only the
+			# current installation may replace sounds, even after reinstalling.
+			if replacer._wrapper is not playWaveFile:
+				return original(*args, **kwargs)
 			try:
 				swapped = replacer._swap(args, kwargs)
 			except Exception:
@@ -319,13 +323,20 @@ def sync_start_and_exit_sounds(release=False) -> bool:
 
 
 def _play_start_or_exit(name, asynchronous):
-	path = replacement_for_name(name) or nvda_sound_path(name)
-	if not path or not os.path.isfile(path):
-		return
-	try:
-		_replacer.play_exactly(path, asynchronous=asynchronous)
-	except Exception:
-		log.debug("ClassicSpeech: could not play the %s sound", name, exc_info=True)
+	native_path = nvda_sound_path(name)
+	replacement = replacement_for_name(name)
+	# Try the scheme first, then NVDA's own sound once. play_exactly bypasses
+	# replacement so the fallback cannot select the same broken scheme again.
+	paths = [replacement] if replacement and replacement != native_path else []
+	paths.append(native_path)
+	for path in paths:
+		if not path or not os.path.isfile(path):
+			continue
+		try:
+			_replacer.play_exactly(path, asynchronous=asynchronous)
+			return
+		except Exception:
+			log.debug("ClassicSpeech: could not play the %s sound from %s", name, path, exc_info=True)
 
 
 def _minimal_start():
