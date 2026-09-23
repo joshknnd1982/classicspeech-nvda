@@ -183,7 +183,7 @@ ClassicSpeech-YYYYMMDD.RUN-gCOMMIT.nvda-addon
 ClassicSpeech-YYYYMMDD.RUN-gCOMMIT.nvda-addon.sha256
 ```
 
-For an official release, manually provide the numeric release version. The resulting package is named `ClassicSpeech-<version>.nvda-addon`.
+For an official release, manually provide the numeric release version. The resulting package is named `ClassicSpeech-<version>.nvda-addon`. The release's notes need a `## What's new` section, copied into the manifest's `changelog` before packaging; see "What's new in the manifest" in `VERSIONING.md`.
 
 ## Fast path for tiny documentation changes
 
