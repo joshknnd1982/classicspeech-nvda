@@ -1,7 +1,31 @@
 import api
 
 from ..dialog_helpers import focused_button_default_status
+from ..localization import pgettext
 from ..tokens import TOKEN_ROLE, TOKEN_STATE, token
+
+#: Role tokens a default button can have, by NVDA role name so any language works.
+_BUTTON_ROLE_KEYS = frozenset({"button", "splitbutton"})
+#: English role labels, for a role token without an NVDA role name.
+_BUTTON_ROLE_LABELS = frozenset({"button", "split button"})
+
+
+def _is_button_role_token(tok) -> bool:
+	if getattr(tok, "kind", None) != TOKEN_ROLE:
+		return False
+	raw = getattr(tok, "raw", None)
+	if isinstance(raw, str) and raw.strip().lower() in _BUTTON_ROLE_KEYS:
+		return True
+	try:
+		return tok.text().strip().lower() in _BUTTON_ROLE_LABELS
+	except Exception:
+		return False
+
+
+def _default_state_label() -> str:
+	# Translators: spoken with a dialog's default button when focus reaches it,
+	# as in "OK, default, button" (Announce default button in dialogs).
+	return pgettext("default button", "default")
 
 
 class DefaultButtonTokenInserter:
@@ -25,7 +49,8 @@ class DefaultButtonTokenInserter:
 		"""Insert a speakable default-state token before role for the focused default button.
 
 		This intentionally announces only when focus lands on the default button:
-		``OK, default, button``.  It does not announce the dialog default merely
+		``OK, default, button``, or ``Open, default, split button`` in the
+		Windows file dialog.  It does not announce the dialog default merely
 		because a dialog opened.
 		"""
 		try:
@@ -39,26 +64,16 @@ class DefaultButtonTokenInserter:
 		# on the default button, but they should not become ``default pressed``.
 		# Check the cheap token shape first: the dialog default-button lookup
 		# is expensive and is only needed for a spoken button role.
-		has_button_role = False
-		for tok in semantic_tokens or []:
-			if getattr(tok, "kind", None) != TOKEN_ROLE:
-				continue
-			try:
-				if tok.text().strip().lower() == "button":
-					has_button_role = True
-					break
-			except Exception:
-				continue
-
-		if not has_button_role:
+		if not any(_is_button_role_token(tok) for tok in semantic_tokens or []):
 			return semantic_tokens
 
 		# Avoid duplicate default tokens if a future NVDA/core sequence exposes one.
+		label = _default_state_label()
 		for tok in semantic_tokens or []:
 			if getattr(tok, "kind", None) != TOKEN_STATE:
 				continue
 			try:
-				if tok.text().strip().lower() == "default":
+				if getattr(tok, "raw", None) == "default" or tok.text().strip().lower() in {"default", label.lower()}:
 					return semantic_tokens
 			except Exception:
 				continue
@@ -75,7 +90,7 @@ class DefaultButtonTokenInserter:
 		default_tok = token(
 			TOKEN_STATE,
 			raw="default",
-			spoken="default",
+			spoken=label,
 			source=[],
 			meta={
 				"orderIndex": self._role_order_index_for_default_token(),
