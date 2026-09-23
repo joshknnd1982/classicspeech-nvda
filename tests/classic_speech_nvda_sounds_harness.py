@@ -264,6 +264,57 @@ class NvdaSoundReplacementTests(NvdaSoundsHarnessBase):
 		self.plugin = None
 		self.assertIs(self.nvwave.playWaveFile, self.nvdaPlayWaveFile)
 
+	def test_unload_keeps_a_later_wrapper_but_stops_replacing_sounds(self):
+		self.give({"browseMode": self.outside_sound("browse.wav")})
+		self.start_plugin()
+		old_wrapper = self.nvwave.playWaveFile
+		forwarded = []
+
+		def later_wrapper(*args, **kwargs):
+			forwarded.append((args, kwargs))
+			return old_wrapper(*args, **kwargs)
+
+		self.nvwave.playWaveFile = later_wrapper
+		self.plugin.terminate()
+		self.plugin = None
+		self.sounds.uninstall()  # Repeated cleanup is harmless.
+		self.assertIs(self.nvwave.playWaveFile, later_wrapper)
+		self.assertFalse(self.sounds._replacer.installed)
+		kwargs = dict(fileName=self.nvda_wave("browseMode"), asynchronous=False, isSpeechWaveFileCommand=True)
+		self.assertEqual(self.nvda_plays(**kwargs), self.nvda_wave("browseMode"))
+		self.assertEqual(forwarded, [((), kwargs)])
+		self.assertEqual(self.played, [(self.nvda_wave("browseMode"), False)])
+
+	def test_reinstall_does_not_reactivate_an_old_retained_wrapper(self):
+		self.give({"browseMode": self.outside_sound("browse.wav")})
+		self.start_plugin()
+		old_wrapper = self.nvwave.playWaveFile
+
+		def later_wrapper(*args, **kwargs):
+			return old_wrapper(*args, **kwargs)
+
+		self.nvwave.playWaveFile = later_wrapper
+		self.sounds.uninstall()
+		self.sounds.install()
+		self.addCleanup(self.sounds.uninstall)
+		replacer = self.sounds._replacer
+		original_swap = replacer._swap
+		swaps = []
+
+		def counted_swap(args, kwargs):
+			swaps.append((args, kwargs))
+			return original_swap(args, kwargs)
+
+		replacer._swap = counted_swap
+		self.addCleanup(setattr, replacer, "_swap", original_swap)
+		self.assertEqual(self.nvda_plays(self.nvda_wave("browseMode")), self.scheme_sound("browseMode"))
+		self.assertEqual(len(swaps), 1, "Only the current installation may consult the scheme")
+		self.played.clear()
+		swaps.clear()
+		old_wrapper(self.nvda_wave("browseMode"), asynchronous=False)
+		self.assertEqual(swaps, [], "Reinstalling must not revive a retained old wrapper")
+		self.assertEqual(self.played, [(self.nvda_wave("browseMode"), False)])
+
 	def test_while_nvda_exits_its_exit_sound_is_still_replaced(self):
 		self.give({"exit": self.outside_sound("bye.wav")})
 		plugin = self.start_plugin()
@@ -301,6 +352,66 @@ class NvdaStartAndExitSoundTests(NvdaSoundsHarnessBase):
 		self.played.clear()
 		self.start_plugin()
 		self.assertEqual(self.played, [(self.scheme_sound("start"), True)])
+
+	def install_rejecting_player(self, reject_native=False):
+		"""Model NVDA rejecting unreadable WAVs without opening an audio device."""
+		tried = []
+
+		def player(fileName, asynchronous=True, isSpeechWaveFileCommand=False):
+			tried.append((fileName, asynchronous))
+			if reject_native or fileName in self.store.active_nvda_sounds().values():
+				raise EOFError("not a WAV file NVDA can read")
+			self.played.append((fileName, asynchronous))
+
+		self.nvwave.playWaveFile = player
+		return tried
+
+	def test_invalid_start_sound_falls_back_to_native_start_once(self):
+		self.give({"start": self.outside_sound("broken-start.wav")})
+		tried = self.install_rejecting_player()
+		self.start_plugin()
+		self.assertEqual(tried, [(self.scheme_sound("start"), True), (self.nvda_wave("start"), True)])
+		self.assertEqual(self.played, [(self.nvda_wave("start"), True)])
+		self.assertFalse(self.option(), "Fallback must not change the persisted takeover policy")
+
+	def test_invalid_exit_sound_falls_back_to_native_exit_once(self):
+		self.give({"start": self.outside_sound("hello.wav"), "exit": self.outside_sound("broken-exit.wav")})
+		tried = self.install_rejecting_player()
+		plugin = self.start_plugin()
+		tried.clear()
+		self.played.clear()
+		stored = self.scheme_sound("exit")
+		self.exit_nvda(plugin)
+		self.assertEqual(tried, [(stored, False), (self.nvda_wave("exit"), False)])
+		self.assertEqual(self.played, [(self.nvda_wave("exit"), False)])
+
+	def test_invalid_signout_sound_falls_back_to_native_exit_once(self):
+		self.give({"start": self.outside_sound("hello.wav"), "exit": self.outside_sound("broken-exit.wav")})
+		tried = self.install_rejecting_player()
+		self.start_plugin()
+		tried.clear()
+		self.played.clear()
+		self.sounds.handle_windows_session_end()
+		self.assertEqual(tried, [(self.scheme_sound("exit"), False), (self.nvda_wave("exit"), False)])
+		self.assertEqual(self.played, [(self.nvda_wave("exit"), False)])
+
+	def test_failing_native_fallback_does_not_raise_or_retry(self):
+		self.give({"start": self.outside_sound("broken-start.wav"), "exit": self.outside_sound("broken-exit.wav")})
+		tried = self.install_rejecting_player(reject_native=True)
+		self.start_plugin()
+		self.assertEqual(tried, [(self.scheme_sound("start"), True), (self.nvda_wave("start"), True)])
+		tried.clear()
+		self.sounds.handle_nvda_exit()
+		self.assertEqual(tried, [(self.scheme_sound("exit"), False), (self.nvda_wave("exit"), False)])
+		self.assertEqual(self.played, [])
+
+	def test_failing_native_sound_without_replacement_is_attempted_only_once(self):
+		self.give({"start": self.outside_sound("hello.wav")})
+		tried = self.install_rejecting_player(reject_native=True)
+		self.start_plugin()
+		tried.clear()
+		self.sounds.handle_nvda_exit()
+		self.assertEqual(tried, [(self.nvda_wave("exit"), False)])
 
 	def test_without_a_start_sound_nvda_keeps_its_option_and_classicspeech_plays_nothing(self):
 		self.give({"exit": self.outside_sound("bye.wav")})

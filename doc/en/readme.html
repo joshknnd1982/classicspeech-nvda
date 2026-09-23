@@ -493,7 +493,8 @@ li { margin: .25em 0; }
 <li><strong>Remove sound</strong> or <strong>Reset this item</strong>, then OK or Apply, brings back NVDA's own sound. So does turning schemes off, or choosing a scheme that doesn't replace that sound.</li>
 <li>When the active scheme replaces none of NVDA's sounds, NVDA plays its sounds exactly as it always has.</li>
 <li>Your sound plays only when NVDA would play its own. If an NVDA option such as Audio indication of focus and browse modes is off, NVDA plays no sound for that event, and neither does your scheme.</li>
-<li>If NVDA can't play your file, it plays its own sound instead.</li>
+<li>If NVDA can't play your file, it tries its own sound instead. This also applies to startup, shutdown and Windows sign-out sounds. If the native sound also fails, ClassicSpeech does not keep retrying.</li>
+<li>Unloading ClassicSpeech stops its sound replacements without removing another add-on's sound handler. Reloading ClassicSpeech enables only its new sound handler; any old handler retained by another add-on stays inactive.</li>
 <li>These sounds have no voice, and When playing the sound doesn't apply to them.</li>
 <li>When another computer controls this one through Remote Access, NVDA sends it the sounds it plays by their file names. A sound your scheme plays instead is a file only this computer has, so the controlling computer doesn't hear it.</li>
 </ul>
