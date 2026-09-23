@@ -8,7 +8,8 @@ import wx
 import api
 import gui
 import logHandler
-import ui
+
+from .message_priority import speak_message
 
 log = logHandler.log
 
@@ -150,7 +151,7 @@ class SpeechHistoryDialog(wx.Dialog):
     def onCopy(self, event=None):
         index = self._selectedIndex()
         if index is None:
-            ui.message(_("No history item selected"))
+            speak_message(_("No history item selected"))
             return
         self.history.copy_index(index)
 
@@ -158,7 +159,7 @@ class SpeechHistoryDialog(wx.Dialog):
         self.history.clear()
         self.listBox.Clear()
         self._refreshButtons()
-        ui.message(_("Speech history cleared"))
+        speak_message(_("Speech history cleared"))
         self.closeButton.SetFocus()
 
     def onCharHook(self, event):

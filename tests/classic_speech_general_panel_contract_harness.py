@@ -228,6 +228,7 @@ class GeneralPanelContractTests(unittest.TestCase):
             queryObjectSourceChoice=Control(2),
             objectNavigationProcessing=Control(True),
             preventAutomaticSpeechInterrupt=Control(True),
+            prioritizeMessages=Control(True),
             speechInterruptForCharacters=Control(False),
             speechInterruptForEnter=Control(True),
         )
@@ -239,6 +240,11 @@ class GeneralPanelContractTests(unittest.TestCase):
         self.assertEqual(section["queryObjectSource"], "navigator")
         self.assertTrue(section["objectNavigationProcessing"])
         self.assertTrue(section["preventAutomaticSpeechInterrupt"])
+        self.assertTrue(section["prioritizeMessages"])
+
+        panel.prioritizeMessages = Control(False)
+        MiscPanel.apply_live(panel)
+        self.assertFalse(section["prioritizeMessages"])
         self.assertEqual(section["automaticSpeechInterruptFallbackMs"], 2000)
         self.assertTrue(config.conf["presentation"]["guessObjectPositionInformationWhenUnavailable"])
         self.assertFalse(config.conf["keyboard"]["speechInterruptForCharacters"])

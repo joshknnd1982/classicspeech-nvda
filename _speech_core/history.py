@@ -13,8 +13,8 @@ from collections import deque
 
 import api
 import logHandler
-import speech
-import ui
+
+from .message_priority import speak_message, speak_sequence
 
 log = logHandler.log
 
@@ -139,33 +139,33 @@ class SpeechHistoryBuffer:
             return
         self.suppress_next_append()
         mark_history_native_passthrough()
-        speech.speak([text])
+        speak_sequence([text])
 
     def speak_previous(self):
         text = self.previous()
         if text is None:
-            ui.message(_("Bottom of speech history"))
+            speak_message(_("Bottom of speech history"))
             return
         self.speak_text(text)
 
     def speak_next(self):
         text = self.next()
         if text is None:
-            ui.message(_("Top of speech history"))
+            speak_message(_("Top of speech history"))
             return
         self.speak_text(text)
 
     def speak_bottom(self):
         text = self.bottom()
         if text is None:
-            ui.message(_("No speech history"))
+            speak_message(_("No speech history"))
             return
         self.speak_text(text)
 
     def speak_top(self):
         text = self.top()
         if text is None:
-            ui.message(_("No speech history"))
+            speak_message(_("No speech history"))
             return
         self.speak_text(text)
 
@@ -175,12 +175,12 @@ class SpeechHistoryBuffer:
     def copy_index(self, index):
         text = self.select(index)
         if not text:
-            ui.message(_("No speech history"))
+            speak_message(_("No speech history"))
             return False
         if api.copyToClip(text):
             self.suppress_next_append()
             mark_history_native_passthrough()
-            speech.speak([text, _("copied")])
+            speak_sequence([text, _("copied")])
             return True
-        ui.message(_("Copy failed"))
+        speak_message(_("Copy failed"))
         return False

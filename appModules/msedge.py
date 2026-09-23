@@ -8,8 +8,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import appModuleHandler
-import ui
 
+from globalPlugins._speech_core.message_priority import speak_message
 from globalPlugins._speech_core.settings import edge_notifications_config
 from globalPlugins._speech_core.settings.web.summary_config import get_notify_when_page_ready
 
@@ -87,6 +87,6 @@ class AppModule(appModuleHandler.AppModule):
         if isinstance(custom_message, str):
             custom_message = custom_message.strip()
             if custom_message:
-                ui.message(custom_message)
+                speak_message(custom_message)
                 return
         nextHandler()

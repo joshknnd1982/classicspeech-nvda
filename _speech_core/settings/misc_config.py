@@ -62,6 +62,16 @@ def _set_prevent_automatic_speech_interrupt_enabled(enabled: bool):
 	conf["preventAutomaticSpeechInterrupt"] = bool(enabled)
 
 
+def _get_prioritize_messages_enabled():
+	conf = _read_classic_speech_section()
+	return _as_bool(conf.get("prioritizeMessages", False))
+
+
+def _set_prioritize_messages_enabled(enabled: bool):
+	conf = _ensure_classic_speech_section()
+	conf["prioritizeMessages"] = bool(enabled)
+
+
 def _get_speech_interrupt_for_typed_characters_enabled():
 	return _get_nvda_setting("keyboard", "speechInterruptForCharacters", True)
 
