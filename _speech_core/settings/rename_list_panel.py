@@ -2,10 +2,7 @@ import wx
 
 from ..localization import _
 
-try:
-	from gui import nvdaControls
-except Exception:
-	nvdaControls = None
+from .check_lists import check_list_class
 
 
 
@@ -62,8 +59,7 @@ class RenameListPanel(wx.Panel):
 				6,
 			)
 
-		checkListClass = nvdaControls.CustomCheckListBox if nvdaControls else wx.CheckListBox
-		self.listCtrl = checkListClass(self)
+		self.listCtrl = check_list_class()(self)
 		self.listCtrl.SetName(title)
 		mainSizer.Add(self.listCtrl, 1, wx.ALL | wx.EXPAND, 6)
 

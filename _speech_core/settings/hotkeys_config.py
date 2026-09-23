@@ -8,11 +8,14 @@ from .constants import (
 	HOTKEY_MODE_BOTH,
 	HOTKEY_MODE_CHOICES,
 	HOTKEY_MODE_DIALOGS,
+	HOTKEY_MODE_FLAGS,
 	HOTKEY_MODE_MENUS,
 	HOTKEY_MODE_OFF,
 	HOTKEY_TYPES_ACCESS,
 	HOTKEY_TYPES_BOTH,
 	HOTKEY_TYPES_COMMAND,
+	HOTKEY_TYPES_FLAGS,
+	HOTKEY_TYPES_NONE,
 )
 
 
@@ -88,7 +91,7 @@ def _get_hotkey_types():
 		types_value = str(conf.get("hotkeyTypes", HOTKEY_TYPES_BOTH))
 	except Exception:
 		types_value = HOTKEY_TYPES_BOTH
-	valid = {HOTKEY_TYPES_ACCESS, HOTKEY_TYPES_COMMAND, HOTKEY_TYPES_BOTH}
+	valid = {HOTKEY_TYPES_ACCESS, HOTKEY_TYPES_COMMAND, HOTKEY_TYPES_BOTH, HOTKEY_TYPES_NONE}
 	if types_value not in valid:
 		types_value = HOTKEY_TYPES_BOTH
 	return types_value
@@ -97,11 +100,68 @@ def _get_hotkey_types():
 def _set_hotkey_types(types_value: str):
 	conf = _ensure_classic_speech_section()
 	types_value = str(types_value or HOTKEY_TYPES_BOTH)
-	valid = {HOTKEY_TYPES_ACCESS, HOTKEY_TYPES_COMMAND, HOTKEY_TYPES_BOTH}
+	valid = {HOTKEY_TYPES_ACCESS, HOTKEY_TYPES_COMMAND, HOTKEY_TYPES_BOTH, HOTKEY_TYPES_NONE}
 	if types_value not in valid:
 		types_value = HOTKEY_TYPES_BOTH
 	conf["hotkeyTypes"] = types_value
 	return types_value
+
+
+# ---------------------------------------------------------------------------
+# Check list conversion
+#
+# "Speak hotkeys" and "Which shortcuts to speak" are each really two
+# independent choices, so they are presented as NVDA-style check lists (see
+# ``check_lists``). The stored values stay the strings earlier versions wrote,
+# so a settings file from any version keeps working.
+# ---------------------------------------------------------------------------
+
+def hotkey_mode_checked_rows(mode: str):
+	"""Return the checked row numbers of the "Speak hotkeys" check list."""
+	mode = str(mode or HOTKEY_MODE_BOTH)
+	if mode == HOTKEY_MODE_BOTH:
+		return list(range(len(HOTKEY_MODE_FLAGS)))
+	if mode == HOTKEY_MODE_OFF:
+		return []
+	return [index for index, (_label, value) in enumerate(HOTKEY_MODE_FLAGS) if value == mode]
+
+
+def hotkey_mode_from_checked_rows(rows) -> str:
+	"""Return the stored "Speak hotkeys" value for those checked rows."""
+	values = {
+		value
+		for index, (_label, value) in enumerate(HOTKEY_MODE_FLAGS)
+		if index in set(int(row) for row in rows or [])
+	}
+	if not values:
+		return HOTKEY_MODE_OFF
+	if len(values) >= len(HOTKEY_MODE_FLAGS):
+		return HOTKEY_MODE_BOTH
+	return values.pop()
+
+
+def hotkey_types_checked_rows(types_value: str):
+	"""Return the checked row numbers of the "Which shortcuts to speak" list."""
+	types_value = str(types_value or HOTKEY_TYPES_BOTH)
+	if types_value == HOTKEY_TYPES_BOTH:
+		return list(range(len(HOTKEY_TYPES_FLAGS)))
+	if types_value == HOTKEY_TYPES_NONE:
+		return []
+	return [index for index, (_label, value) in enumerate(HOTKEY_TYPES_FLAGS) if value == types_value]
+
+
+def hotkey_types_from_checked_rows(rows) -> str:
+	"""Return the stored "Which shortcuts to speak" value for those rows."""
+	values = {
+		value
+		for index, (_label, value) in enumerate(HOTKEY_TYPES_FLAGS)
+		if index in set(int(row) for row in rows or [])
+	}
+	if not values:
+		return HOTKEY_TYPES_NONE
+	if len(values) >= len(HOTKEY_TYPES_FLAGS):
+		return HOTKEY_TYPES_BOTH
+	return values.pop()
 
 def _get_hotkey_dialog_access_key_only():
 	conf = _read_classic_speech_section()

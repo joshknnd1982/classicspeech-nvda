@@ -5,10 +5,7 @@ import copy
 import wx
 import logHandler
 
-try:
-	from gui import nvdaControls
-except Exception:
-	nvdaControls = None
+from .check_lists import check_list_class
 
 from .accessibility import _set_panel_description
 from .profile_config import (
@@ -87,8 +84,7 @@ class VerbosityPanel(wx.Panel):
 		tokenInfo = wx.StaticText(self, label=_("Spoken object details:"))
 		mainSizer.Add(tokenInfo, 0, wx.LEFT | wx.RIGHT | wx.TOP | wx.EXPAND, 8)
 
-		checkListClass = nvdaControls.CustomCheckListBox if nvdaControls else wx.CheckListBox
-		self.tokenList = checkListClass(
+		self.tokenList = check_list_class()(
 			self,
 			choices=[label for _tokenKind, label in self.TOKEN_DEFS],
 		)

@@ -4,6 +4,7 @@ import wx
 import logHandler
 
 from .accessibility import _set_panel_description
+from .check_lists import checked_indices, make_check_list, set_checked_indices
 from .hotkeys_config import (
 	_get_hotkey_dialog_access_key_only,
 	_get_hotkey_format,
@@ -13,14 +14,19 @@ from .hotkeys_config import (
 	_set_hotkey_format,
 	_set_hotkey_mode,
 	_set_hotkey_types,
+	hotkey_mode_checked_rows,
+	hotkey_mode_from_checked_rows,
+	hotkey_types_checked_rows,
+	hotkey_types_from_checked_rows,
 )
 from .constants import (
 	HOTKEY_FORMAT_CHOICES,
 	HOTKEY_FORMAT_NATIVE,
 	HOTKEY_MODE_BOTH,
-	HOTKEY_MODE_CHOICES,
+	HOTKEY_MODE_FLAGS,
+	HOTKEY_MODE_OFF,
 	HOTKEY_TYPES_BOTH,
-	HOTKEY_TYPES_CHOICES,
+	HOTKEY_TYPES_FLAGS,
 )
 
 log = logHandler.log
@@ -51,13 +57,13 @@ class HotkeysPanel(wx.Panel):
 
 		grid = wx.FlexGridSizer(cols=2, vgap=8, hgap=10)
 		grid.AddGrowableCol(1, 1)
-		grid.Add(wx.StaticText(self, label=_("Speak hotkeys:")), 0, wx.ALIGN_CENTER_VERTICAL)
-		self.hotkeyModeChoice = wx.Choice(
+		grid.Add(wx.StaticText(self, label=_("Speak hotkeys &in:")), 0, wx.ALIGN_TOP)
+		self.hotkeyModeList = make_check_list(
 			self,
-			choices=[label for label, _value in HOTKEY_MODE_CHOICES],
+			_("Speak hotkeys in"),
+			[label for label, _value in HOTKEY_MODE_FLAGS],
 		)
-		self.hotkeyModeChoice.SetName(_("Speak hotkeys"))
-		grid.Add(self.hotkeyModeChoice, 1, wx.EXPAND)
+		grid.Add(self.hotkeyModeList, 1, wx.EXPAND)
 
 		grid.Add(wx.StaticText(self, label=_("Shortcut formatting:")), 0, wx.ALIGN_CENTER_VERTICAL)
 		self.hotkeyFormatChoice = wx.Choice(
@@ -67,13 +73,13 @@ class HotkeysPanel(wx.Panel):
 		self.hotkeyFormatChoice.SetName(_("Shortcut formatting"))
 		grid.Add(self.hotkeyFormatChoice, 1, wx.EXPAND)
 
-		grid.Add(wx.StaticText(self, label=_("Which shortcuts to speak:")), 0, wx.ALIGN_CENTER_VERTICAL)
-		self.hotkeyTypesChoice = wx.Choice(
+		grid.Add(wx.StaticText(self, label=_("Which shortcuts to &speak:")), 0, wx.ALIGN_TOP)
+		self.hotkeyTypesList = make_check_list(
 			self,
-			choices=[label for label, _value in HOTKEY_TYPES_CHOICES],
+			_("Which shortcuts to speak"),
+			[label for label, _value in HOTKEY_TYPES_FLAGS],
 		)
-		self.hotkeyTypesChoice.SetName(_("Which shortcuts to speak"))
-		grid.Add(self.hotkeyTypesChoice, 1, wx.EXPAND)
+		grid.Add(self.hotkeyTypesList, 1, wx.EXPAND)
 		mainSizer.Add(grid, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, 8)
 
 		self.dialogAccessKeyOnlyCheck = wx.CheckBox(
@@ -85,19 +91,18 @@ class HotkeysPanel(wx.Panel):
 
 		self._loadControlsFromConfig()
 		self._syncDependentControlsAvailability()
-		self.hotkeyModeChoice.Bind(wx.EVT_CHOICE, self.onInlineChanged)
+		# CustomCheckListBox reports a checked state change through
+		# EVT_CHECKLISTBOX for both keyboard and mouse.
+		self.hotkeyModeList.Bind(wx.EVT_CHECKLISTBOX, self.onCheckListChanged)
+		self.hotkeyTypesList.Bind(wx.EVT_CHECKLISTBOX, self.onCheckListChanged)
 		self.hotkeyFormatChoice.Bind(wx.EVT_CHOICE, self.onInlineChanged)
-		self.hotkeyTypesChoice.Bind(wx.EVT_CHOICE, self.onInlineChanged)
 		self.dialogAccessKeyOnlyCheck.Bind(wx.EVT_CHECKBOX, self.onInlineChanged)
 
 	def _loadControlsFromConfig(self):
-		mode = str(self.hotkeyMode or HOTKEY_MODE_BOTH)
-		for index, (_label, value) in enumerate(HOTKEY_MODE_CHOICES):
-			if value == mode:
-				self.hotkeyModeChoice.SetSelection(index)
-				break
-		else:
-			self.hotkeyModeChoice.SetSelection(len(HOTKEY_MODE_CHOICES) - 1)
+		set_checked_indices(
+			self.hotkeyModeList,
+			hotkey_mode_checked_rows(self.hotkeyMode or HOTKEY_MODE_BOTH),
+		)
 
 		format_value = str(self.hotkeyFormat or HOTKEY_FORMAT_NATIVE)
 		for index, (_label, value) in enumerate(HOTKEY_FORMAT_CHOICES):
@@ -107,21 +112,15 @@ class HotkeysPanel(wx.Panel):
 		else:
 			self.hotkeyFormatChoice.SetSelection(0)
 
-		types_value = str(self.hotkeyTypes or HOTKEY_TYPES_BOTH)
-		for index, (_label, value) in enumerate(HOTKEY_TYPES_CHOICES):
-			if value == types_value:
-				self.hotkeyTypesChoice.SetSelection(index)
-				break
-		else:
-			self.hotkeyTypesChoice.SetSelection(len(HOTKEY_TYPES_CHOICES) - 1)
+		set_checked_indices(
+			self.hotkeyTypesList,
+			hotkey_types_checked_rows(self.hotkeyTypes or HOTKEY_TYPES_BOTH),
+		)
 
 		self.dialogAccessKeyOnlyCheck.SetValue(bool(self.dialogAccessKeyOnly))
 
 	def _getModeFromChoice(self):
-		selection = self.hotkeyModeChoice.GetSelection()
-		if selection < 0 or selection >= len(HOTKEY_MODE_CHOICES):
-			return HOTKEY_MODE_BOTH
-		return HOTKEY_MODE_CHOICES[selection][1]
+		return hotkey_mode_from_checked_rows(checked_indices(self.hotkeyModeList))
 
 	def _getFormatFromChoice(self):
 		selection = self.hotkeyFormatChoice.GetSelection()
@@ -130,10 +129,13 @@ class HotkeysPanel(wx.Panel):
 		return HOTKEY_FORMAT_CHOICES[selection][1]
 
 	def _getTypesFromChoice(self):
-		selection = self.hotkeyTypesChoice.GetSelection()
-		if selection < 0 or selection >= len(HOTKEY_TYPES_CHOICES):
-			return HOTKEY_TYPES_BOTH
-		return HOTKEY_TYPES_CHOICES[selection][1]
+		return hotkey_types_from_checked_rows(checked_indices(self.hotkeyTypesList))
+
+	def onCheckListChanged(self, evt=None):
+		# Let NVDA's check list announce the new checked state first.
+		if evt is not None and hasattr(evt, "Skip"):
+			evt.Skip()
+		self.onInlineChanged()
 
 	def onInlineChanged(self, evt=None):
 		try:
@@ -150,10 +152,10 @@ class HotkeysPanel(wx.Panel):
 			log.exception("ClassicSpeech hotkey settings live apply failed")
 
 	def _syncDependentControlsAvailability(self):
-		enabled = self._getModeFromChoice() != "off"
+		enabled = self._getModeFromChoice() != HOTKEY_MODE_OFF
 		for control in (
 			self.hotkeyFormatChoice,
-			self.hotkeyTypesChoice,
+			self.hotkeyTypesList,
 			self.dialogAccessKeyOnlyCheck,
 		):
 			control.Enable(enabled)

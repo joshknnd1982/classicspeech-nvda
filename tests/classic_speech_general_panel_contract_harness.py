@@ -43,6 +43,16 @@ class Control:
         return getattr(self, "enabled", True)
 
 
+class CheckList(Control):
+    """An NVDA-style check list, as the settings panels read it."""
+
+    def __init__(self, checked):
+        super().__init__(list(checked))
+
+    def GetCheckedItems(self):
+        return list(self.value)
+
+
 class GeneralPanelContractTests(unittest.TestCase):
     def setUp(self):
         nvda_harness.ClassicSpeechNVDAConfigStartupTests().setUp()
@@ -63,9 +73,9 @@ class GeneralPanelContractTests(unittest.TestCase):
         from globalPlugins._speech_core.settings.hotkeys_panel import HotkeysPanel
 
         panel = types.SimpleNamespace(
-            hotkeyModeChoice=Control(3),
+            hotkeyModeList=CheckList([0, 1]),
             hotkeyFormatChoice=Control(1),
-            hotkeyTypesChoice=Control(0),
+            hotkeyTypesList=CheckList([0]),
             dialogAccessKeyOnlyCheck=Control(True),
         )
         panel._getModeFromChoice = lambda: HotkeysPanel._getModeFromChoice(panel)
@@ -83,9 +93,9 @@ class GeneralPanelContractTests(unittest.TestCase):
         from globalPlugins._speech_core.settings.hotkeys_panel import HotkeysPanel
 
         panel = types.SimpleNamespace(
-            hotkeyModeChoice=Control(0),
+            hotkeyModeList=CheckList([]),
             hotkeyFormatChoice=Control(0),
-            hotkeyTypesChoice=Control(0),
+            hotkeyTypesList=CheckList([0, 1]),
             dialogAccessKeyOnlyCheck=Control(False),
         )
         panel._getModeFromChoice = lambda: HotkeysPanel._getModeFromChoice(panel)
@@ -93,7 +103,7 @@ class GeneralPanelContractTests(unittest.TestCase):
         HotkeysPanel._syncDependentControlsAvailability(panel)
 
         self.assertFalse(panel.hotkeyFormatChoice.IsEnabled())
-        self.assertFalse(panel.hotkeyTypesChoice.IsEnabled())
+        self.assertFalse(panel.hotkeyTypesList.IsEnabled())
         self.assertFalse(panel.dialogAccessKeyOnlyCheck.IsEnabled())
 
     def test_menus_panel_persists_every_toggle_and_message(self):
@@ -440,6 +450,95 @@ class GeneralPanelContractTests(unittest.TestCase):
         for key, value in expected.items():
             with self.subTest(key=key):
                 self.assertEqual(config.conf["documentFormatting"].get(key), value)
+
+
+class HotkeyCheckListTests(unittest.TestCase):
+    """The Hotkeys settings, as NVDA presents a several-choices setting."""
+
+    def setUp(self):
+        nvda_harness.ClassicSpeechNVDAConfigStartupTests().setUp()
+        self.module = nvda_harness._import_classic_speech_like_nvda()
+        from globalPlugins._speech_core.settings import hotkeys_config
+
+        self.hotkeys_config = hotkeys_config
+
+    def tearDown(self):
+        globalPluginHandler.runningPlugins.clear()
+        nvda_harness._reset_global_plugin_imports()
+
+    def test_speak_hotkeys_rows_round_trip_every_stored_value(self):
+        cfg = self.hotkeys_config
+        for stored in ("off", "menus", "dialogs", "both"):
+            rows = cfg.hotkey_mode_checked_rows(stored)
+            self.assertEqual(cfg.hotkey_mode_from_checked_rows(rows), stored, stored)
+
+    def test_nothing_checked_means_hotkeys_are_off(self):
+        self.assertEqual(self.hotkeys_config.hotkey_mode_from_checked_rows([]), "off")
+        self.assertEqual(self.hotkeys_config.hotkey_mode_checked_rows("off"), [])
+
+    def test_which_shortcuts_rows_round_trip_every_stored_value(self):
+        cfg = self.hotkeys_config
+        for stored in ("none", "access", "command", "both"):
+            rows = cfg.hotkey_types_checked_rows(stored)
+            self.assertEqual(cfg.hotkey_types_from_checked_rows(rows), stored, stored)
+
+    def test_an_unknown_stored_value_still_opens_the_panel(self):
+        cfg = self.hotkeys_config
+        self.assertEqual(cfg.hotkey_mode_checked_rows("nonsense"), [])
+        self.assertEqual(cfg.hotkey_types_checked_rows("nonsense"), [])
+
+    def test_no_shortcut_kind_checked_speaks_no_shortcut(self):
+        from globalPlugins._speech_core.base_processor.hotkeys import HotkeyProcessor
+
+        processor = HotkeyProcessor()
+        self.hotkeys_config._set_hotkey_types("none")
+        self.assertFalse(processor._hotkey_type_allowed("alt+f"))
+        self.assertFalse(processor._hotkey_type_allowed("f"))
+        self.hotkeys_config._set_hotkey_types("both")
+        self.assertTrue(processor._hotkey_type_allowed("alt+f"))
+
+    def test_the_panel_offers_check_lists_rather_than_combined_combo_entries(self):
+        source = (ROOT / "_speech_core" / "settings" / "hotkeys_panel.py").read_text(encoding="utf-8")
+        self.assertIn("make_check_list", source)
+        self.assertIn("wx.EVT_CHECKLISTBOX", source)
+        self.assertNotIn("HOTKEY_MODE_CHOICES", source)
+        self.assertNotIn("HOTKEY_TYPES_CHOICES", source)
+        self.assertNotIn("wx.CheckListBox", source)
+
+    def test_the_panel_writes_the_values_earlier_versions_stored(self):
+        from globalPlugins._speech_core.settings.hotkeys_panel import HotkeysPanel
+
+        class CheckList:
+            def __init__(self, checked):
+                self.checked = list(checked)
+
+            def GetCheckedItems(self):
+                return list(self.checked)
+
+        class Choice:
+            def __init__(self, selection):
+                self.selection = selection
+
+            def GetSelection(self):
+                return self.selection
+
+            def GetValue(self):
+                return self.selection
+
+        panel = types.SimpleNamespace(
+            hotkeyModeList=CheckList([0]),
+            hotkeyFormatChoice=Choice(0),
+            hotkeyTypesList=CheckList([1]),
+            dialogAccessKeyOnlyCheck=Choice(False),
+        )
+        panel._getModeFromChoice = lambda: HotkeysPanel._getModeFromChoice(panel)
+        panel._getFormatFromChoice = lambda: HotkeysPanel._getFormatFromChoice(panel)
+        panel._getTypesFromChoice = lambda: HotkeysPanel._getTypesFromChoice(panel)
+        HotkeysPanel.apply_live(panel)
+
+        section = config.conf.profiles[0]["classicSpeech"]
+        self.assertEqual(section["hotkeyMode"], "menus")
+        self.assertEqual(section["hotkeyTypes"], "command")
 
 
 if __name__ == "__main__":

@@ -15,6 +15,7 @@ from ..settings import (
 	HOTKEY_TYPES_ACCESS,
 	HOTKEY_TYPES_COMMAND,
 	HOTKEY_TYPES_BOTH,
+	HOTKEY_TYPES_NONE,
 )
 from ..settings.hotkeys_config import (
 	_get_hotkey_dialog_access_key_only as _read_dialog_access_key_only,
@@ -88,6 +89,9 @@ class HotkeyProcessor:
 		types_value = self._get_hotkey_types()
 		if types_value == HOTKEY_TYPES_BOTH:
 			return True
+		if types_value == HOTKEY_TYPES_NONE:
+			# Nothing is checked in "Which shortcuts to speak".
+			return False
 		is_access = self._is_access_key_hotkey(hotkey_text)
 		if types_value == HOTKEY_TYPES_ACCESS:
 			return is_access
