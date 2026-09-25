@@ -18,7 +18,7 @@ APP_MODULE_DIRECTORIES = ("appModules",)
 # NVDA's Add-on Store Help opens doc/<language>/<docFileName> from the add-on root.
 DOC_DIRECTORIES = ("doc",)
 LOCALE_DIRECTORIES = ("locale",)
-RELEASE_NOTES = "RELEASE-1.16.md"
+RELEASE_NOTES = "RELEASE-1.17.md"
 # NVDA 2026.1 and later show the manifest's changelog, rendered from Markdown, when you choose
 # "What's new" for an add-on in the Add-on Store. Every release's changelog is this section of
 # its release notes; --sync-changelog copies it into manifest.ini.
@@ -289,6 +289,7 @@ def main() -> None:
             "globalPlugins/_speech_core/settings/text/config.py",
             "globalPlugins/_speech_core/settings/text/panel.py",
             "globalPlugins/_speech_core/focus_ancestry.py",
+            "globalPlugins/_speech_core/outlook_message_rows.py",
             "globalPlugins/_speech_core/schemes/__init__.py",
             "globalPlugins/_speech_core/schemes/catalog.py",
             "globalPlugins/_speech_core/schemes/labels.py",

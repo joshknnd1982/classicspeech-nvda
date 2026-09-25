@@ -68,6 +68,7 @@ from ._speech_core.history_viewer import show_history_dialog, is_history_list_fo
 from ._speech_core.interrupt_control import SpeechInterruptController
 from ._speech_core import message_priority
 from ._speech_core.message_priority import join_message_ends, speak_message, split_message_ends
+from ._speech_core import outlook_message_rows
 from ._speech_core.update_check import UpdateChecker
 from ._speech_core.user_guide import open_user_guide
 from ._speech_core.processors.web.summary import build_summary, format_summary_with_document_title
@@ -1719,6 +1720,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         return self._get_web_page_lifecycle().report_page_orientation(
             document, on_summary, on_fallback
         )
+
+    def chooseNVDAObjectOverlayClasses(self, obj, clsList):
+        """A message in Outlook's message list waits for Outlook to say it is unread (see outlook_message_rows)."""
+        outlook_message_rows.choose_overlay_classes(obj, clsList)
 
     def event_gainFocus(self, obj, nextHandler):
         """Keep NVDA's native focus event first, exactly once."""
