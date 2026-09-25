@@ -647,16 +647,18 @@ class BaseProcessorExtractionTests(unittest.TestCase):
         ]
         self.assertEqual(processor._restore_native_item_state_order(tokens), tokens)
 
-    def _speak_with_item_focus(self, sequence, mode, name="DSpeech", role="LISTITEM"):
+    def _speak_with_item_focus(self, sequence, mode, name="DSpeech", role="LISTITEM", windowClassName="SysListView32", appName="dspeech", profile=None):
         config.conf["classicSpeech"]["textProcessingData"]["listItemStateReporting"] = mode
         processor = BaseSpeechProcessor()
-        processor.verbosity.get_profile_config = lambda: DEFAULT_PROFILE
+        processor.verbosity.get_profile_config = lambda: profile or DEFAULT_PROFILE
         focus = types.SimpleNamespace(
             role=types.SimpleNamespace(name=role),
             parent=types.SimpleNamespace(role=types.SimpleNamespace(name="LIST"), parent=None),
             name=name,
             value="",
             treeInterceptor=None,
+            windowClassName=windowClassName,
+            appModule=types.SimpleNamespace(appName=appName),
         )
         api.getFocusObject = lambda: focus
         sequence = list(sequence)
@@ -700,6 +702,54 @@ class BaseProcessorExtractionTests(unittest.TestCase):
         # Focus or object navigation to an item without a name still has its
         # position, so its state follows List item state reporting.
         self.assertEqual(self._speak_with_item_focus(["not selected", "3 of 10"], "none", name=""), ["3 of 10"])
+
+    def _speak_in_file_explorer(self, sequence, mode="notSelected", name="Jaws files", **kwargs):
+        return self._speak_with_item_focus(sequence, mode, name=name, windowClassName="DirectUIHWND", appName="explorer", **kwargs)
+
+    def test_control_space_in_file_explorer_says_it_as_jaws_does(self):
+        # A tester's log: Control+Space on the selected "Jaws files" in File Explorer said
+        # "Jaws files, not selected". JAWS's ExplorerFrame.jss says "Not Selected", then the
+        # file's name, and just "selected" when you select a file.
+        self.assertEqual(self._speak_in_file_explorer(["not selected"]), ["not selected", "Jaws files"])
+        self.assertEqual(self._speak_in_file_explorer(["selected"]), ["selected"])
+
+    def test_file_explorer_selection_change_whatever_list_item_state_reporting_says(self):
+        for mode in ("native", "notSelected", "none", "selected", "both"):
+            with self.subTest(mode=mode):
+                self.assertEqual(self._speak_in_file_explorer(["not selected"], mode), ["not selected", "Jaws files"])
+                self.assertEqual(self._speak_in_file_explorer(["selected"], mode), ["selected"])
+
+    def test_file_explorer_order_holds_whatever_the_token_editor_order(self):
+        profile = {
+            **DEFAULT_PROFILE,
+            "order": [TOKEN_STATE, TOKEN_NAME, TOKEN_ROLE, TOKEN_VALUE, TOKEN_POSITION, "description", "tooltip", TOKEN_HOTKEY],
+        }
+        self.assertEqual(self._speak_in_file_explorer(["not selected"], profile=profile), ["not selected", "Jaws files"])
+
+    def test_file_explorer_unnamed_item_says_its_new_state(self):
+        self.assertEqual(self._speak_in_file_explorer(["not selected"], name=""), ["not selected"])
+        self.assertEqual(self._speak_in_file_explorer(["selected"], name=""), ["selected"])
+
+    def test_moving_through_file_explorer_is_unchanged(self):
+        focus_speech = ["Jaws files", "not selected", "10 of 50"]
+        self.assertEqual(self._speak_in_file_explorer(focus_speech), focus_speech)
+        self.assertEqual(self._speak_in_file_explorer(focus_speech, "none"), ["Jaws files", "10 of 50"])
+
+    def test_other_lists_keep_the_name_first(self):
+        # JAWS's own Default.JSS, for list boxes elsewhere, says the item's name.
+        cases = (
+            {"windowClassName": "DirectUIHWND", "appName": "notepad"},  # an Open dialog in another program
+            {"windowClassName": "SysListView32", "appName": "explorer"},  # the desktop
+        )
+        for case in cases:
+            with self.subTest(**case):
+                self.assertEqual(self._speak_with_item_focus(["not selected"], "notSelected", name="Jaws files", **case), ["Jaws files", "not selected"])
+                self.assertEqual(self._speak_with_item_focus(["selected"], "notSelected", name="Jaws files", **case), ["Jaws files", "selected"])
+        self.assertEqual(
+            self._speak_with_item_focus(["selected"], "notSelected", name="Documents", role="TREEVIEWITEM", windowClassName="DirectUIHWND", appName="explorer"),
+            ["Documents", "selected"],
+            "File Explorer's navigation pane",
+        )
 
 
 class TokenPolicyTests(unittest.TestCase):

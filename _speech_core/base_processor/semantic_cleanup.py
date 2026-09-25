@@ -240,6 +240,12 @@ class SemanticCleanup:
 		keeps it whatever that option says, and the focused item's text is added
 		in front. Keep this narrow to item-like focus and state-only sequences so
 		ordinary focus speech and token-editor ordering stay unchanged.
+
+		File Explorer's file list says it as JAWS does there (ExplorerFrame.jss,
+		ObjStateChangedEvent): "not selected" and then the file's name when you
+		unselect it, and just "selected" when you select it. The name goes last
+		as the one placement the token editor honors for a single token
+		(``forceLast``), so the token editor's order for everything else stays.
 		"""
 		focus_role_key = self._get_focus_role_key()
 		if focus_role_key not in {"listitem", "treeviewitem", "tablerow", "tablecell"}:
@@ -254,6 +260,9 @@ class SemanticCleanup:
 			for tok in semantic_tokens
 		]
 		focus = api.getFocusObject()
+		explorer_order = focus_role_key == "listitem" and self._is_file_explorer_item(focus)
+		if explorer_order and any(self._selected_state_text(tok) == "selected" for tok in semantic_tokens):
+			return semantic_tokens
 		item_text = ""
 		for attr in ("name", "value"):
 			try:
@@ -267,7 +276,19 @@ class SemanticCleanup:
 		if not item_text:
 			return semantic_tokens
 
+		if explorer_order:
+			return list(semantic_tokens) + [token(TOKEN_VALUE, raw=item_text, spoken=item_text, meta={"forceLast": True})]
 		return [token(TOKEN_VALUE, raw=item_text, spoken=item_text)] + list(semantic_tokens)
+
+	def _is_file_explorer_item(self, focus):
+		"""Whether ``focus`` is an item of File Explorer's file list, where JAWS's ExplorerFrame.jss speaks."""
+		try:
+			if getattr(focus, "windowClassName", "") != "DirectUIHWND":
+				return False
+			app_module = getattr(focus, "appModule", None)
+			return str(getattr(app_module, "appName", "") or "").lower() == "explorer"
+		except Exception:
+			return False
 
 	def _restore_native_item_state_order(self, semantic_tokens):
 		"""Apply list-item selected/not-selected reporting and placement.
