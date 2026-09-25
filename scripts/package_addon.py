@@ -289,6 +289,7 @@ def main() -> None:
             "globalPlugins/_speech_core/settings/text/config.py",
             "globalPlugins/_speech_core/settings/text/panel.py",
             "globalPlugins/_speech_core/focus_ancestry.py",
+            "globalPlugins/_speech_core/outlook_message_rows.py",
             "globalPlugins/_speech_core/schemes/__init__.py",
             "globalPlugins/_speech_core/schemes/catalog.py",
             "globalPlugins/_speech_core/schemes/labels.py",

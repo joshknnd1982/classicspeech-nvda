@@ -55,6 +55,7 @@ li { margin: .25em 0; }
 <li><a href="#speech-and-sound-schemes">Speech and Sound Schemes</a></li>
 <li><a href="#speech-history">Speech history</a></li>
 <li><a href="#object-commands">Current object, default button and page summary commands</a></li>
+<li><a href="#outlook">Microsoft Outlook's message list</a></li>
 <li><a href="#commands">Commands and gestures</a></li>
 <li><a href="#updates">Updating ClassicSpeech</a>
 <ol>
@@ -546,6 +547,10 @@ li { margin: .25em 0; }
 <p>When neither Windows nor the program reports a default button, ClassicSpeech looks at the dialog's buttons on the screen, the way a sighted person tells them apart: many dialogs fill their default button, or draw its border, in the accent color. If exactly one button stands out that way, you hear, for example, "Default button Save, by appearance". This check needs the dialog on the screen. While NVDA's Screen Curtain is on, ClassicSpeech can't see the buttons, and you hear "No default button found. Turn off Screen Curtain so ClassicSpeech can check how the buttons look." ClassicSpeech only compares the colors of the buttons; nothing is saved. Focus speech never uses this check.</p>
 <h3 id="page-summary-command">Page summary: NVDA+Shift+U</h3>
 <p>In browse mode, speaks the element counts chosen on the <a href="#page-summary">Page Summary</a> page. Elsewhere, you hear "Page summary is not available here."</p>
+
+<h2 id="outlook">Microsoft Outlook's message list</h2>
+<p>As you move through the messages in Outlook's Inbox or another mail folder, NVDA starts each message with what Outlook tells it about the message: "unread", "replied", "replied all" or "forwarded", "has attachment", "high importance" or "low importance", and "meeting request". For example: "unread From Contoso News, Subject Morning headlines, Received 6:31 AM".</p>
+<p>NVDA asks Outlook for this as a message gets focus, and right after you move, Outlook doesn't always answer. NVDA then says the message without it, and adds it a moment later only when Outlook reports a change, by reading the whole message again. By then you have usually moved on, so you never hear "unread". ClassicSpeech waits for Outlook's answer before NVDA speaks the message, for up to three tenths of a second, so every message starts with "unread" when it is unread. If Outlook doesn't answer in that time, you hear the message without it, and ClassicSpeech doesn't wait again until Outlook answers. There is nothing to set.</p>
 
 <h2 id="commands">Commands and gestures</h2>
 <p>All ClassicSpeech commands are in the ClassicSpeech category of NVDA's Input Gestures dialog. Commands without a default gesture are there so you can choose your own keys, without clashing with other add-ons.</p>
