@@ -29,6 +29,8 @@ if str(ROOT / "tests") not in sys.path:
 	sys.path.insert(0, str(ROOT / "tests"))
 
 import classic_speech_nvda_master_harness as nvda_harness  # noqa: E402
+from classic_speech_latency_harness import CountingObject, LatencyTestBase, _chain  # noqa: E402
+from speech.commands import _CancellableSpeechCommand  # noqa: E402
 import api  # noqa: E402
 import core  # noqa: E402
 import globalPluginHandler  # noqa: E402
@@ -398,6 +400,33 @@ class GivingUpTests(OutlookMessageRowTestBase):
 		outlook.busyUntil = self.clock.now + 0.06
 		self.assertEqual(self._row(outlook).name, "unread " + COLUMNS)
 		self.assertGreater(self.clock.slept, waited)
+
+
+class SpeechFilterTests(LatencyTestBase):
+	"""ClassicSpeech's speech filter passes the status on: NVDA's name was already missing it in the log."""
+
+	def test_unread_stays_at_the_start_of_the_announcement(self):
+		plugin = self.module.GlobalPlugin()
+		globalPluginHandler.runningPlugins.append(plugin)
+		self.addCleanup(plugin.terminate)
+		window = CountingObject("WINDOW", "Inbox - Outlook - Outlook")
+		table = CountingObject("TABLE", "Table View")
+		row = CountingObject("LISTITEM", "unread " + COLUMNS)
+		_chain(row, table, window)
+		self._focus(row, table, window)
+		plugin.processor._safe_selected_text = lambda _focus: ""
+
+		def speak(sequence):
+			return [part for part in plugin._filterSpeechSequence(list(sequence)) if isinstance(part, str)]
+
+		# The logged sequences, with the name NVDA builds once Outlook has answered.
+		self.assertEqual(speak(["Table View", "table", _CancellableSpeechCommand()]), [])
+		first = speak([row.name, "row 2581", "column 1", "through 13", "2581 of 2605", _CancellableSpeechCommand()])
+		self.assertEqual(first[:2], ["Table View", "table"])
+		self.assertTrue(first[2].startswith("unread " + COLUMNS), first)
+		moved = speak([row.name, "row 2632", "2632 of 2633", _CancellableSpeechCommand()])
+		self.assertTrue(moved[0].startswith("unread " + COLUMNS), moved)
+		self.assertEqual(speak([row.name]), [row.name])
 
 
 class ThreadTests(OutlookMessageRowTestBase):

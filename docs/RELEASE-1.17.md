@@ -36,5 +36,5 @@ Use **Check for Updates...** in the ClassicSpeech menu (NVDA menu → Preference
 ## Verification
 
 * Full local harness gate: every harness passes. `tests/classic_speech_outlook_messages_harness.py` builds a message row the way NVDA does, with NVDA's own property caching from `baseObject.py` and NVDA 2026.2's way of asking Outlook, and a fake Outlook that turns calls away for a while. Without the fix it fails with exactly what the log shows: the announcement without "unread", then a second reading with it.
-* It also checks the limit and the pause after it, that only the focused message waits, that nothing waits before NVDA has Outlook's object model, Outlook Extended's rows, and that a name built on another thread is never kept for NVDA's next announcement.
+* It also checks the limit and the pause after it, that only the focused message waits, that nothing waits before NVDA has Outlook's object model, Outlook Extended's rows, that a name built on another thread is never kept for NVDA's next announcement, and that ClassicSpeech's own speech processing keeps "unread" at the start of the announcement.
 * These changes have passed the automated tests but have not yet been tried live in NVDA with Outlook.
